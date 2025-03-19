@@ -61,6 +61,14 @@ dependencies {
     implementation(libs.hilt.android)
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:$2.8.7")
     kapt(libs.hilt.android.compiler)
+
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.exoplayer.dash)
+    implementation(libs.androidx.media3.ui)
+
+    implementation(platform(libs.okhttp.bom))
+    implementation(libs.okhttp)
+    implementation(libs.logging.interceptor)
 }
 
 // Allow references to generated code
