@@ -7,8 +7,6 @@ import com.example.datn_mobile.ui.components.VideoPlayerDash
 
 @Composable
 fun MainScreen() {
-    val videoUrl = "https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd"
-    val videoUrl2 = "http://10.0.2.2:8080/67d93e93ca386d2312a19f5c/output.mpd"
-//    curl -I http://10.0.2.2:8080/67d93e93ca386d2312a19f5c/output.mpd
-    VideoPlayerDash(url = videoUrl2, modifier = Modifier.fillMaxSize())
+    val videoUrl = "http://10.0.2.2:8080/67d93e93ca386d2312a19f5c/output.mpd"
+    VideoPlayerDash(url = videoUrl, modifier = Modifier.fillMaxSize())
 }

@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.example.datn_mobile.ui.screens.MainScreen
+import com.example.datn_mobile.ui.screens.LoginScreen
 import com.example.datn_mobile.ui.theme.DatnmobileTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -15,7 +15,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             DatnmobileTheme {
-                MainScreen()
+                LoginScreen()
             }
         }
     }
