@@ -29,9 +29,14 @@ fun LoginScreen(viewModel: LoginViewModel = viewModel()) {
         if (uiState.authenticated) {
             Text("Access token")
             Text(uiState.accessToken)
+            Text("Email: ${uiState.email}")
+
+            Button(onClick = {viewModel.getCurrentUser() }) { Text("Get email") }
+
             Button(onClick = { viewModel.logout()} ) {
                 Text("Logout")
             }
+
         } else {
             var username by remember { mutableStateOf("") }
             var password by remember { mutableStateOf("") }

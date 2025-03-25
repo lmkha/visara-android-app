@@ -6,7 +6,7 @@ import javax.inject.Inject
 class AuthLocalDataSource @Inject constructor(
     private val tokenStorage: TokenStorage,
 ) {
-    fun getToken() : String = tokenStorage.getToken()
+    fun getToken() : String? = tokenStorage.getToken()
     fun saveToken(token: String) {
         tokenStorage.saveToken(token)
     }

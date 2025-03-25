@@ -81,6 +81,8 @@ dependencies {
     implementation(libs.logging.interceptor)
 
     implementation(libs.gson)
+
+    implementation(libs.androidx.security.crypto)
 }
 
 // Allow references to generated code

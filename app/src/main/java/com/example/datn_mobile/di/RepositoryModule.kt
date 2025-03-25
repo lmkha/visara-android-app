@@ -2,7 +2,9 @@ package com.example.datn_mobile.di
 
 import com.example.datn_mobile.data.local.datasource.AuthLocalDataSource
 import com.example.datn_mobile.data.remote.datasource.AuthRemoteDataSource
+import com.example.datn_mobile.data.remote.datasource.UserRemoteDataSource
 import com.example.datn_mobile.data.repository.AuthRepository
+import com.example.datn_mobile.data.repository.UserRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,5 +21,14 @@ object RepositoryModule {
         authLocalDataSource: AuthLocalDataSource,
     ) : AuthRepository {
         return AuthRepository(authRemoteDataSource, authLocalDataSource)
+    }
+
+
+    @Provides
+    @Singleton
+    fun provideUserRepository(
+        userRemoteDataSource: UserRemoteDataSource,
+    ) : UserRepository {
+        return UserRepository(userRemoteDataSource)
     }
 }

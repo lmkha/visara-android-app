@@ -3,6 +3,8 @@ package com.example.datn_mobile.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.datn_mobile.data.repository.AuthRepository
+import com.example.datn_mobile.data.repository.UserRepository
+import com.example.datn_mobile.domain.LoginUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +16,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
+    private val loginUseCase: LoginUseCase,
     private val authRepository: AuthRepository,
+    private val userRepository: UserRepository,
 ) : ViewModel() {
     private var _uiState: MutableStateFlow<UiState> = MutableStateFlow<UiState>(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
@@ -28,10 +32,9 @@ class LoginViewModel @Inject constructor(
 
     fun login(username: String, password: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            authRepository.login(username, password)
-            val token = authRepository.getToken()
-            token?.let {
-                _uiState.update {oldState-> oldState.copy(authenticated = true, accessToken = it) }
+            val token = loginUseCase(username, password)
+            if (!token.isNullOrEmpty()) {
+                _uiState.update {oldState-> oldState.copy(authenticated = true, accessToken = token) }
             }
         }
     }
@@ -45,9 +48,20 @@ class LoginViewModel @Inject constructor(
             }
         }
     }
+
+    fun getCurrentUser() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val currentUser = userRepository.getCurrentUser()
+            if (!currentUser?.email.isNullOrEmpty()) {
+                _uiState.update { oldState-> oldState.copy(email = currentUser.email) }
+            }
+        }
+    }
+
 }
 
 data class UiState(
     val authenticated: Boolean = false,
     val accessToken: String = "",
+    val email: String = "",
 )
