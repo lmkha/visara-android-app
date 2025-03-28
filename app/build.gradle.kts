@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
+    kotlin("plugin.serialization") version "2.0.21"
 }
 
 android {
@@ -70,6 +71,7 @@ dependencies {
 
     implementation(libs.hilt.android)
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:$2.8.7")
+    implementation(libs.androidx.hilt.navigation.compose)
     kapt(libs.hilt.android.compiler)
 
     implementation(libs.androidx.media3.exoplayer)
@@ -83,6 +85,14 @@ dependencies {
     implementation(libs.gson)
 
     implementation(libs.androidx.security.crypto)
+
+    implementation(libs.androidx.navigation.compose)
+    androidTestImplementation(libs.androidx.navigation.testing)
+    implementation(libs.kotlinx.serialization.json)
+
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
+
 }
 
 // Allow references to generated code

@@ -7,37 +7,47 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.datn_mobile.viewmodels.LoginViewModel
 
 @Composable
-fun LoginScreen(viewModel: LoginViewModel = viewModel()) {
+fun LoginScreen(
+    viewModel: LoginViewModel = hiltViewModel<LoginViewModel>(),
+    onAuthenticated: () -> Unit,
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(uiState.authenticated) {
+        if (uiState.authenticated) {
+            onAuthenticated()
+        }
+    }
 
     Column (
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        if (uiState.authenticated) {
-            Text("Access token")
-            Text(uiState.accessToken)
-            Text("Email: ${uiState.email}")
-
-            Button(onClick = {viewModel.getCurrentUser() }) { Text("Get email") }
-
-            Button(onClick = { viewModel.logout()} ) {
-                Text("Logout")
-            }
-
-        } else {
+//        if (uiState.authenticated) {
+//            Text("Access token")
+//            Text(uiState.accessToken)
+//            Text("Email: ${uiState.email}")
+//
+//            Button(onClick = {viewModel.getCurrentUser() }) { Text("Get email") }
+//
+//            Button(onClick = { viewModel.logout()} ) {
+//                Text("Logout")
+//            }
+//
+//        } else {
             var username by remember { mutableStateOf("") }
             var password by remember { mutableStateOf("") }
 
@@ -58,6 +68,6 @@ fun LoginScreen(viewModel: LoginViewModel = viewModel()) {
             ) {
                 Text("Login")
             }
-        }
+//        }
     }
 }
