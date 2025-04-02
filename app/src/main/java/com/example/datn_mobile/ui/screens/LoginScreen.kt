@@ -36,38 +36,25 @@ fun LoginScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-//        if (uiState.authenticated) {
-//            Text("Access token")
-//            Text(uiState.accessToken)
-//            Text("Email: ${uiState.email}")
-//
-//            Button(onClick = {viewModel.getCurrentUser() }) { Text("Get email") }
-//
-//            Button(onClick = { viewModel.logout()} ) {
-//                Text("Logout")
-//            }
-//
-//        } else {
-            var username by remember { mutableStateOf("") }
-            var password by remember { mutableStateOf("") }
+        var username by remember { mutableStateOf("") }
+        var password by remember { mutableStateOf("") }
 
-            TextField(
-                label = { Text("UserName") },
-                value = username,
-                onValueChange = { username = it }
-            )
+        TextField(
+            label = { Text("UserName") },
+            value = username,
+            onValueChange = { username = it }
+        )
 
-            TextField(
-                label = { Text("Password") },
-                value = password,
-                onValueChange = { password = it }
-            )
+        TextField(
+            label = { Text("Password") },
+            value = password,
+            onValueChange = { password = it }
+        )
 
-            Button(
-                onClick = { viewModel.login(username = username, password = password) },
-            ) {
-                Text("Login")
-            }
-//        }
+        Button(
+            onClick = { viewModel.login(username = username, password = password) },
+        ) {
+            Text("Login")
+        }
     }
 }
