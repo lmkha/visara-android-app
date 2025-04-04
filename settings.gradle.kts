@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "datn-mobile"
+rootProject.name = "visara"
 include(":app")

@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.datn_mobile"
+    namespace = "com.example.visara"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.datn_mobile"
+        applicationId = "com.example.visara"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
