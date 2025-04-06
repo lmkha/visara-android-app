@@ -1,6 +1,7 @@
 package com.example.visara.ui.screens
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -36,7 +37,10 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchScreen(goBack: () -> Unit) {
+fun SearchScreen(
+    modifier: Modifier = Modifier,
+    goBack: () -> Unit,
+) {
     val textFieldState = remember { TextFieldState() }
     var filteredResults by remember { mutableStateOf(emptyList<String>()) }
     val allResults = listOf("barca", "real", "milano", "liver", "bayer", "chelsea")
@@ -53,46 +57,56 @@ fun SearchScreen(goBack: () -> Unit) {
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    SimpleSearchBar(
-                        textFieldState = textFieldState,
-                        onSearch = { newQuery-> textFieldState.edit { replace(0, length, newQuery)}},
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = goBack) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "GoBack")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = {}) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.mic_24px),
-                            contentDescription = "Mic icon",
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
-                }
-            )
-        }
-    ) { padding ->
-        LazyColumn(
+    Box(modifier = modifier.fillMaxSize()) {
+        Scaffold(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = padding,
-            state = resultLazyListState,
-        ) {
-            items(count = filteredResults.size) {index->
-                val resultText = filteredResults[index]
-                ListItem(
-                    headlineContent = { Text(resultText) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 4.dp)
-                        .clickable {textFieldState.edit { replace(0, length, resultText)} }
+            topBar = {
+                TopAppBar(
+                    title = {
+                        SimpleSearchBar(
+                            textFieldState = textFieldState,
+                            onSearch = { newQuery ->
+                                textFieldState.edit {
+                                    replace(0, length, newQuery)
+                                }
+                            },
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = goBack) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "GoBack"
+                            )
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = {}) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.mic_24px),
+                                contentDescription = "Mic icon",
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+                    }
                 )
+            }
+        ) { padding ->
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = padding,
+                state = resultLazyListState,
+            ) {
+                items(count = filteredResults.size) { index ->
+                    val resultText = filteredResults[index]
+                    ListItem(
+                        headlineContent = { Text(resultText) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp)
+                            .clickable { textFieldState.edit { replace(0, length, resultText) } }
+                    )
+                }
             }
         }
     }

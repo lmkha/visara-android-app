@@ -17,7 +17,6 @@ import androidx.navigation.compose.rememberNavController
 import com.example.visara.ui.components.MainContainer
 import com.example.visara.ui.navigation.Destination
 import com.example.visara.ui.screens.LoginScreen
-import com.example.visara.ui.screens.SearchScreen
 import com.example.visara.ui.theme.VisaraTheme
 
 @Composable
@@ -27,19 +26,14 @@ fun App() {
         var authenticated by remember { mutableStateOf(false) }
 
         NavHost(
+            modifier = Modifier.fillMaxSize(),
             navController = navController,
             startDestination = Destination.Main(),
         ) {
             composable<Destination.Main> {
                 MainContainer(
                     navigateToLogin = { navController.navigate(Destination.Login) },
-                    navigateToSearch = { navController.navigate(Destination.Search) },
                     authenticated = authenticated,
-                )
-            }
-            composable<Destination.Search> {
-                SearchScreen(
-                    goBack = { navController.popBackStack() }
                 )
             }
             composable<Destination.Login> {

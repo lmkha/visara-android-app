@@ -18,7 +18,7 @@ class VideoApi @Inject constructor(
     @UnauthenticatedOkhttpClient private val unauthorizedOkHttpClient: OkHttpClient,
     private val gson: Gson,
 ) {
-    fun getRandomVideos(numOfVideos: Int = 10) : ApiResponse<VideoDto>? {
+    fun getRandomVideos(numOfVideos: Int = 10) : ApiResponse<List<VideoDto>>? {
         val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
             .addPathSegments("videos/random")
             .addQueryParameter("count", numOfVideos.toString())
@@ -36,7 +36,7 @@ class VideoApi @Inject constructor(
                 return null
             }
             if (responseBody.isNullOrEmpty()) return null
-            return gson.fromJson(responseBody, object : TypeToken<ApiResponse<VideoDto>>() {}.type)
+            return gson.fromJson(responseBody, object : TypeToken<ApiResponse<List<VideoDto>>>() {}.type)
         }
     }
 }
