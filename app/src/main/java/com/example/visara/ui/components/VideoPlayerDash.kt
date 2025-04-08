@@ -12,7 +12,10 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 
 @Composable
-fun VideoPlayerDash(modifier: Modifier = Modifier, url: String, ) {
+fun VideoPlayerDash(
+    modifier: Modifier = Modifier,
+    url: String,
+) {
     val context = LocalContext.current
     val exoPlayer = remember {
         ExoPlayer.Builder(context)
@@ -20,7 +23,7 @@ fun VideoPlayerDash(modifier: Modifier = Modifier, url: String, ) {
             .apply {
                 val mediaItem = MediaItem.Builder()
                     .setUri(url)
-                    .setMimeType(MimeTypes.APPLICATION_MPD) // MPEG-DASH
+                    .setMimeType(MimeTypes.APPLICATION_MPD)
                     .build()
                 setMediaItem(mediaItem)
                 prepare()

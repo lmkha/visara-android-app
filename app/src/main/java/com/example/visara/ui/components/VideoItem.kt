@@ -1,6 +1,5 @@
 package com.example.visara.ui.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,12 +9,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -34,43 +36,56 @@ fun VideoItem(
             .fillMaxWidth()
             .clickable(onClick = {onVideoSelect("best-video-id")})
     ) {
-        Column() {
+        Column {
             AsyncImage(
                 modifier = Modifier
                     .height(250.dp)
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(20.dp))
+                ,
                 model = cloudinaryImageUrl,
                 contentDescription = null,
-                contentScale = ContentScale.FillWidth,
+                contentScale = ContentScale.FillBounds,
             )
             Row(
                 modifier = Modifier
                     .padding(8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                // Avatar
-                Box(
-                    modifier = Modifier
-                        .size(50.dp)
-                        .clip(CircleShape)
-                        .background(Color.Black)
-                )
+                UserAvatar(modifier = Modifier.size(50.dp))
                 Column {
-                    Text(
-                        text = "FC Barcelona 1 vs 1 Betis | Laliga 2024/25 MD30 - xxxxxxxxx",
-                        overflow = TextOverflow.Ellipsis,
-                        maxLines = 2,
-                        fontWeight = FontWeight.W600,
-                        fontSize = 20.sp
-                    )
+                    Row {
+                        Text(
+                            modifier = Modifier
+                                .weight(1f)
+                            ,
+                            text = "FC Barcelona 1 vs 1 Betis | Laliga 2024/25 MD30",
+                            overflow = TextOverflow.Ellipsis,
+                            maxLines = 2,
+                            fontWeight = FontWeight.W600,
+                            fontSize = 20.sp
+                        )
+                        IconButton(onClick = {}) {
+                            Icon(
+                                imageVector = Icons.Default.MoreVert,
+                                contentDescription = null
+                            )
+                        }
+                    }
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
-                        Text("FC Barcelona")
+                        Text(
+                            text = "FC Barcelona"
+                        )
                         Text("-")
-                        Text("601K views")
+                        Text(
+                            text = "601K views"
+                        )
                         Text("-")
-                        Text("601K views")
+                        Text(
+                            text = "10 hours ago"
+                        )
                     }
                 }
             }
