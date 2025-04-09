@@ -30,13 +30,26 @@ import com.example.visara.ui.navigation.Destination
 import com.example.visara.ui.screens.HomeScreen
 import com.example.visara.ui.screens.ProfileScreen
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.example.visara.ui.components.UserAvatar
+import com.example.visara.ui.components.VideoPlayerDash
+import com.example.visara.ui.components.VideoPlayerManager
+import com.example.visara.ui.components.rememberVideoPlayerManager
 import com.example.visara.ui.screens.AddNewVideoScreen
 import com.example.visara.ui.screens.FollowingScreen
 import com.example.visara.ui.screens.MailScreen
@@ -82,20 +95,22 @@ fun MainContainer(
     )
     var scaffoldBottomPadding by remember { mutableStateOf(0.dp) }
     var displaySearchOverlay by remember { mutableStateOf(false) }
-    var displayVideoDetailOverlay by remember { mutableStateOf(false) }
+    val videoDetailState = rememberVideoDetailState()
+    val videoPlayerManager = rememberVideoPlayerManager()
 
     BackHandler(enabled = displaySearchOverlay) {
         displaySearchOverlay = false
     }
 
-    BackHandler(enabled = displayVideoDetailOverlay) {
-        displayVideoDetailOverlay = false
+    BackHandler(enabled = videoDetailState.display) {
+        videoDetailState.minimize()
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             modifier = Modifier
-                .zIndex(0f),
+                .zIndex(0f)
+            ,
             bottomBar = {
                 NavigationBar(
                     containerColor = Color.Transparent,
@@ -114,7 +129,12 @@ fun MainContainer(
                                 } else {
                                     UserAvatar(modifier = Modifier.size(24.dp))
                                 }
-                            }
+                            },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = MaterialTheme.colorScheme.primary,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                indicatorColor = MaterialTheme.colorScheme.surface,
+                            )
                         )
                     }
                 }
@@ -122,13 +142,20 @@ fun MainContainer(
         ) { innerPadding ->
             NavHost(
                 modifier = Modifier
-                    .padding(bottom = innerPadding.calculateBottomPadding()),
+                    .padding(
+                        bottom = innerPadding.calculateBottomPadding()
+                    )
+                ,
                 navController = navController,
                 startDestination = Destination.Main.Home,
             ) {
                 composable<Destination.Main.Home> {
                     HomeScreen(
-                        onVideoSelect = { displayVideoDetailOverlay = true },
+                        onVideoSelect = {
+                            val videoUrl = "http://10.0.2.2:8080/67d93e93ca386d2312a19f5c/output.mpd"
+                            videoPlayerManager.playDash(videoUrl)
+                            videoDetailState.display = true
+                        },
                         onOpenSearchOverlay = { displaySearchOverlay = true },
                     )
                 }
@@ -151,18 +178,47 @@ fun MainContainer(
         }
 
         SearchScreen(
-            goBack = { displaySearchOverlay = false },
             modifier = Modifier
                 .zIndex(if (displaySearchOverlay) 1f else -1f)
-                .fillMaxSize()
+                .fillMaxSize(),
+            goBack = { displaySearchOverlay = false },
+            onSelectResult = {videoId->
+                videoDetailState.display = true
+            }
         )
 
         VideoDetailScreen(
+            videoPlayerManager = videoPlayerManager,
+            isDisplay = videoDetailState.display,
             modifier = Modifier
+                .zIndex(if (videoDetailState.display) 2f else -2f)
                 .fillMaxSize()
-                .zIndex(if (displayVideoDetailOverlay) 2f else -2f)
                 .statusBarsPadding()
+//                .navigationBarsPadding()
         )
+
+        if (videoDetailState.minimized) {
+            MinimizedVideoDetail(
+                videoPlayerManager = videoPlayerManager,
+                modifier = Modifier
+                    .zIndex(if (videoDetailState.minimized) 3f else -3f)
+                    .align(Alignment.BottomEnd)
+                    .padding(
+                        bottom = 120.dp,
+                        end = 24.dp,
+                    )
+                    .clip(RoundedCornerShape(15.dp))
+                ,
+                onExpand = {
+                    videoDetailState.expand()
+                },
+                onClose = {
+                    videoPlayerManager.exoPlayer.stop()
+                    videoDetailState.close()
+                },
+            )
+        }
+
     }
 }
 
@@ -171,3 +227,62 @@ private data class BottomNavigationItemData (
     val icon: ImageVector,
     val destination: Destination,
 )
+
+class VideoDetailState(
+    initialDisplay: Boolean = false,
+    initialMinimized: Boolean = false,
+    initialVideoId: String = ""
+) {
+    var display by mutableStateOf(initialDisplay)
+    var minimized by mutableStateOf(initialMinimized)
+    var videoId by mutableStateOf(initialVideoId)
+
+    fun expand() {
+        display = true
+        minimized = false
+    }
+
+    fun minimize() {
+        minimized = true
+        display = false
+    }
+
+    fun close() {
+        display = false
+        minimized = false
+        videoId = ""
+    }
+}
+
+@Composable
+fun rememberVideoDetailState() = remember { VideoDetailState() }
+
+@Composable
+private fun MinimizedVideoDetail(
+    modifier: Modifier = Modifier,
+    videoPlayerManager: VideoPlayerManager,
+    onExpand: () -> Unit,
+    onClose: () -> Unit,
+) {
+    Box(modifier = modifier.clickable(onClick = onExpand)) {
+        VideoPlayerDash(
+            videoPlayerManager = videoPlayerManager,
+            showControls = false,
+            modifier = Modifier
+                .width(200.dp)
+            ,
+        )
+
+        IconButton(
+            onClick = onClose,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Clear,
+                contentDescription = null,
+                tint = Color.White,
+            )
+        }
+    }
+}

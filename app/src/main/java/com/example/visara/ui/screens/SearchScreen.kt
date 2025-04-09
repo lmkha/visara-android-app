@@ -15,11 +15,13 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -31,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.visara.R
+import com.example.visara.ui.components.VideoItem
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -40,6 +43,7 @@ import kotlinx.coroutines.launch
 fun SearchScreen(
     modifier: Modifier = Modifier,
     goBack: () -> Unit,
+    onSelectResult: (videoId: String) -> Unit = {},
 ) {
     val textFieldState = remember { TextFieldState() }
     var filteredResults by remember { mutableStateOf(emptyList<String>()) }
@@ -59,9 +63,11 @@ fun SearchScreen(
 
     Box(modifier = modifier.fillMaxSize()) {
         Scaffold(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize(),
             topBar = {
                 TopAppBar(
+                    modifier = Modifier.padding(bottom = 8.dp),
                     title = {
                         SimpleSearchBar(
                             textFieldState = textFieldState,
@@ -88,7 +94,12 @@ fun SearchScreen(
                                 modifier = Modifier.size(32.dp)
                             )
                         }
-                    }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        scrolledContainerColor = MaterialTheme.colorScheme.background
+                    ),
+                    expandedHeight = 90.dp,
                 )
             }
         ) { padding ->
@@ -105,6 +116,13 @@ fun SearchScreen(
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp, vertical = 4.dp)
                             .clickable { textFieldState.edit { replace(0, length, resultText) } }
+                    )
+                }
+                items(10) {
+                    VideoItem(
+                        onVideoSelect = onSelectResult,
+                        modifier = Modifier
+                            .fillMaxWidth()
                     )
                 }
             }
@@ -127,10 +145,17 @@ fun SimpleSearchBar(
                 expanded = false,
                 onExpandedChange = {},
                 placeholder = { Text("Search ....") },
+                colors = SearchBarDefaults.inputFieldColors(
+                    cursorColor = MaterialTheme.colorScheme.primary,
+                )
             )
         },
         expanded = false,
         onExpandedChange = {},
-        content = {}
+        content = {},
+        colors = SearchBarDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            dividerColor = MaterialTheme.colorScheme.onSurface,
+        )
     )
 }
