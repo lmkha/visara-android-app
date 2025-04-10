@@ -129,19 +129,14 @@ fun VideoDetailScreen(
         videoPlayerManager.exoPlayer.play()
     }
 
-    Box(
-        modifier = modifier
-            .background(color = Color.Black)
-    ) {
-        Column(
-            modifier = modifier.fillMaxSize()
-        ) {
+    Box(modifier = modifier.background(color = Color.Black)) {
+        Column(modifier = modifier.fillMaxSize()) {
             // Video
             Box(
+                contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth(),
-                contentAlignment = Alignment.Center
             ) {
                 if (isDisplay) {
                     VideoPlayerDash(
@@ -250,9 +245,10 @@ fun VideoDetailScreen(
 private fun VideoHeaderSection() {
     Column(
         modifier = Modifier
-            .clickable(onClick = {
+            .clickable {
 
-            })
+            }
+        ,
     ) {
         Text(
             text = "FC Barcelona 1 vs 1 Betis | Laliga 2024/25 MD30",
@@ -278,8 +274,7 @@ private fun VideoHeaderSection() {
 @Composable
 private fun AuthorAccountInfoSection() {
     Row(
-        modifier = Modifier
-            .fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
@@ -316,14 +311,11 @@ private fun ActionsSection() {
     var liked by remember { mutableStateOf(false) }
 
     Row(
-        modifier = Modifier
-            .fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         // Like
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             OutlinedButton(
                 onClick = {
                     liked = !liked
@@ -345,7 +337,8 @@ private fun ActionsSection() {
         Row(
             modifier = Modifier
                 .weight(1f)
-                .horizontalScroll(rememberScrollState()),
+                .horizontalScroll(rememberScrollState())
+            ,
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             FilledTonalButton(
@@ -426,6 +419,7 @@ private fun MinimizedCommentSection(
             .clip(RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.surface)
             .clickable(onClick = onClick)
+        ,
     ) {
         Column(
             modifier = Modifier
@@ -468,6 +462,7 @@ private fun ExpandedCommentSection(
                 .height(headerHeight)
                 .fillMaxWidth()
                 .padding(4.dp)
+            ,
         ) {
             Text(
                 modifier = Modifier.align(Alignment.Center),
@@ -552,7 +547,8 @@ private fun ParentCommentItem(
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         modifier = Modifier
-                            .clickable(onClick = { liked = !liked })
+                            .clickable { liked = !liked }
+                        ,
                     ) {
                         Icon(
                             painter = painterResource(id = if (liked) R.drawable.heart_filled_24px else R.drawable.heart_outlined_24px),
@@ -568,7 +564,8 @@ private fun ParentCommentItem(
                         text = "Reply",
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier
-                            .clickable(onClick = {}),
+                            .clickable{ }
+                        ,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
                 }
@@ -599,9 +596,9 @@ private fun ParentCommentItem(
             if (!openReplies) {
                 Row(
                     modifier = Modifier
-                        .clickable(onClick = {
+                        .clickable {
                             openReplies = true
-                        })
+                        }
                     ,
                 ) {
                     Text("See more 5 replies")
@@ -614,9 +611,9 @@ private fun ParentCommentItem(
             if (openReplies) {
                 Row(
                     modifier = Modifier
-                        .clickable(onClick = {
+                        .clickable {
                             openReplies = false
-                        })
+                        }
                     ,
                 ) {
                     Text("Hide")
@@ -667,7 +664,7 @@ private fun ChildCommentItem(
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     modifier = Modifier
-                        .clickable(onClick = { liked = !liked })
+                        .clickable { liked = !liked }
                 ) {
                     Icon(
                         painter = painterResource(id = if (liked) R.drawable.heart_filled_24px else R.drawable.heart_outlined_24px),
@@ -698,10 +695,8 @@ private fun CommentInput(
 ) {
     var content by remember { mutableStateOf("") }
 
-    Box(
-        modifier = modifier
-    ) {
-        HorizontalDivider()
+    Box(modifier = modifier) {
+        HorizontalDivider(color = MaterialTheme.colorScheme.onBackground)
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -717,9 +712,13 @@ private fun CommentInput(
                 value = content,
                 onValueChange = { content = it },
                 colors = TextFieldDefaults.colors(
+                    cursorColor = Color.Black,
                     unfocusedIndicatorColor = Color.Transparent,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedContainerColor = Color.LightGray,
+                    focusedContainerColor = Color.LightGray,
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black,
                 ),
                 modifier = Modifier
                     .weight(1f)
@@ -730,6 +729,7 @@ private fun CommentInput(
                             Icon(
                                 painter = painterResource(id = R.drawable.at_24px),
                                 contentDescription = null,
+                                tint = Color.Black,
                             )
                         }
                         if (content.isNotEmpty()) {
