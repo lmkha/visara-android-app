@@ -1,8 +1,11 @@
 package com.example.visara.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
@@ -21,6 +24,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -32,15 +36,19 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -65,12 +73,12 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import com.example.visara.R
 import com.example.visara.ui.components.UserAvatar
 import com.example.visara.ui.components.VideoItem
 import com.example.visara.ui.components.VideoPlayerDash
 import com.example.visara.ui.components.VideoPlayerManager
+import com.example.visara.ui.theme.LocalVisaraCustomColors
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -82,9 +90,10 @@ fun VideoDetailScreen(
 ) {
     val scope = rememberCoroutineScope()
     val thresholdDp: Dp = 300.dp
-    val thresholdPx: Float = with(LocalDensity.current) { thresholdDp.toPx() }
-    val offsetY = remember { Animatable(0f) }
     val defaultHeight = 600.dp
+    val offsetY = remember { Animatable(0f) }
+    val thresholdPx: Float = with(LocalDensity.current) { thresholdDp.toPx() }
+    val defaultHeightPx = with(LocalDensity.current) { defaultHeight.toPx() }
     var dynamicHeight = defaultHeight - with(LocalDensity.current) { offsetY.value.toDp() }
     val columnState = rememberLazyListState()
     val nestedScrollConnection = remember {
@@ -111,6 +120,10 @@ fun VideoDetailScreen(
         }
     }
     var isOpenExpandedCommentSection by remember { mutableStateOf(false) }
+
+    BackHandler(enabled = isOpenExpandedCommentSection) {
+        isOpenExpandedCommentSection = false
+    }
 
     LaunchedEffect(isDisplay) {
         videoPlayerManager.exoPlayer.play()
@@ -150,7 +163,7 @@ fun VideoDetailScreen(
                         .nestedScroll(nestedScrollConnection)
                         .height(dynamicHeight)
                         .fillMaxWidth()
-                        .padding(4.dp)
+                        .padding(8.dp)
                         .draggable(
                             orientation = Orientation.Vertical,
                             state = rememberDraggableState { delta ->
@@ -161,7 +174,7 @@ fun VideoDetailScreen(
                             onDragStopped = { velocity ->
                                 scope.launch {
                                     if (offsetY.value > thresholdPx) {
-//                                    offsetY.animateTo(maxOffsetPx)
+                                        offsetY.animateTo(defaultHeightPx)
                                     } else {
                                         offsetY.animateTo(0f)
                                     }
@@ -200,7 +213,7 @@ fun VideoDetailScreen(
                     }
                 }
 
-                Column(modifier = Modifier.background(color = MaterialTheme.colorScheme.background)) {
+                Column(modifier = Modifier.background(color = Color.Transparent)) {
                     AnimatedVisibility(
                         visible = isOpenExpandedCommentSection,
                         enter = slideInVertically(
@@ -216,7 +229,12 @@ fun VideoDetailScreen(
                                 .height(defaultHeight)
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                                .background(color = MaterialTheme.colorScheme.surface)
+                                .background(color = LocalVisaraCustomColors.current.expandedCommentSectionBackground)
+                                // Prevent unexpected drag down
+                                .draggable(
+                                    state = rememberDraggableState {  },
+                                    orientation = Orientation.Vertical,
+                                )
                             ,
                             onClose = { isOpenExpandedCommentSection = false }
                         )
@@ -224,6 +242,7 @@ fun VideoDetailScreen(
                 }
             }
         }
+
     }
 }
 
@@ -436,15 +455,20 @@ private fun MinimizedCommentSection(
 }
 
 @Composable
-fun ExpandedCommentSection(
+private fun ExpandedCommentSection(
     modifier: Modifier = Modifier,
     onClose: () -> Unit
 ) {
-    Column(
-        modifier = modifier
-            .padding(8.dp)
-    ) {
-        Box(modifier = Modifier.fillMaxWidth()) {
+    val headerHeight = 50.dp
+    val commentInputHeight = 100.dp
+    Box(
+        modifier = modifier.imePadding()) {
+        Box(
+            modifier = Modifier
+                .height(headerHeight)
+                .fillMaxWidth()
+                .padding(4.dp)
+        ) {
             Text(
                 modifier = Modifier.align(Alignment.Center),
                 text = "6.778 comments",
@@ -461,22 +485,158 @@ fun ExpandedCommentSection(
                 )
             }
         }
-        LazyColumn {
-            item {
+        LazyColumn(
+            modifier = Modifier
+                .padding(
+                    top = headerHeight,
+                    bottom = commentInputHeight,
+                    start = 8.dp,
+                    end = 8.dp
+                )
+            ,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(8) {
                 ParentCommentItem()
             }
         }
-
+        CommentInput(
+            modifier = Modifier
+                .height(commentInputHeight)
+                .fillMaxWidth()
+                .background(color = LocalVisaraCustomColors.current.expandedCommentSectionBackground)
+                .align(Alignment.BottomStart)
+            ,
+        )
     }
 }
 
 @Composable
-fun ParentCommentItem(
+private fun ParentCommentItem(
     modifier: Modifier = Modifier,
     childCount: Int = 3,
 ) {
     var liked by remember { mutableStateOf(false) }
+    var openReplies by remember { mutableStateOf(false) }
+
+    Column(modifier = modifier) {
+        Row(
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            UserAvatar(modifier = Modifier.size(40.dp))
+            Column {
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        text = "lmkha",
+                        fontWeight = FontWeight.Medium,
+                        color = Color.Gray,
+                    )
+
+                    Text(
+                        text = "-",
+                        color = Color.Gray,
+                    )
+
+                    Text(
+                        text = "7h ago",
+                        color = Color.Gray,
+                    )
+                }
+                Text(
+                    text = "This is most interesting match I had seen!",
+                    fontWeight = FontWeight.Normal,
+                )
+
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier
+                            .clickable(onClick = { liked = !liked })
+                    ) {
+                        Icon(
+                            painter = painterResource(id = if (liked) R.drawable.heart_filled_24px else R.drawable.heart_outlined_24px),
+                            contentDescription = null,
+                            tint = if (liked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                        )
+                        Text(
+                            text = "9",
+                        )
+                    }
+
+                    Text(
+                        text = "Reply",
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .clickable(onClick = {}),
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+            }
+        }
+
+        AnimatedVisibility(
+            visible = openReplies,
+            enter = fadeIn(animationSpec = tween(durationMillis = 300)),
+            exit = fadeOut(animationSpec = tween(durationMillis = 100)),
+        ) {
+            Column(modifier = Modifier.padding(start = 40.dp)) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    for (i in 0 until childCount) {
+                        ChildCommentItem()
+                    }
+                }
+            }
+        }
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(start = 32.dp, top = 4.dp),
+        ) {
+            HorizontalDivider(modifier = Modifier.width(32.dp))
+            if (!openReplies) {
+                Row(
+                    modifier = Modifier
+                        .clickable(onClick = {
+                            openReplies = true
+                        })
+                    ,
+                ) {
+                    Text("See more 5 replies")
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowDown,
+                        contentDescription = null,
+                    )
+                }
+            }
+            if (openReplies) {
+                Row(
+                    modifier = Modifier
+                        .clickable(onClick = {
+                            openReplies = false
+                        })
+                    ,
+                ) {
+                    Text("Hide")
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowUp,
+                        contentDescription = null
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ChildCommentItem(
+    modifier: Modifier = Modifier,
+) {
+    var liked by remember { mutableStateOf(false) }
     Row(
+        modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         UserAvatar(modifier = Modifier.size(32.dp))
@@ -485,10 +645,17 @@ fun ParentCommentItem(
                 Text(
                     text = "lmkha",
                     fontWeight = FontWeight.Medium,
+                    color = Color.Gray,
                 )
+
+                Text(
+                    text = "-",
+                    color = Color.Gray,
+                )
+
                 Text(
                     text = "7h ago",
-                    color = Color.LightGray
+                    color = Color.Gray,
                 )
             }
             Text(
@@ -526,8 +693,65 @@ fun ParentCommentItem(
 }
 
 @Composable
-fun ChildCommentItem(
+private fun CommentInput(
     modifier: Modifier = Modifier,
 ) {
+    var content by remember { mutableStateOf("") }
 
+    Box(
+        modifier = modifier
+    ) {
+        HorizontalDivider()
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    vertical = 16.dp,
+                    horizontal = 8.dp,
+                )
+        ) {
+            UserAvatar(modifier = Modifier.size(56.dp))
+            TextField(
+                value = content,
+                onValueChange = { content = it },
+                colors = TextFieldDefaults.colors(
+                    unfocusedIndicatorColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedContainerColor = Color.LightGray,
+                ),
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(30.dp)),
+                trailingIcon = {
+                    Row {
+                        IconButton(onClick = {}) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.at_24px),
+                                contentDescription = null,
+                            )
+                        }
+                        if (content.isNotEmpty()) {
+                            IconButton(
+                                onClick = {},
+                                modifier = Modifier
+                                    .background(
+                                        if (content.isNotEmpty()) MaterialTheme.colorScheme.primary
+                                        else Color.LightGray
+                                    )
+                                ,
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.arrow_upward_24px),
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onPrimary,
+                                )
+                            }
+                        }
+                    }
+                },
+            )
+        }
+    }
 }

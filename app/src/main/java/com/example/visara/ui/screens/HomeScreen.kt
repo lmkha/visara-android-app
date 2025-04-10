@@ -65,7 +65,7 @@ fun HomeScreen(
                             contentDescription = "App logo",
                             modifier = Modifier.size(24.dp),
                         )
-                        Text(text = stringResource(id = R.string.app_name).drop(1))
+                        Text(text = stringResource(id = R.string.app_name).drop(2))
                     }
                 },
                 actions = {

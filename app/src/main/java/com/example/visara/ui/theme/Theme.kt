@@ -8,6 +8,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
@@ -19,7 +20,7 @@ private val DarkColorScheme = darkColorScheme(
     background = Color.Black,
     onBackground = Color.White,
     surface = Color.DarkGray,
-    onSurface = Color.White,
+    onSurface = Color.LightGray,
     /* Other default colors to override
     onSecondary = Color.White,
     onTertiary = Color.White,
@@ -34,7 +35,7 @@ private val LightColorScheme = lightColorScheme(
     background = Color.White,
     onBackground = Color.Black,
     surface = Color.LightGray,
-    onSurface = Color.Black,
+    onSurface = Color.DarkGray,
     /* Other default colors to override
     onSecondary = Color.White,
     onTertiary = Color.White,
@@ -58,9 +59,19 @@ fun VisaraTheme(
         else -> LightColorScheme
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+//    MaterialTheme(
+//        colorScheme = colorScheme,
+//        typography = Typography,
+//        content = content
+//    )
+
+    val customColors = if (darkTheme) DarkCustomColors else LightCustomColors
+
+    CompositionLocalProvider(LocalVisaraCustomColors provides customColors) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            content = content
+        )
+    }
 }

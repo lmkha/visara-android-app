@@ -37,6 +37,7 @@ fun VideoItem(
     onVideoSelect: (videoId: String) -> Unit = {},
 ) {
     val cloudinaryImageUrl = "http://res.cloudinary.com/drnufn5sf/image/upload/v1743006773/videoplatform/thumbnail/67e42c30bb79412ece6f639a.jpg"
+    val cloudinaryImageUrl2 = "http://res.cloudinary.com/drnufn5sf/image/upload/v1743006316/videoplatform/thumbnail/67e42a68bb79412ece6f6399.jpg"
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -48,9 +49,10 @@ fun VideoItem(
                     modifier = Modifier
                         .height(videoHeight)
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(20.dp))
+                        .padding(horizontal = 4.dp)
+                        .clip(RoundedCornerShape(10.dp))
                     ,
-                    model = cloudinaryImageUrl,
+                    model = cloudinaryImageUrl2,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                 )
