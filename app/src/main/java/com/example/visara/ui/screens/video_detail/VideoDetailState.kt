@@ -37,7 +37,6 @@ class VideoDetailState(
 
     fun close() {
         videoId = null
-        isPlaying = false
         isFullScreenMode = false
         isMinimizedMode = false
     }

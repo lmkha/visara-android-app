@@ -57,6 +57,7 @@ import kotlin.math.roundToInt
 @Composable
 fun VideoDetailScreen(
     modifier: Modifier = Modifier,
+    videoId: String? = null,
     videoPlayerManager: VideoPlayerManager,
     isFullScreenMode: Boolean,
     isPlaying: Boolean,

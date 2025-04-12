@@ -37,6 +37,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -51,6 +52,7 @@ import com.example.visara.ui.screens.mail.MailScreen
 import com.example.visara.ui.screens.search.SearchScreen
 import com.example.visara.ui.screens.video_detail.VideoDetailScreen
 import com.example.visara.ui.screens.video_detail.rememberVideoDetailState
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -93,6 +95,7 @@ fun MainContainer(
     var displaySearchOverlay by remember { mutableStateOf(false) }
     val videoPlayerManager = rememberVideoPlayerManager()
     val videoDetailState = rememberVideoDetailState(manager = videoPlayerManager)
+    val scope = rememberCoroutineScope()
 
     BackHandler(enabled = displaySearchOverlay) {
         displaySearchOverlay = false
@@ -148,11 +151,13 @@ fun MainContainer(
                 composable<Destination.Main.Home> {
                     HomeScreen(
                         onVideoSelect = {
-                            val videoUrl = "http://10.0.2.2:8080/67d93e93ca386d2312a19f5c/output.mpd"
-                            val videoUrl2 = "http://10.0.2.2:8080/67e42c30bb79412ece6f639a/output.mpd"
-                            videoPlayerManager.playDash(videoUrl2)
-                            videoDetailState.videoId = "mock-id"
-                            videoDetailState.isFullScreenMode = true
+                            scope.launch {
+                                val videoUrl = "http://10.0.2.2:8080/67d93e93ca386d2312a19f5c/output.mpd"
+                                val videoUrl2 = "http://10.0.2.2:8080/67e42c30bb79412ece6f639a/output.mpd"
+                                videoPlayerManager.playDash(videoUrl2)
+                                videoDetailState.videoId = "mock-id"
+                                videoDetailState.isFullScreenMode = true
+                            }
                         },
                         onOpenSearchOverlay = { displaySearchOverlay = true },
                     )
@@ -185,33 +190,42 @@ fun MainContainer(
             }
         )
 
-        if (!videoDetailState.videoId.isNullOrEmpty()) {
-            VideoDetailScreen(
-                videoPlayerManager = videoPlayerManager,
-                isFullScreenMode = videoDetailState.isFullScreenMode,
-                modifier = if (videoDetailState.isFullScreenMode) Modifier
-                    .zIndex(if (videoDetailState.isFullScreenMode) 2f else -2f)
-                    .fillMaxSize()
-                    .statusBarsPadding()
-                else Modifier
-                    .width(220.dp)
-                    .height(220.dp)
-                    .zIndex(if (videoDetailState.isMinimizedMode) 2f else -2f)
-                    .align(Alignment.BottomEnd)
-                    .padding(bottom = 120.dp, end = 24.dp)
-                    .clip(RoundedCornerShape(15.dp)),
-                onPlay = { videoPlayerManager.exoPlayer.play() },
-                onPause = { videoPlayerManager.exoPlayer.pause() },
-                onClose = {
-                    videoPlayerManager.exoPlayer.stop()
+        VideoDetailScreen(
+            videoId = videoDetailState.videoId,
+            videoPlayerManager = videoPlayerManager,
+            isFullScreenMode = videoDetailState.isFullScreenMode,
+            onPlay = {
+                scope.launch {
+                    videoPlayerManager.exoPlayer.play()
+                }
+            },
+            onPause = {
+                scope.launch {
+                    videoPlayerManager.exoPlayer.pause()
+                }
+            },
+            onEnableFullScreenMode = {
+                videoDetailState.enableFullScreenMode()
+            },
+            onClose = {
+                scope.launch {
+                    videoPlayerManager.exoPlayer.pause()
                     videoDetailState.close()
-                },
-                onEnableFullScreenMode = {
-                    videoDetailState.enableFullScreenMode()
-                },
-                isPlaying = videoDetailState.isPlaying,
-            )
-        }
+                }
+            },
+            isPlaying = videoDetailState.isPlaying,
+            modifier = if (videoDetailState.isFullScreenMode) Modifier
+                .zIndex(if (videoDetailState.videoId.isNullOrEmpty()) -2f else 2f)
+                .fillMaxSize()
+                .statusBarsPadding()
+            else Modifier
+                .width(220.dp)
+                .height(220.dp)
+                .zIndex(if (videoDetailState.videoId.isNullOrEmpty()) -2f else 2f)
+                .align(Alignment.BottomEnd)
+                .padding(bottom = 120.dp, end = 24.dp)
+                .clip(RoundedCornerShape(15.dp)),
+        )
     }
 }
 
