@@ -1,7 +1,9 @@
 package com.example.visara.ui.screens.video_detail
 
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.media3.common.Player
 import com.example.visara.ui.components.VideoPlayerManager
@@ -39,5 +41,12 @@ class VideoDetailState(
         videoId = null
         isFullScreenMode = false
         isMinimizedMode = false
+    }
+}
+
+@Composable
+fun rememberVideoDetailState(manager: VideoPlayerManager): VideoDetailState {
+    return remember {
+        VideoDetailState(manager = manager)
     }
 }
