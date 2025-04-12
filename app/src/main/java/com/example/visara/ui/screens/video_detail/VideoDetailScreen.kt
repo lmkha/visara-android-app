@@ -22,7 +22,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -110,8 +109,6 @@ fun VideoDetailScreen(
                     VisaraVideoPlayer(
                         videoPlayerManager = videoPlayerManager,
                     )
-                } else {
-                    Text("Kha")
                 }
             }
             // Info
