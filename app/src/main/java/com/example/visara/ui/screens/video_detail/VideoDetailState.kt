@@ -31,8 +31,8 @@ class VideoDetailState(
     }
 
     fun enableMinimizedMode() {
-        isMinimizedMode = true
         isFullScreenMode = false
+        isMinimizedMode = true
     }
 
     fun close() {

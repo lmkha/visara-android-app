@@ -30,8 +30,10 @@ import com.example.visara.ui.navigation.Destination
 import com.example.visara.ui.screens.home.HomeScreen
 import com.example.visara.ui.screens.profile.ProfileScreen
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -47,7 +49,6 @@ import com.example.visara.ui.screens.add_new_video.AddNewVideoScreen
 import com.example.visara.ui.screens.following.FollowingScreen
 import com.example.visara.ui.screens.mail.MailScreen
 import com.example.visara.ui.screens.search.SearchScreen
-import com.example.visara.ui.screens.video_detail.MinimizedVideoDetail
 import com.example.visara.ui.screens.video_detail.VideoDetailScreen
 import com.example.visara.ui.screens.video_detail.rememberVideoDetailState
 
@@ -148,7 +149,8 @@ fun MainContainer(
                     HomeScreen(
                         onVideoSelect = {
                             val videoUrl = "http://10.0.2.2:8080/67d93e93ca386d2312a19f5c/output.mpd"
-                            videoPlayerManager.playDash(videoUrl)
+                            val videoUrl2 = "http://10.0.2.2:8080/67e42c30bb79412ece6f639a/output.mpd"
+                            videoPlayerManager.playDash(videoUrl2)
                             videoDetailState.videoId = "mock-id"
                             videoDetailState.isFullScreenMode = true
                         },
@@ -183,35 +185,33 @@ fun MainContainer(
             }
         )
 
-        VideoDetailScreen(
-            videoPlayerManager = videoPlayerManager,
-            isVisible = videoDetailState.isFullScreenMode,
-            modifier = Modifier
-                .zIndex(if (videoDetailState.isFullScreenMode) 2f else -2f)
-                .fillMaxSize()
-                .statusBarsPadding()
-        )
-
-        MinimizedVideoDetail(
-            videoPlayerManager = videoPlayerManager,
-            isVisible = videoDetailState.isMinimizedMode,
-            isPlaying = videoDetailState.isPlaying,
-            modifier = Modifier
-                .zIndex(if (videoDetailState.isMinimizedMode) 3f else -3f)
-                .align(Alignment.BottomEnd)
-                .padding(bottom = 120.dp, end = 24.dp)
-                .clip(RoundedCornerShape(15.dp))
-            ,
-            onExpand = {
-                videoDetailState.enableFullScreenMode()
-            },
-            onClose = {
-                videoPlayerManager.exoPlayer.stop()
-                videoDetailState.close()
-            },
-            onPlay = { videoPlayerManager.exoPlayer.play() },
-            onPause = { videoPlayerManager.exoPlayer.pause() },
-        )
+        if (!videoDetailState.videoId.isNullOrEmpty()) {
+            VideoDetailScreen(
+                videoPlayerManager = videoPlayerManager,
+                isFullScreenMode = videoDetailState.isFullScreenMode,
+                modifier = if (videoDetailState.isFullScreenMode) Modifier
+                    .zIndex(if (videoDetailState.isFullScreenMode) 2f else -2f)
+                    .fillMaxSize()
+                    .statusBarsPadding()
+                else Modifier
+                    .width(220.dp)
+                    .height(220.dp)
+                    .zIndex(if (videoDetailState.isMinimizedMode) 2f else -2f)
+                    .align(Alignment.BottomEnd)
+                    .padding(bottom = 120.dp, end = 24.dp)
+                    .clip(RoundedCornerShape(15.dp)),
+                onPlay = { videoPlayerManager.exoPlayer.play() },
+                onPause = { videoPlayerManager.exoPlayer.pause() },
+                onClose = {
+                    videoPlayerManager.exoPlayer.stop()
+                    videoDetailState.close()
+                },
+                onEnableFullScreenMode = {
+                    videoDetailState.enableFullScreenMode()
+                },
+                isPlaying = videoDetailState.isPlaying,
+            )
+        }
     }
 }
 

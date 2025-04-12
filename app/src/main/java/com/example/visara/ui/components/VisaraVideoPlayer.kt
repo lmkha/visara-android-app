@@ -3,7 +3,6 @@ package com.example.visara.ui.components
 import android.content.Context
 import androidx.annotation.OptIn
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -16,11 +15,9 @@ import androidx.media3.ui.PlayerView
 
 class VideoPlayerManager(context: Context) {
     val exoPlayer: ExoPlayer = ExoPlayer.Builder(context).build()
-    val isPlayingState = mutableStateOf(false)
 
     fun playDash(url: String, playWhenReady: Boolean = true) {
         exoPlayer.stop()
-
         val mediaItem = MediaItem.Builder()
             .setUri(url)
             .setMimeType(MimeTypes.APPLICATION_MPD)
@@ -55,28 +52,51 @@ fun VisaraVideoPlayer(
     showControls: Boolean = true,
 ) {
     AndroidView(
-        factory = { context->
+        factory = { context ->
             PlayerView(context).apply {
                 player = videoPlayerManager.exoPlayer
                 useController = showControls
-
-                setKeepContentOnPlayerReset(true)
-                setShutterBackgroundColor(android.graphics.Color.TRANSPARENT)
-
-                post {
-                    invalidate()
-                    requestLayout()
-                }
+//                setKeepContentOnPlayerReset(true)
+//                setShutterBackgroundColor(android.graphics.Color.TRANSPARENT)
             }
         },
-        update = { view ->
-            view.player = videoPlayerManager.exoPlayer
-
-            view.post {
-                view.invalidate()
-                view.requestLayout()
-            }
-        },
+//        update = { view ->
+//            view.player = videoPlayerManager.exoPlayer
+//        },
         modifier = modifier,
     )
 }
+
+//@OptIn(UnstableApi::class)
+//@Composable
+//fun VisaraVideoPlayer(
+//    modifier: Modifier = Modifier,
+//    videoPlayerManager: VideoPlayerManager,
+//    showControls: Boolean = true,
+//) {
+//    AndroidView(
+//        factory = { context->
+//            PlayerView(context).apply {
+//                player = videoPlayerManager.exoPlayer
+//                useController = showControls
+//
+//                setKeepContentOnPlayerReset(true)
+//                setShutterBackgroundColor(android.graphics.Color.TRANSPARENT)
+//
+//                post {
+//                    invalidate()
+//                    requestLayout()
+//                }
+//            }
+//        },
+//        update = { view ->
+//            view.player = videoPlayerManager.exoPlayer
+//
+//            view.post {
+//                view.invalidate()
+//                view.requestLayout()
+//            }
+//        },
+//        modifier = modifier,
+//    )
+//}

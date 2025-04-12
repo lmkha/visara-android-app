@@ -48,6 +48,7 @@ import com.example.visara.ui.screens.video_detail.components.ActionsSection
 import com.example.visara.ui.screens.video_detail.components.AuthorAccountInfoSection
 import com.example.visara.ui.screens.video_detail.components.ExpandedCommentSection
 import com.example.visara.ui.screens.video_detail.components.MinimizedCommentSection
+import com.example.visara.ui.screens.video_detail.components.MinimizedModeControl
 import com.example.visara.ui.screens.video_detail.components.VideoHeaderSection
 import com.example.visara.ui.theme.LocalVisaraCustomColors
 import kotlinx.coroutines.launch
@@ -56,8 +57,13 @@ import kotlin.math.roundToInt
 @Composable
 fun VideoDetailScreen(
     modifier: Modifier = Modifier,
-    isVisible: Boolean = false,
     videoPlayerManager: VideoPlayerManager,
+    isFullScreenMode: Boolean,
+    isPlaying: Boolean,
+    onPlay: () -> Unit,
+    onPause: () -> Unit,
+    onClose: () -> Unit,
+    onEnableFullScreenMode: () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     val thresholdDp: Dp = 300.dp
@@ -97,7 +103,7 @@ fun VideoDetailScreen(
     }
 
     Box(modifier = modifier.background(color = Color.Black)) {
-        Column(modifier = modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize()) {
             // Video
             Box(
                 contentAlignment = Alignment.Center,
@@ -105,9 +111,23 @@ fun VideoDetailScreen(
                     .weight(1f)
                     .fillMaxWidth(),
             ) {
-                if (isVisible) {
+                if (isFullScreenMode) {
                     VisaraVideoPlayer(
                         videoPlayerManager = videoPlayerManager,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                } else {
+                    VisaraVideoPlayer(
+                        videoPlayerManager = videoPlayerManager,
+                        showControls = false,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    MinimizedModeControl(
+                        isPlaying = isPlaying,
+                        onPlay = onPlay,
+                        onPause = onPause,
+                        onClose = onClose,
+                        onEnableFullScreenMode = onEnableFullScreenMode,
                     )
                 }
             }
@@ -123,7 +143,8 @@ fun VideoDetailScreen(
                     state = columnState,
                     modifier = Modifier
                         .nestedScroll(nestedScrollConnection)
-                        .height(dynamicHeight)
+//                        .height(dynamicHeight)
+                        .height(if (isFullScreenMode) dynamicHeight else 0.dp)
                         .fillMaxWidth()
                         .padding(8.dp)
                         .draggable(
