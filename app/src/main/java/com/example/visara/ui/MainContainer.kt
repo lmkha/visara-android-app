@@ -27,17 +27,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.visara.ui.navigation.Destination
-import com.example.visara.ui.screens.HomeScreen
-import com.example.visara.ui.screens.ProfileScreen
+import com.example.visara.ui.screens.home.HomeScreen
+import com.example.visara.ui.screens.profile.ProfileScreen
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.ui.Alignment
@@ -47,14 +42,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.example.visara.ui.components.UserAvatar
-import com.example.visara.ui.components.VideoPlayerDash
-import com.example.visara.ui.components.VideoPlayerManager
 import com.example.visara.ui.components.rememberVideoPlayerManager
-import com.example.visara.ui.screens.AddNewVideoScreen
-import com.example.visara.ui.screens.FollowingScreen
-import com.example.visara.ui.screens.MailScreen
-import com.example.visara.ui.screens.SearchScreen
-import com.example.visara.ui.screens.VideoDetailScreen
+import com.example.visara.ui.screens.add_new_video.AddNewVideoScreen
+import com.example.visara.ui.screens.following.FollowingScreen
+import com.example.visara.ui.screens.mail.MailScreen
+import com.example.visara.ui.screens.search.SearchScreen
+import com.example.visara.ui.screens.video_detail.MinimizedVideoDetail
+import com.example.visara.ui.screens.video_detail.VideoDetailScreen
+import com.example.visara.ui.screens.video_detail.rememberVideoDetailState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -95,15 +90,15 @@ fun MainContainer(
     )
     var scaffoldBottomPadding by remember { mutableStateOf(0.dp) }
     var displaySearchOverlay by remember { mutableStateOf(false) }
-    val videoDetailState = rememberVideoDetailState()
     val videoPlayerManager = rememberVideoPlayerManager()
+    val videoDetailState = rememberVideoDetailState(manager = videoPlayerManager)
 
     BackHandler(enabled = displaySearchOverlay) {
         displaySearchOverlay = false
     }
 
-    BackHandler(enabled = videoDetailState.display) {
-        videoDetailState.minimize()
+    BackHandler(enabled = videoDetailState.isFullScreenMode) {
+        videoDetailState.enableMinimizedMode()
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -154,7 +149,8 @@ fun MainContainer(
                         onVideoSelect = {
                             val videoUrl = "http://10.0.2.2:8080/67d93e93ca386d2312a19f5c/output.mpd"
                             videoPlayerManager.playDash(videoUrl)
-                            videoDetailState.display = true
+                            videoDetailState.videoId = "mock-id"
+                            videoDetailState.isFullScreenMode = true
                         },
                         onOpenSearchOverlay = { displaySearchOverlay = true },
                     )
@@ -183,42 +179,39 @@ fun MainContainer(
                 .fillMaxSize(),
             goBack = { displaySearchOverlay = false },
             onSelectResult = {videoId->
-                videoDetailState.display = true
+                videoDetailState.isFullScreenMode = true
             }
         )
 
         VideoDetailScreen(
             videoPlayerManager = videoPlayerManager,
-            isDisplay = videoDetailState.display,
+            isVisible = videoDetailState.isFullScreenMode,
             modifier = Modifier
-                .zIndex(if (videoDetailState.display) 2f else -2f)
+                .zIndex(if (videoDetailState.isFullScreenMode) 2f else -2f)
                 .fillMaxSize()
                 .statusBarsPadding()
-//                .navigationBarsPadding()
         )
 
-        if (videoDetailState.minimized) {
-            MinimizedVideoDetail(
-                videoPlayerManager = videoPlayerManager,
-                modifier = Modifier
-                    .zIndex(if (videoDetailState.minimized) 3f else -3f)
-                    .align(Alignment.BottomEnd)
-                    .padding(
-                        bottom = 120.dp,
-                        end = 24.dp,
-                    )
-                    .clip(RoundedCornerShape(15.dp))
-                ,
-                onExpand = {
-                    videoDetailState.expand()
-                },
-                onClose = {
-                    videoPlayerManager.exoPlayer.stop()
-                    videoDetailState.close()
-                },
-            )
-        }
-
+        MinimizedVideoDetail(
+            videoPlayerManager = videoPlayerManager,
+            isVisible = videoDetailState.isMinimizedMode,
+            isPlaying = videoDetailState.isPlaying,
+            modifier = Modifier
+                .zIndex(if (videoDetailState.isMinimizedMode) 3f else -3f)
+                .align(Alignment.BottomEnd)
+                .padding(bottom = 120.dp, end = 24.dp)
+                .clip(RoundedCornerShape(15.dp))
+            ,
+            onExpand = {
+                videoDetailState.enableFullScreenMode()
+            },
+            onClose = {
+                videoPlayerManager.exoPlayer.stop()
+                videoDetailState.close()
+            },
+            onPlay = { videoPlayerManager.exoPlayer.play() },
+            onPause = { videoPlayerManager.exoPlayer.pause() },
+        )
     }
 }
 
@@ -227,62 +220,3 @@ private data class BottomNavigationItemData (
     val icon: ImageVector,
     val destination: Destination,
 )
-
-class VideoDetailState(
-    initialDisplay: Boolean = false,
-    initialMinimized: Boolean = false,
-    initialVideoId: String = ""
-) {
-    var display by mutableStateOf(initialDisplay)
-    var minimized by mutableStateOf(initialMinimized)
-    var videoId by mutableStateOf(initialVideoId)
-
-    fun expand() {
-        display = true
-        minimized = false
-    }
-
-    fun minimize() {
-        minimized = true
-        display = false
-    }
-
-    fun close() {
-        display = false
-        minimized = false
-        videoId = ""
-    }
-}
-
-@Composable
-fun rememberVideoDetailState() = remember { VideoDetailState() }
-
-@Composable
-private fun MinimizedVideoDetail(
-    modifier: Modifier = Modifier,
-    videoPlayerManager: VideoPlayerManager,
-    onExpand: () -> Unit,
-    onClose: () -> Unit,
-) {
-    Box(modifier = modifier.clickable(onClick = onExpand)) {
-        VideoPlayerDash(
-            videoPlayerManager = videoPlayerManager,
-            showControls = false,
-            modifier = Modifier
-                .width(200.dp)
-            ,
-        )
-
-        IconButton(
-            onClick = onClose,
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Clear,
-                contentDescription = null,
-                tint = Color.White,
-            )
-        }
-    }
-}

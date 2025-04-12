@@ -1,4 +1,4 @@
-package com.example.visara.ui.screens
+package com.example.visara.ui.screens.register
 
 import androidx.compose.runtime.Composable
 

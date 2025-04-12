@@ -1,4 +1,4 @@
-package com.example.visara.ui.screens
+package com.example.visara.ui.screens.profile
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

@@ -1,7 +1,6 @@
-package com.example.visara.ui.screens
+package com.example.visara.ui.screens.home
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,7 +24,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
@@ -33,6 +39,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.visara.R
 import com.example.visara.ui.components.VideoItem
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,6 +60,17 @@ fun HomeScreen(
     )
     val lazyColumnState = rememberLazyListState()
     val scrollBehavior: TopAppBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    var isRefreshing by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(isRefreshing) {
+        if (isRefreshing) {
+            scope.launch {
+                delay(1000)
+                isRefreshing = false
+            }
+        }
+    }
 
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -88,17 +107,21 @@ fun HomeScreen(
                 modifier = Modifier.wrapContentHeight()
             )
 
-            LazyColumn(
-                state = lazyColumnState,
-                modifier = Modifier
-                    .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = { isRefreshing = true },
+                modifier = Modifier.weight(1f)
             ) {
-                items(3) {
-                    VideoItem(
-                        onVideoSelect = { videoId -> onVideoSelect(videoId) },
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                LazyColumn(
+                    state = lazyColumnState,
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    items(3) {
+                        VideoItem(
+                            onVideoSelect = { videoId -> onVideoSelect(videoId) },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
                 }
             }
         }

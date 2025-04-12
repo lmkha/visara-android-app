@@ -1,21 +1,24 @@
 package com.example.visara.ui.components
 
 import android.content.Context
+import androidx.annotation.OptIn
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 
 class VideoPlayerManager(context: Context) {
     val exoPlayer: ExoPlayer = ExoPlayer.Builder(context).build()
+    val isPlayingState = mutableStateOf(false)
 
-    fun playDash(url: String) {
+    fun playDash(url: String, playWhenReady: Boolean = true) {
         exoPlayer.stop()
 
         val mediaItem = MediaItem.Builder()
@@ -25,15 +28,16 @@ class VideoPlayerManager(context: Context) {
 
         exoPlayer.setMediaItem(mediaItem)
         exoPlayer.prepare()
-        exoPlayer.playWhenReady = true
+        exoPlayer.playWhenReady = playWhenReady
     }
 
-    fun pause() {
-        exoPlayer.pause()
-    }
+    fun playFromUrl(uri: android.net.Uri, playWhenReady: Boolean = true) {
+        exoPlayer.stop()
 
-    fun release() {
-        exoPlayer.release()
+        val mediaItem = MediaItem.fromUri(uri)
+        exoPlayer.setMediaItem(mediaItem)
+        exoPlayer.prepare()
+        exoPlayer.playWhenReady = playWhenReady
     }
 }
 
@@ -43,23 +47,34 @@ fun rememberVideoPlayerManager() : VideoPlayerManager {
     return remember { VideoPlayerManager(context) }
 }
 
+@OptIn(UnstableApi::class)
 @Composable
-fun VideoPlayerDash(
+fun VisaraVideoPlayer(
     modifier: Modifier = Modifier,
     videoPlayerManager: VideoPlayerManager,
     showControls: Boolean = true,
 ) {
-    DisposableEffect(Unit) {
-        onDispose {
-            videoPlayerManager.pause()
-        }
-    }
-
     AndroidView(
         factory = { context->
             PlayerView(context).apply {
                 player = videoPlayerManager.exoPlayer
                 useController = showControls
+
+                setKeepContentOnPlayerReset(true)
+                setShutterBackgroundColor(android.graphics.Color.TRANSPARENT)
+
+                post {
+                    invalidate()
+                    requestLayout()
+                }
+            }
+        },
+        update = { view ->
+            view.player = videoPlayerManager.exoPlayer
+
+            view.post {
+                view.invalidate()
+                view.requestLayout()
             }
         },
         modifier = modifier,

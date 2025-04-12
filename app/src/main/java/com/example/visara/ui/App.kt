@@ -20,7 +20,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.visara.ui.navigation.Destination
-import com.example.visara.ui.screens.LoginScreen
+import com.example.visara.ui.screens.login.LoginScreen
 import com.example.visara.ui.theme.VisaraTheme
 import kotlinx.coroutines.launch
 

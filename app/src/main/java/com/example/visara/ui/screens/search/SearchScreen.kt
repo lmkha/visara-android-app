@@ -1,4 +1,4 @@
-package com.example.visara.ui.screens
+package com.example.visara.ui.screens.search
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box

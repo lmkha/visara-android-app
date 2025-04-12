@@ -1,4 +1,4 @@
-package com.example.visara.ui.screens
+package com.example.visara.ui.screens.mail
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
