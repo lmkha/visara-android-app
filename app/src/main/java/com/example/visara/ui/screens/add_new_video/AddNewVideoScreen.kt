@@ -1,7 +1,6 @@
 package com.example.visara.ui.screens.add_new_video
 
 import android.net.Uri
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
@@ -14,30 +13,28 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.example.visara.ui.components.VisaraVideoPlayer
-import com.example.visara.ui.components.rememberVideoPlayerManager
+import com.example.visara.ui.components.VideoPlayerManager
+import com.example.visara.ui.components.VisaraUriVideoPlayer
+import kotlinx.coroutines.launch
 
 @Composable
 fun AddNewVideoScreen(
     modifier: Modifier = Modifier,
+    videoPlayerManager: VideoPlayerManager,
 ) {
     var videoUri by remember { mutableStateOf<Uri?>(null) }
-    val videoPlayerManager = rememberVideoPlayerManager()
+    val scope = rememberCoroutineScope()
     val pickMedia = rememberLauncherForActivityResult(PickVisualMedia()) { uri->
         videoUri = uri
-        if (uri != null) {
-            Log.d("CHECK_VAR", "Selected URI: $uri")
-            videoPlayerManager.playFromUrl(uri)
-        } else {
-            Log.d("CHECK_VAR", "No media selected")
-        }
+        uri?.let { scope.launch { videoPlayerManager.playFromUrl(it) }}
     }
 
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -47,7 +44,7 @@ fun AddNewVideoScreen(
             Text("Open video picker")
         }
         if (videoUri != null) {
-            VisaraVideoPlayer(
+            VisaraUriVideoPlayer(
                 videoPlayerManager = videoPlayerManager,
             )
         }

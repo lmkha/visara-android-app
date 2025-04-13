@@ -41,6 +41,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -93,23 +94,25 @@ fun MainContainer(
     )
     var scaffoldBottomPadding by remember { mutableStateOf(0.dp) }
     var displaySearchOverlay by remember { mutableStateOf(false) }
-    val videoPlayerManager = rememberVideoPlayerManager()
+    val videoPlayerManager = rememberVideoPlayerManager(LocalContext.current)
     val videoDetailState = rememberVideoDetailState(manager = videoPlayerManager)
     val scope = rememberCoroutineScope()
 
-    BackHandler(enabled = displaySearchOverlay) {
-        displaySearchOverlay = false
+    if (displaySearchOverlay) {
+        BackHandler {
+            displaySearchOverlay = false
+        }
     }
 
-    BackHandler(enabled = videoDetailState.isFullScreenMode) {
-        videoDetailState.enableMinimizedMode()
+    if (videoDetailState.isFullScreenMode) {
+        BackHandler(enabled = videoDetailState.isFullScreenMode) {
+            videoDetailState.enableMinimizedMode()
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
-            modifier = Modifier
-                .zIndex(0f)
-            ,
+            modifier = Modifier.zIndex(0f),
             bottomBar = {
                 NavigationBar(
                     containerColor = Color.Transparent,
@@ -118,7 +121,15 @@ fun MainContainer(
                         NavigationBarItem(
                             label = { Text(item.label) },
                             selected = currentRoute == item.destination.toString(),
-                            onClick = { navController.navigate(item.destination) },
+                            onClick = {
+                                scope.launch {
+                                    if (item.destination == Destination.Main.AddNewVideo) {
+                                        videoPlayerManager.dashExoPlayer.pause()
+                                        videoDetailState.isVisible = false
+                                    }
+                                    navController.navigate(item.destination)
+                                }
+                            },
                             icon = {
                                 if (item.destination != Destination.Main.Profile) {
                                     Icon(
@@ -140,11 +151,7 @@ fun MainContainer(
             },
         ) { innerPadding ->
             NavHost(
-                modifier = Modifier
-                    .padding(
-                        bottom = innerPadding.calculateBottomPadding()
-                    )
-                ,
+                modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()),
                 navController = navController,
                 startDestination = Destination.Main.Home,
             ) {
@@ -152,10 +159,11 @@ fun MainContainer(
                     HomeScreen(
                         onVideoSelect = {
                             scope.launch {
-                                val videoUrl = "http://10.0.2.2:8080/67d93e93ca386d2312a19f5c/output.mpd"
+//                                val videoUrl = "http://10.0.2.2:8080/67d93e93ca386d2312a19f5c/output.mpd"
                                 val videoUrl2 = "http://10.0.2.2:8080/67e42c30bb79412ece6f639a/output.mpd"
                                 videoPlayerManager.playDash(videoUrl2)
                                 videoDetailState.videoId = "mock-id"
+                                videoDetailState.isVisible = true
                                 videoDetailState.isFullScreenMode = true
                             }
                         },
@@ -169,12 +177,12 @@ fun MainContainer(
                         },
                     )
                 }
-                composable<Destination.Main.AddNewVideo> { AddNewVideoScreen() }
+                composable<Destination.Main.AddNewVideo> { AddNewVideoScreen(videoPlayerManager = videoPlayerManager) }
                 composable<Destination.Main.Mail> { MailScreen() }
                 composable<Destination.Main.Profile> {
                     ProfileScreen(
                         authenticated = authenticated,
-                        navigateToLogin = navigateToLogin
+                        navigateToLogin = navigateToLogin,
                     )
                 }
             }
@@ -196,12 +204,12 @@ fun MainContainer(
             isFullScreenMode = videoDetailState.isFullScreenMode,
             onPlay = {
                 scope.launch {
-                    videoPlayerManager.exoPlayer.play()
+                    videoPlayerManager.dashExoPlayer.play()
                 }
             },
             onPause = {
                 scope.launch {
-                    videoPlayerManager.exoPlayer.pause()
+                    videoPlayerManager.dashExoPlayer.pause()
                 }
             },
             onEnableFullScreenMode = {
@@ -209,22 +217,23 @@ fun MainContainer(
             },
             onClose = {
                 scope.launch {
-                    videoPlayerManager.exoPlayer.pause()
+                    videoPlayerManager.dashExoPlayer.pause()
                     videoDetailState.close()
                 }
             },
             isPlaying = videoDetailState.isPlaying,
             modifier = if (videoDetailState.isFullScreenMode) Modifier
-                .zIndex(if (videoDetailState.videoId.isNullOrEmpty()) -2f else 2f)
+                .zIndex(if (videoDetailState.isVisible) 10f else -10f)
                 .fillMaxSize()
                 .statusBarsPadding()
-            else Modifier
-                .width(220.dp)
-                .height(220.dp)
-                .zIndex(if (videoDetailState.videoId.isNullOrEmpty()) -2f else 2f)
-                .align(Alignment.BottomEnd)
-                .padding(bottom = 120.dp, end = 24.dp)
-                .clip(RoundedCornerShape(15.dp)),
+                else Modifier
+                    .width(220.dp)
+                    .height(220.dp)
+                    .zIndex(if (videoDetailState.isVisible) 10f else -10f)
+                    .align(Alignment.BottomEnd)
+                    .padding(bottom = 120.dp, end = 24.dp)
+                    .clip(RoundedCornerShape(15.dp))
+            ,
         )
     }
 }

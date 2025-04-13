@@ -11,16 +11,17 @@ import com.example.visara.ui.components.VideoPlayerManager
 class VideoDetailState(
     manager: VideoPlayerManager,
     initialVideoId: String? = null,
+    initialIsVisible: Boolean = false,
     initialIsFullScreenMode: Boolean = false,
     initialIsMinimizedMode: Boolean = false,
 ) {
     var videoId by mutableStateOf(initialVideoId)
-    var isPlaying by mutableStateOf(manager.exoPlayer.isPlaying)
+    var isVisible by mutableStateOf(initialIsVisible)
+    var isPlaying by mutableStateOf(manager.dashExoPlayer.isPlaying)
     var isFullScreenMode by mutableStateOf(initialIsFullScreenMode)
-    var isMinimizedMode by mutableStateOf(initialIsMinimizedMode)
 
     init {
-        manager.exoPlayer.addListener(object : Player.Listener {
+        manager.dashExoPlayer.addListener(object : Player.Listener {
             override fun onIsPlayingChanged(isPlayingNow: Boolean) {
                 isPlaying = isPlayingNow
             }
@@ -29,18 +30,16 @@ class VideoDetailState(
 
     fun enableFullScreenMode() {
         isFullScreenMode = true
-        isMinimizedMode = false
     }
 
     fun enableMinimizedMode() {
         isFullScreenMode = false
-        isMinimizedMode = true
     }
 
     fun close() {
         videoId = null
+        isVisible = false
         isFullScreenMode = false
-        isMinimizedMode = false
     }
 }
 

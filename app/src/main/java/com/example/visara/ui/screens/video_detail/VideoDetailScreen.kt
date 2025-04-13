@@ -43,7 +43,7 @@ import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import com.example.visara.ui.components.VideoItem
 import com.example.visara.ui.components.VideoPlayerManager
-import com.example.visara.ui.components.VisaraVideoPlayer
+import com.example.visara.ui.components.VisaraDashPlayer
 import com.example.visara.ui.screens.video_detail.components.ActionsSection
 import com.example.visara.ui.screens.video_detail.components.AuthorAccountInfoSection
 import com.example.visara.ui.screens.video_detail.components.ExpandedCommentSection
@@ -99,8 +99,10 @@ fun VideoDetailScreen(
     }
     var isOpenExpandedCommentSection by remember { mutableStateOf(false) }
 
-    BackHandler(enabled = isOpenExpandedCommentSection) {
-        isOpenExpandedCommentSection = false
+    if (isOpenExpandedCommentSection) {
+        BackHandler {
+            isOpenExpandedCommentSection = false
+        }
     }
 
     Box(modifier = modifier.background(color = Color.Black)) {
@@ -113,12 +115,12 @@ fun VideoDetailScreen(
                     .fillMaxWidth(),
             ) {
                 if (isFullScreenMode) {
-                    VisaraVideoPlayer(
+                    VisaraDashPlayer(
                         videoPlayerManager = videoPlayerManager,
                         modifier = Modifier.fillMaxWidth()
                     )
                 } else {
-                    VisaraVideoPlayer(
+                    VisaraDashPlayer(
                         videoPlayerManager = videoPlayerManager,
                         showControls = false,
                         modifier = Modifier.fillMaxWidth(),
