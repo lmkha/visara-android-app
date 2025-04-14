@@ -2,8 +2,10 @@ package com.example.visara.ui.screens.video_detail.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -103,8 +105,14 @@ fun ParentCommentItem(
 
         AnimatedVisibility(
             visible = openReplies,
-            enter = fadeIn(animationSpec = tween(durationMillis = 300)),
-            exit = fadeOut(animationSpec = tween(durationMillis = 100)),
+            enter = expandVertically(
+                animationSpec = tween(durationMillis = 300),
+                expandFrom = Alignment.Top
+            ) + fadeIn(animationSpec = tween(durationMillis = 300)),
+            exit = shrinkVertically(
+                animationSpec = tween(durationMillis = 250),
+                shrinkTowards = Alignment.Top
+            ) + fadeOut(animationSpec = tween(durationMillis = 100)),
         ) {
             Column(modifier = Modifier.padding(start = 40.dp)) {
                 Spacer(modifier = Modifier.height(4.dp))
