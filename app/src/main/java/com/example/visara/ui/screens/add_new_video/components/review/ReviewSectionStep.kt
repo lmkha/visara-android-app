@@ -10,6 +10,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.example.visara.ui.components.VideoPlayerManager
@@ -22,6 +24,14 @@ fun ReviewSectionStep(
     onBack: () -> Unit,
     onGoNext: () -> Unit,
 ) {
+    LaunchedEffect(Unit) {
+        videoPlayerManager.localExoPlayer.play()
+    }
+
+    DisposableEffect(Unit) {
+        onDispose { videoPlayerManager.localExoPlayer.pause() }
+    }
+
     Column(modifier = modifier) {
         Box(modifier = Modifier.fillMaxWidth()) {
             IconButton(

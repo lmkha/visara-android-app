@@ -1,13 +1,15 @@
 package com.example.visara.ui.screens.add_new_video
 
 import android.net.Uri
+import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -25,8 +27,6 @@ import kotlinx.coroutines.launch
 fun AddNewVideoScreen(
     modifier: Modifier = Modifier,
     videoPlayerManager: VideoPlayerManager,
-    onHideBottomNavigationBar: () -> Unit,
-    onShowBottomNavigationBar: () -> Unit,
 ) {
     var videoUri by remember { mutableStateOf<Uri?>(null) }
     val scope = rememberCoroutineScope()
@@ -35,29 +35,24 @@ fun AddNewVideoScreen(
         videoUri = uri
         uri?.let {
             scope.launch {
+                Log.i("CHECK_VAR", "URI: $videoUri")
                 videoPlayerManager.playFromUrl(it)
                 step = 2
             }
         }
     }
 
-    LaunchedEffect(Unit) {
-        onHideBottomNavigationBar()
-    }
+//    if (step > 1) {
+//        BackHandler {
+//            step -= 1
+//        }
+//    }
 
-    DisposableEffect(Unit) {
-        onDispose { onShowBottomNavigationBar() }
-    }
-
-    /*
-    if (step > 1) {
-        BackHandler {
-            step -= 1
-        }
-    }
-     */
-
-    Box(modifier = modifier) {
+    Box(
+        modifier = modifier
+            .statusBarsPadding()
+            .navigationBarsPadding()
+    ) {
         when (step) {
             1 -> {
                 SelectVideoStep(
@@ -72,13 +67,16 @@ fun AddNewVideoScreen(
                     ReviewSectionStep(
                         videoPlayerManager = videoPlayerManager,
                         modifier = modifier,
-                        onBack = { step -= 1},
+                        onBack = { step -= 1 },
                         onGoNext = { step += 1 },
                     )
                 }
             }
             3 -> {
-                EnterVideoInfoStep()
+                EnterVideoInfoStep(
+                    videoUri = videoUri,
+                    onBack = { step -= 1 },
+                )
             }
             else -> { }
         }

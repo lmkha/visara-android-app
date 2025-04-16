@@ -34,6 +34,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.visara.R
 import com.example.visara.ui.components.VideoItem
+import com.example.visara.ui.theme.LocalVisaraCustomColors
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -154,7 +155,7 @@ fun SimpleSearchBar(
         onExpandedChange = {},
         content = {},
         colors = SearchBarDefaults.colors(
-            containerColor = MaterialTheme.colorScheme.surface,
+            containerColor = LocalVisaraCustomColors.current.darkGrayCustom,
             dividerColor = MaterialTheme.colorScheme.onSurface,
         )
     )

@@ -1,10 +1,12 @@
 package com.example.visara.ui.screens.add_new_video.components.enter_video_info
 
+import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -12,11 +14,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -45,18 +50,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import coil3.compose.AsyncImage
 import com.example.visara.R
+import com.example.visara.ui.theme.LocalVisaraCustomColors
+import coil3.compose.AsyncImage
 
 @Composable
 fun EnterVideoInfoStep(
     modifier: Modifier = Modifier,
+    videoUri: Uri? = null,
+    onBack: () -> Unit,
 ) {
     val thumbnail = "http://res.cloudinary.com/drnufn5sf/image/upload/v1743007784/videoplatform/thumbnail/67e42e7fbb79412ece6f639b.jpg"
     var isAllowComment by remember { mutableStateOf(true) }
+    var openAddDescriptionBox by remember { mutableStateOf(false) }
     var openSelectPrivacyBox by remember { mutableStateOf(false) }
     var openAddPlaylistBox by remember { mutableStateOf(false) }
     var privacyState by remember { mutableStateOf(Privacy.ALL) }
+    var selectedPlaylists by remember { mutableStateOf<List<String>>(emptyList()) }
 
     BackHandler(enabled = openSelectPrivacyBox) {
         openSelectPrivacyBox = false
@@ -66,13 +76,17 @@ fun EnterVideoInfoStep(
         openAddPlaylistBox = false
     }
 
+    BackHandler(enabled = openAddDescriptionBox) {
+        openAddDescriptionBox = false
+    }
+
     Box(modifier = modifier) {
         // Base layer
         Column(modifier = Modifier.zIndex(0f)) {
             // Header
             Box(modifier = Modifier.fillMaxWidth()) {
                 IconButton(
-                    onClick = {},
+                    onClick = onBack,
                     modifier = Modifier.align(Alignment.TopStart),
                 ) {
                     Icon(
@@ -90,11 +104,24 @@ fun EnterVideoInfoStep(
             ) {
                 // thumbnail
                 Box {
-                    AsyncImage(
-                        model = thumbnail,
-                        contentDescription = null,
-                        modifier = Modifier.clip(RoundedCornerShape(8.dp))
-                    )
+                    Box(
+                        modifier = Modifier
+                            .height(300.dp)
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(color = Color.Black),
+                        contentAlignment = Alignment.Center,
+                    ) {
+//                        VideoThumbnailFromUri(
+//                            uri = videoUri,
+//                            modifier = Modifier
+//                                .clip(RoundedCornerShape(8.dp))
+//                        )
+                        AsyncImage(
+                            model = thumbnail,
+                            contentDescription = null,
+                        )
+                    }
                     IconButton(
                         onClick = {},
                         colors = IconButtonDefaults.iconButtonColors(
@@ -104,6 +131,11 @@ fun EnterVideoInfoStep(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(top = 8.dp, end = 8.dp)
+                            .border(
+                                width = 3.dp,
+                                color = LocalVisaraCustomColors.current.border,
+                                shape = CircleShape
+                            )
                     ) {
                         Icon(
                             imageVector = Icons.Default.Edit,
@@ -113,7 +145,6 @@ fun EnterVideoInfoStep(
                 }
 
                 // Title
-                HorizontalDivider(modifier = Modifier.padding(top = 8.dp))
                 TextField(
                     value = "",
                     onValueChange = {},
@@ -123,21 +154,26 @@ fun EnterVideoInfoStep(
                             color = Color.Gray,
                         )
                     },
-                    maxLines = 3,
-                    minLines = 3,
+                    maxLines = 4,
+                    minLines = 4,
                     colors = TextFieldDefaults.colors(
-                        unfocusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.Black,
                         unfocusedPlaceholderColor = Color.Black,
                         unfocusedIndicatorColor = Color.Transparent,
                         focusedIndicatorColor = Color.Transparent,
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
+                        .border(
+                            width = 3.dp,
+                            color = LocalVisaraCustomColors.current.border,
+                            shape = RoundedCornerShape(8.dp)
+                        )
                     ,
                 )
-                HorizontalDivider(modifier = Modifier.padding(bottom = 8.dp))
+                Spacer(Modifier.height(8.dp))
 
-                // Description
+                // Description and hashtags
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -145,10 +181,12 @@ fun EnterVideoInfoStep(
                         .clip(RoundedCornerShape(10.dp))
                         .border(
                             width = 1.dp,
-                            color = Color.LightGray,
+                            color = LocalVisaraCustomColors.current.border,
                             shape = RoundedCornerShape(10.dp)
                         )
-                        .padding(4.dp),
+                        .padding(4.dp)
+                        .clickable { openAddDescriptionBox = true }
+                    ,
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
@@ -157,7 +195,7 @@ fun EnterVideoInfoStep(
                         contentDescription = null,
                     )
                     Text(
-                        text = "Add description for video",
+                        text = "Add description and hashtags",
                         modifier = Modifier.weight(1f)
                     )
                     Icon(
@@ -175,7 +213,7 @@ fun EnterVideoInfoStep(
                         .clip(RoundedCornerShape(10.dp))
                         .border(
                             width = 1.dp,
-                            color = Color.LightGray,
+                            color = LocalVisaraCustomColors.current.border,
                             shape = RoundedCornerShape(10.dp)
                         )
                         .padding(4.dp)
@@ -191,10 +229,10 @@ fun EnterVideoInfoStep(
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = "Who can see this video",
-                            color = Color.Gray,
                         )
                         Text(
-                            text = privacyState.label
+                            text = privacyState.label,
+                            color = Color.Gray,
                         )
                     }
                     Icon(
@@ -212,7 +250,7 @@ fun EnterVideoInfoStep(
                         .clip(RoundedCornerShape(10.dp))
                         .border(
                             width = 1.dp,
-                            color = Color.LightGray,
+                            color = LocalVisaraCustomColors.current.border,
                             shape = RoundedCornerShape(10.dp)
                         )
                         .padding(4.dp),
@@ -242,7 +280,7 @@ fun EnterVideoInfoStep(
                         .clip(RoundedCornerShape(10.dp))
                         .border(
                             width = 1.dp,
-                            color = Color.LightGray,
+                            color = LocalVisaraCustomColors.current.border,
                             shape = RoundedCornerShape(10.dp)
                         )
                         .padding(4.dp)
@@ -255,10 +293,24 @@ fun EnterVideoInfoStep(
                         imageVector = Icons.Default.Info,
                         contentDescription = null,
                     )
-                    Text(
-                        text = "Add video to playlist",
-                        modifier = Modifier.weight(1f)
-                    )
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                        ,
+                        verticalArrangement = Arrangement.Center,
+                    ) {
+                        Text(
+                            text = "Add video to playlist",
+                        )
+                        if (selectedPlaylists.isNotEmpty()) {
+                            Text(
+                                text = "${selectedPlaylists.size} selected",
+                                color = Color.Gray
+                                ,
+                            )
+                        }
+                    }
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                         contentDescription = null,
@@ -308,6 +360,24 @@ fun EnterVideoInfoStep(
             HorizontalDivider(Modifier.padding(top = 8.dp))
         }
 
+        // Add description and hashtags
+        AnimatedVisibility(
+            visible = openAddDescriptionBox,
+            enter = slideInHorizontally(
+                initialOffsetX = { it },
+                animationSpec = tween(durationMillis = 300)
+            ),
+            exit = slideOutHorizontally(
+                targetOffsetX = { it },
+                animationSpec = tween(durationMillis = 300)
+            ),
+        ) {
+            AddDescriptionBox(
+                onBack = { openAddDescriptionBox = false },
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+
         // Select privacy Box
         AnimatedVisibility(
             visible = openSelectPrivacyBox,
@@ -346,7 +416,9 @@ fun EnterVideoInfoStep(
             AddVideoToPlaylistsBox(
                 modifier = Modifier.fillMaxSize(),
                 onBack = { openAddPlaylistBox = false },
-                onSelected = {
+                currentSelectedPlaylists = selectedPlaylists,
+                onSelectFinished = {
+                    selectedPlaylists = it
                     openAddPlaylistBox = false
                 }
             )
