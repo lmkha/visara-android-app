@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -30,15 +31,16 @@ fun VideoHeaderSection() {
             maxLines = 2,
             fontWeight = FontWeight.W600,
             fontSize = 20.sp,
+            color = MaterialTheme.colorScheme.onBackground,
         )
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text("22,007 views")
-            Text("8h ago")
-            Text("#BLVAnhQuan")
-            Text("...more")
+            Text(text = "22,007 views", color = MaterialTheme.colorScheme.onBackground)
+            Text(text = "8h ago", color = MaterialTheme.colorScheme.onBackground)
+            Text(text = "#BLVAnhQuan", color = MaterialTheme.colorScheme.onBackground)
+            Text(text = "...more", color = MaterialTheme.colorScheme.onBackground)
         }
 
     }

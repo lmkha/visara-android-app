@@ -1,87 +1,273 @@
 package com.example.visara.ui
 
-import android.annotation.SuppressLint
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import com.example.visara.ui.components.UserAvatar
+import com.example.visara.ui.components.rememberVideoPlayerManager
 import com.example.visara.ui.navigation.Destination
+import com.example.visara.ui.screens.add_new_video.AddNewVideoScreen
+import com.example.visara.ui.screens.following.FollowingScreen
+import com.example.visara.ui.screens.home.HomeScreen
 import com.example.visara.ui.screens.login.LoginScreen
+import com.example.visara.ui.screens.mail.MailScreen
+import com.example.visara.ui.screens.profile.ProfileScreen
+import com.example.visara.ui.screens.search.SearchScreen
+import com.example.visara.ui.screens.video_detail.VideoDetailScreen
+import com.example.visara.ui.screens.video_detail.rememberVideoDetailState
 import com.example.visara.ui.theme.VisaraTheme
 import kotlinx.coroutines.launch
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun App() {
     VisaraTheme(dynamicColor = false) {
+        val scope = rememberCoroutineScope()
         val navController = rememberNavController()
-        var authenticated by remember { mutableStateOf(false) }
         val snackBarHostState = remember { SnackbarHostState() }
-        val coroutineScope = rememberCoroutineScope()
-        var snackBarBottomPadding by remember { mutableStateOf(0.dp) }
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentRoute = navBackStackEntry?.destination?.route
+        val botNavItems = listOf<BottomNavigationItemData>(
+            BottomNavigationItemData(
+                label = "Home",
+                icon = Icons.Filled.Home,
+                destination = Destination.Main.Home
+            ),
+            BottomNavigationItemData(
+                label = "Following",
+                icon = Icons.Filled.Star,
+                destination = Destination.Main.Following
+            ),
+            BottomNavigationItemData(
+                label = "Add",
+                icon = Icons.Filled.AddCircle,
+                destination = Destination.Main.AddNewVideo
+            ),
+            BottomNavigationItemData(
+                label = "Mail",
+                icon = Icons.Filled.Email,
+                destination = Destination.Main.Mail
+            ),
+            BottomNavigationItemData(
+                label = "Profile",
+                icon = Icons.Filled.AccountCircle,
+                destination = Destination.Main.Profile
+            ),
+        )
+        var displaySearchOverlay by remember { mutableStateOf(false) }
+        val videoPlayerManager = rememberVideoPlayerManager(LocalContext.current)
+        val videoDetailState = rememberVideoDetailState(manager = videoPlayerManager)
+        val routesWithBottomBar = listOf<Destination>(
+            Destination.Main.Home,
+            Destination.Main.Following,
+            Destination.Main.Mail,
+        )
 
-        Scaffold(
-            snackbarHost = {
-                SnackbarHost(
-                    hostState = snackBarHostState,
-                    modifier = Modifier
-                        .padding(bottom = snackBarBottomPadding)
-                )
-            }
-        ) {
-            NavHost(
-                modifier = Modifier.fillMaxSize(),
-                navController = navController,
-                startDestination = Destination.Main(),
-            ) {
-                composable<Destination.Main> {
-                    MainContainer(
-                        navigateToLogin = { navController.navigate(Destination.Login) },
-                        authenticated = authenticated,
-                        displaySnackBar = { message, bottomPadding->
-                            coroutineScope.launch {
-                                snackBarBottomPadding = bottomPadding
+        BackHandler(enabled = displaySearchOverlay) {
+            displaySearchOverlay = false
+        }
 
-                                val result = snackBarHostState
-                                    .showSnackbar(
-                                        message = message,
-                                        actionLabel = "Try again",
-                                        duration = SnackbarDuration.Long,
+        BackHandler(enabled = videoDetailState.isFullScreenMode) {
+            videoDetailState.enableMinimizedMode()
+        }
+
+        Box(modifier = Modifier.fillMaxSize()) {
+            Scaffold(
+                modifier = Modifier.zIndex(0f),
+                snackbarHost = {
+                    SnackbarHost(
+                        hostState = snackBarHostState,
+                    )
+                },
+                bottomBar = {
+                    if (routesWithBottomBar.map { it.toString() }.contains(currentRoute)) {
+                        NavigationBar(
+                            containerColor = Color.Transparent,
+                        ) {
+                            botNavItems.forEach { item ->
+                                NavigationBarItem(
+                                    label = { Text(item.label) },
+                                    selected = currentRoute == item.destination.toString(),
+                                    onClick = { scope.launch {navController.navigate(item.destination) }},
+                                    icon = {
+                                        if (item.destination != Destination.Main.Profile) {
+                                            Icon(
+                                                imageVector = item.icon,
+                                                contentDescription = item.label
+                                            )
+                                        } else {
+                                            UserAvatar(modifier = Modifier.size(24.dp))
+                                        }
+                                    },
+                                    colors = NavigationBarItemDefaults.colors(
+                                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                                        indicatorColor = MaterialTheme.colorScheme.surface,
                                     )
-
-                                when (result) {
-                                    SnackbarResult.Dismissed -> {
-
-                                    }
-                                    SnackbarResult.ActionPerformed -> {
-
-                                    }
-                                }
+                                )
                             }
                         }
-                    )
-                }
-                composable<Destination.Login> {
-                    LoginScreen {
-                        authenticated = true
-                        navController.popBackStack()
+                    }
+                },
+            ) { innerPadding->
+                NavHost(
+                    modifier = Modifier.fillMaxSize(),
+                    navController = navController,
+                    startDestination = Destination.Main(),
+                ) {
+                    navigation<Destination.Main>(startDestination = Destination.Main.Home) {
+                        composable<Destination.Main.Home> {
+                            HomeScreen(
+                                onVideoSelect = {
+                                    scope.launch {
+//                                val videoUrl = "http://10.0.2.2:8080/67d93e93ca386d2312a19f5c/output.mpd"
+                                        val videoUrl2 = "http://10.0.2.2:8080/67e42c30bb79412ece6f639a/output.mpd"
+                                        videoPlayerManager.playDash(videoUrl2)
+                                        videoDetailState.videoId = "mock-id"
+                                        videoDetailState.isVisible = true
+                                        videoDetailState.isFullScreenMode = true
+                                    }
+                                },
+                                onOpenSearchOverlay = { navController.navigate(Destination.Search) },
+                                modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding())
+                            )
+                        }
+                        composable<Destination.Main.Following> {
+                            FollowingScreen(
+                                displaySnackBar = { message ->
+                                },
+                            )
+                        }
+                        composable<Destination.Main.AddNewVideo>(
+                            enterTransition = {
+                                scaleIn(transformOrigin = TransformOrigin(0.5f, 1f), initialScale = 0.8f) + fadeIn()
+                            },
+                            exitTransition = {
+                                scaleOut(transformOrigin = TransformOrigin(0.5f, 1f), targetScale = 0.8f) + fadeOut()
+                            }
+                        ) {
+                            scope.launch { videoPlayerManager.dashExoPlayer.pause() }
+                            AddNewVideoScreen(
+                                videoPlayerManager = videoPlayerManager,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(MaterialTheme.colorScheme.background),
+                            )
+                        }
+                        composable<Destination.Main.Mail> {
+                            MailScreen()
+                        }
+                        composable<Destination.Main.Profile> {
+                            ProfileScreen(
+                                authenticated = true,
+                                navigateToLogin = {},
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    }
+                    composable<Destination.Search> {
+                        SearchScreen(
+                            modifier = Modifier.fillMaxSize(),
+                            goBack = { navController.popBackStack() },
+                            onSelectResult = { videoId ->
+                                videoDetailState.isFullScreenMode = true
+                            }
+                        )
+                    }
+                    composable<Destination.Login> {
+                        LoginScreen {
+                            navController.popBackStack()
+                        }
                     }
                 }
             }
+
+            VideoDetailScreen(
+                videoId = videoDetailState.videoId,
+                videoPlayerManager = videoPlayerManager,
+                isFullScreenMode = videoDetailState.isFullScreenMode,
+                onPlay = {
+                    scope.launch {
+                        videoPlayerManager.dashExoPlayer.play()
+                    }
+                },
+                onPause = {
+                    scope.launch {
+                        videoPlayerManager.dashExoPlayer.pause()
+                    }
+                },
+                onEnableFullScreenMode = {
+                    videoDetailState.enableFullScreenMode()
+                },
+                onClose = {
+                    scope.launch {
+                        videoPlayerManager.dashExoPlayer.pause()
+                        videoDetailState.close()
+                    }
+                },
+                isPlaying = videoDetailState.isPlaying,
+                modifier = if (videoDetailState.isFullScreenMode) Modifier
+                    .zIndex(if (videoDetailState.isVisible) 10f else -10f)
+                    .fillMaxSize()
+                    .statusBarsPadding()
+                else Modifier
+                    .width(220.dp)
+                    .height(220.dp)
+                    .zIndex(if (videoDetailState.isVisible && currentRoute != Destination.Main.AddNewVideo.toString()) 10f else -10f)
+                    .align(Alignment.BottomEnd)
+                    .padding(bottom = 120.dp, end = 24.dp)
+                    .clip(RoundedCornerShape(15.dp)),
+            )
         }
     }
 }
+private data class BottomNavigationItemData (
+    val label: String,
+    val icon: ImageVector,
+    val destination: Destination,
+)
