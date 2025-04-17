@@ -48,6 +48,7 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     onVideoSelect: (videoId: String) -> Unit = {},
     onOpenSearchOverlay: () -> Unit = {},
+    bottomNavBar: @Composable () -> Unit,
 ) {
     val suggestionTags = listOf(
         "football",
@@ -84,7 +85,7 @@ fun HomeScreen(
                             contentDescription = "App logo",
                             modifier = Modifier.size(24.dp),
                         )
-                        Text(text = stringResource(id = R.string.app_name).drop(2))
+                        Text(text = stringResource(id = R.string.app_name).drop(1))
                     }
                 },
                 actions = {
@@ -98,9 +99,10 @@ fun HomeScreen(
                 )
             )
         },
+        bottomBar = { bottomNavBar() }
     ) { innerPadding->
         Column(
-            modifier = Modifier.padding(top = innerPadding.calculateTopPadding())
+            modifier = Modifier.padding(innerPadding)
         ) {
             SuggestionTag(
                 tags = suggestionTags,

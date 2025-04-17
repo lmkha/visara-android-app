@@ -42,13 +42,23 @@ private val LightColorScheme = lightColorScheme(
     */
 )
 
+enum class AppTheme {
+    LIGHT, DARK, SYSTEM
+}
+
 @Composable
 fun VisaraTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    appTheme: AppTheme = AppTheme.SYSTEM,
     // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
+    val darkTheme = when (appTheme) {
+        AppTheme.DARK -> true
+        AppTheme.LIGHT -> false
+        AppTheme.SYSTEM -> isSystemInDarkTheme()
+    }
+
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
@@ -58,12 +68,6 @@ fun VisaraTheme(
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
-
-//    MaterialTheme(
-//        colorScheme = colorScheme,
-//        typography = Typography,
-//        content = content
-//    )
 
     val customColors = if (darkTheme) DarkCustomColors else LightCustomColors
 
