@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -46,6 +47,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.visara.R
@@ -57,6 +59,7 @@ fun ProfileScreen(
     modifier: Modifier = Modifier,
     isMyProfile: Boolean = false,
     bottomNavBar: @Composable () -> Unit,
+    onBack: () -> Unit,
 ) {
 
     var displayBottomSheet by remember { mutableStateOf(false) }
@@ -72,13 +75,22 @@ fun ProfileScreen(
             topBar = {
                 TopAppBar(
                     title = {
-                        Row {
-                            Image(
-                                painter = painterResource(R.drawable.app_logo),
-                                contentDescription = "App logo",
-                                modifier = Modifier.size(24.dp),
-                            )
-                            Text(text = stringResource(id = R.string.app_name).drop(1))
+                        if (isMyProfile) {
+                            Row {
+                                Image(
+                                    painter = painterResource(R.drawable.app_logo),
+                                    contentDescription = "App logo",
+                                    modifier = Modifier.size(24.dp),
+                                )
+                                Text(text = stringResource(id = R.string.app_name).drop(1))
+                            }
+                        } else {
+                            IconButton(onClick = onBack) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = null,
+                                )
+                            }
                         }
                     },
                     actions = {
@@ -96,7 +108,11 @@ fun ProfileScreen(
                     ),
                 )
             },
-            bottomBar = { bottomNavBar() }
+            bottomBar = {
+                if (isMyProfile) {
+                    bottomNavBar()
+                }
+            }
         ) { innerPadding ->
             Column(modifier = Modifier.padding(innerPadding)) {
                 // Avatar
@@ -173,14 +189,72 @@ fun ProfileScreen(
                 }
                 /**
                  * Actions:
-                 *  MyProfile: Edit profile, share profile
+                 *  MyProfile: Edit profile, share profile, open studio
                  *  Not followed: Follow, Send message
                  *  Following: Send message, unfollow(wrap in a icon button)
                  */
+                Box(modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)) {
+                    Row(
+                        modifier = Modifier.align(Alignment.Center),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        @Composable
+                        fun ActionButton(
+                            modifier: Modifier = Modifier,
+                            onClick: () -> Unit,
+                            content: @Composable () -> Unit,
+                        ) {
+                            Box(
+                                modifier = modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(color = Color.LightGray)
+                                    .clickable(onClick = onClick)
+                                ,
+                                contentAlignment = Alignment.Center
+                            ) {
+                                content()
+                            }
+                        }
 
+                        ActionButton(onClick = {}) {
+                            Text(
+                                text = "Edit profile",
+                                modifier = Modifier.padding(8.dp),
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
+                        ActionButton(onClick = {}) {
+                            Text(
+                                text = "Share profile",
+                                modifier = Modifier.padding(8.dp),
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
+                        ActionButton(onClick = {}) {
+                            Icon(
+                                painter = painterResource(R.drawable.studio_24px),
+                                contentDescription = null,
+                                modifier = Modifier.padding(8.dp),
+                            )
+                        }
+                    }
+                }
+                // Bio
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "...checkmate information technology",
+                        maxLines = 1,
+                        modifier = Modifier.width(300.dp),
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
         }
 
+        // Bottom Sheet
         AnimatedVisibility(
             visible = displayBottomSheet,
             enter = fadeIn(animationSpec = tween(300)),

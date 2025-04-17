@@ -31,6 +31,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -47,12 +48,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
 import com.example.visara.ui.components.UserAvatar
-import com.example.visara.ui.components.rememberVideoPlayerManager
+import com.example.visara.ui.components.rememberDashVideoPlayerManager
+import com.example.visara.ui.components.rememberLocalVideoPlayerManager
 import com.example.visara.ui.navigation.Destination
 import com.example.visara.ui.screens.add_new_video.AddNewVideoScreen
 import com.example.visara.ui.screens.following.FollowingScreen
@@ -77,15 +77,10 @@ fun App(viewModel: AppViewModel = viewModel()) {
         val scope = rememberCoroutineScope()
         val navController = rememberNavController()
         val snackBarHostState = remember { SnackbarHostState() }
-        val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentRoute = navBackStackEntry?.destination?.route
-        val videoPlayerManager = rememberVideoPlayerManager(LocalContext.current)
-        val videoDetailState = rememberVideoDetailState(manager = videoPlayerManager)
-        fun String?.isRouteOf(destination: Destination): Boolean {
-            if (this == null) return false
-            return this.substringBefore("/") == destination.route
-        }
-        @Composable fun BotNavNar() {
+        val dashPlayerManager = rememberDashVideoPlayerManager(LocalContext.current)
+        val localVideoPlayerManager = rememberLocalVideoPlayerManager(LocalContext.current)
+        val videoDetailState = rememberVideoDetailState(manager = dashPlayerManager)
+        @Composable fun BotNavNar(activeDestination: Destination) {
             val botNavItems = listOf<BottomNavigationItemData>(
                 BottomNavigationItemData(
                     label = "Home",
@@ -117,7 +112,7 @@ fun App(viewModel: AppViewModel = viewModel()) {
                 botNavItems.forEach { item ->
                     NavigationBarItem(
                         label = { Text(item.label) },
-                        selected = currentRoute.isRouteOf(item.destination),
+                        selected = item.destination.route == activeDestination.route,
                         onClick = { scope.launch {navController.navigate(item.destination) }},
                         icon = {
                             if (item.destination != Destination.Main.Profile) {
@@ -164,20 +159,20 @@ fun App(viewModel: AppViewModel = viewModel()) {
                                     scope.launch {
 //                                val videoUrl = "http://10.0.2.2:8080/67d93e93ca386d2312a19f5c/output.mpd"
                                         val videoUrl2 = "http://10.0.2.2:8080/67e42c30bb79412ece6f639a/output.mpd"
-                                        videoPlayerManager.playDash(videoUrl2)
+                                        dashPlayerManager.play(videoUrl2)
                                         videoDetailState.videoId = "mock-id"
                                         videoDetailState.isVisible = true
                                         videoDetailState.isFullScreenMode = true
                                     }
                                 },
                                 onOpenSearchOverlay = { navController.navigate(Destination.Search) },
-                                bottomNavBar = { BotNavNar() }
+                                bottomNavBar = { BotNavNar(Destination.Main.Home) }
                             )
                         }
                         composable<Destination.Main.Following> {
                             FollowingScreen(
                                 onChangeTheme = { viewModel.setTheme(it) },
-                                bottomNavBar = { BotNavNar() },
+                                bottomNavBar = { BotNavNar(Destination.Main.Following) },
                             )
                         }
                         composable<Destination.Main.AddNewVideo>(
@@ -188,12 +183,22 @@ fun App(viewModel: AppViewModel = viewModel()) {
                                 scaleOut(transformOrigin = TransformOrigin(0.5f, 1f), targetScale = 0.8f) + fadeOut()
                             }
                         ) {
+                            val isVideoDetailVisibleBefore = videoDetailState.isVisible
                             scope.launch {
-                                videoPlayerManager.dashExoPlayer.pause()
+                                dashPlayerManager.player.pause()
+                                videoDetailState.isVisible = false
+                            }
+
+                            DisposableEffect(Unit) {
+                                onDispose {
+                                    if (isVideoDetailVisibleBefore) {
+                                        videoDetailState.isVisible = true
+                                    }
+                                }
                             }
 
                             AddNewVideoScreen(
-                                videoPlayerManager = videoPlayerManager,
+                                videoPlayerManager = localVideoPlayerManager,
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .background(MaterialTheme.colorScheme.background),
@@ -201,15 +206,14 @@ fun App(viewModel: AppViewModel = viewModel()) {
                         }
                         composable<Destination.Main.Mail> {
                             MailScreen(
-                                bottomNavBar = { BotNavNar() },
+                                bottomNavBar = { BotNavNar(Destination.Main.Mail) },
                             )
                         }
                         composable<Destination.Main.Profile> { backStackEntry->
-                            val profile: Destination.Main.Profile = backStackEntry.toRoute()
-                            val isMyProfile = profile.username == "lmkha27"
                             ProfileScreen(
-                                isMyProfile = isMyProfile,
-                                bottomNavBar = { BotNavNar() },
+                                isMyProfile = true,
+                                bottomNavBar = { BotNavNar(Destination.Main.Profile()) },
+                                onBack = { navController.popBackStack() },
                             )
                         }
                     }
@@ -232,16 +236,16 @@ fun App(viewModel: AppViewModel = viewModel()) {
 
             VideoDetailScreen(
                 videoId = videoDetailState.videoId,
-                videoPlayerManager = videoPlayerManager,
+                videoPlayerManager = dashPlayerManager,
                 isFullScreenMode = videoDetailState.isFullScreenMode,
                 onPlay = {
                     scope.launch {
-                        videoPlayerManager.dashExoPlayer.play()
+                        dashPlayerManager.player.play()
                     }
                 },
                 onPause = {
                     scope.launch {
-                        videoPlayerManager.dashExoPlayer.pause()
+                        dashPlayerManager.player.pause()
                     }
                 },
                 onEnableFullScreenMode = {
@@ -249,7 +253,7 @@ fun App(viewModel: AppViewModel = viewModel()) {
                 },
                 onClose = {
                     scope.launch {
-                        videoPlayerManager.dashExoPlayer.pause()
+                        dashPlayerManager.player.pause()
                         videoDetailState.close()
                     }
                 },
@@ -261,7 +265,7 @@ fun App(viewModel: AppViewModel = viewModel()) {
                 else Modifier
                     .width(220.dp)
                     .height(220.dp)
-                    .zIndex(if (videoDetailState.isVisible && currentRoute != Destination.Main.AddNewVideo.route) 10f else -10f)
+                    .zIndex(if (videoDetailState.isVisible) 10f else -10f)
                     .align(Alignment.BottomEnd)
                     .padding(bottom = 120.dp, end = 24.dp)
                     .clip(RoundedCornerShape(15.dp)),

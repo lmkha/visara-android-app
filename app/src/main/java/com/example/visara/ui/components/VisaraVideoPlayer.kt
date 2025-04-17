@@ -10,35 +10,65 @@ import androidx.media3.common.MimeTypes
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 
-class VideoPlayerManager(context: Context) {
-    var dashExoPlayer: ExoPlayer = ExoPlayer.Builder(context).build()
-    var localExoPlayer: ExoPlayer = ExoPlayer.Builder(context).build()
+interface VideoPlayerManager {
+    fun release()
+    fun pause()
+    val player: ExoPlayer
+}
+class DashVideoPlayerManager(context: Context) : VideoPlayerManager {
+    override val player: ExoPlayer = ExoPlayer.Builder(context).build()
 
-    fun playDash(url: String, playWhenReady: Boolean = true) {
-        dashExoPlayer.clearMediaItems()
+    fun play(url: String, playWhenReady: Boolean = true) {
+        player.clearMediaItems()
         val mediaItem = MediaItem.Builder()
             .setUri(url)
             .setMimeType(MimeTypes.APPLICATION_MPD)
             .build()
-        dashExoPlayer.setMediaItem(mediaItem)
-        dashExoPlayer.prepare()
-        dashExoPlayer.playWhenReady = playWhenReady
+        player.setMediaItem(mediaItem)
+        player.prepare()
+        player.playWhenReady = playWhenReady
     }
-    fun playFromUrl(uri: android.net.Uri, playWhenReady: Boolean = true) {
+
+    override fun release() {
+        player.release()
+    }
+
+    override fun pause() {
+        player.pause()
+    }
+}
+
+class LocalVideoPlayerManager(context: Context) : VideoPlayerManager {
+    override val player: ExoPlayer = ExoPlayer.Builder(context).build()
+
+    fun play(uri: android.net.Uri, playWhenReady: Boolean = true) {
         val mediaItem = MediaItem.fromUri(uri)
-        localExoPlayer.setMediaItem(mediaItem)
-        localExoPlayer.prepare()
-        localExoPlayer.playWhenReady = playWhenReady
+        player.setMediaItem(mediaItem)
+        player.prepare()
+        player.playWhenReady = playWhenReady
+    }
+
+    override fun release() {
+        player.release()
+    }
+
+    override fun pause() {
+        player.pause()
     }
 }
 
 @Composable
-fun rememberVideoPlayerManager(context: Context): VideoPlayerManager {
-    return remember { VideoPlayerManager(context) }
+fun rememberDashVideoPlayerManager(context: Context): DashVideoPlayerManager {
+    return remember { DashVideoPlayerManager(context) }
 }
 
 @Composable
-fun VisaraDashPlayer(
+fun rememberLocalVideoPlayerManager(context: Context): LocalVideoPlayerManager {
+    return remember { LocalVideoPlayerManager(context) }
+}
+
+@Composable
+fun VisaraVideoPlayer(
     modifier: Modifier = Modifier,
     videoPlayerManager: VideoPlayerManager,
     showControls: Boolean = true,
@@ -46,24 +76,7 @@ fun VisaraDashPlayer(
     AndroidView(
         factory = { context ->
             PlayerView(context).apply {
-                player = videoPlayerManager.dashExoPlayer
-                useController = showControls
-            }
-        },
-        modifier = modifier,
-    )
-}
-
-@Composable
-fun VisaraUriVideoPlayer(
-    modifier: Modifier = Modifier,
-    videoPlayerManager: VideoPlayerManager,
-    showControls: Boolean = true,
-) {
-    AndroidView(
-        factory = { context ->
-            PlayerView(context).apply {
-                player = videoPlayerManager.localExoPlayer
+                player = videoPlayerManager.player
                 useController = showControls
             }
         },

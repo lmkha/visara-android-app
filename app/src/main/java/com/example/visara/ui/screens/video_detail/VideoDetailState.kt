@@ -17,11 +17,11 @@ class VideoDetailState(
 ) {
     var videoId by mutableStateOf(initialVideoId)
     var isVisible by mutableStateOf(initialIsVisible)
-    var isPlaying by mutableStateOf(manager.dashExoPlayer.isPlaying)
+    var isPlaying by mutableStateOf(manager.player.isPlaying)
     var isFullScreenMode by mutableStateOf(initialIsFullScreenMode)
 
     init {
-        manager.dashExoPlayer.addListener(object : Player.Listener {
+        manager.player.addListener(object : Player.Listener {
             override fun onIsPlayingChanged(isPlayingNow: Boolean) {
                 isPlaying = isPlayingNow
             }

@@ -43,7 +43,7 @@ import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import com.example.visara.ui.components.VideoItem
 import com.example.visara.ui.components.VideoPlayerManager
-import com.example.visara.ui.components.VisaraDashPlayer
+import com.example.visara.ui.components.VisaraVideoPlayer
 import com.example.visara.ui.screens.video_detail.components.ActionsSection
 import com.example.visara.ui.screens.video_detail.components.AuthorAccountInfoSection
 import com.example.visara.ui.screens.video_detail.components.ExpandedCommentSection
@@ -115,12 +115,12 @@ fun VideoDetailScreen(
                     .fillMaxWidth(),
             ) {
                 if (isFullScreenMode) {
-                    VisaraDashPlayer(
+                    VisaraVideoPlayer(
                         videoPlayerManager = videoPlayerManager,
                         modifier = Modifier.fillMaxWidth()
                     )
                 } else {
-                    VisaraDashPlayer(
+                    VisaraVideoPlayer(
                         videoPlayerManager = videoPlayerManager,
                         showControls = false,
                         modifier = Modifier.fillMaxWidth(),

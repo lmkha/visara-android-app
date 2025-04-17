@@ -14,22 +14,22 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.example.visara.ui.components.VideoPlayerManager
-import com.example.visara.ui.components.VisaraUriVideoPlayer
+import com.example.visara.ui.components.LocalVideoPlayerManager
+import com.example.visara.ui.components.VisaraVideoPlayer
 
 @Composable
 fun ReviewSectionStep(
     modifier: Modifier = Modifier,
-    videoPlayerManager: VideoPlayerManager,
+    videoPlayerManager: LocalVideoPlayerManager,
     onBack: () -> Unit,
     onGoNext: () -> Unit,
 ) {
     LaunchedEffect(Unit) {
-        videoPlayerManager.localExoPlayer.play()
+        videoPlayerManager.player.play()
     }
 
     DisposableEffect(Unit) {
-        onDispose { videoPlayerManager.localExoPlayer.pause() }
+        onDispose { videoPlayerManager.player.pause() }
     }
 
     Column(modifier = modifier) {
@@ -42,7 +42,7 @@ fun ReviewSectionStep(
             }
         }
         Box(modifier = modifier.weight(1f)) {
-            VisaraUriVideoPlayer(videoPlayerManager = videoPlayerManager)
+            VisaraVideoPlayer(videoPlayerManager = videoPlayerManager)
         }
         Box(modifier = Modifier.fillMaxWidth()) {
             Button(
