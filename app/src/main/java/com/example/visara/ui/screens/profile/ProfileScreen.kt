@@ -1,6 +1,5 @@
 package com.example.visara.ui.screens.profile
 
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
@@ -19,6 +18,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -32,7 +32,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -53,12 +55,15 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -68,6 +73,7 @@ import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import coil3.compose.AsyncImage
 import com.example.visara.R
 import com.example.visara.ui.components.UserAvatar
 import kotlinx.coroutines.launch
@@ -97,9 +103,6 @@ fun ProfileScreen(
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
                 val isScrollingUp = available.y < 0
                 val canScrollOutsideUp = mainScrollState.firstVisibleItemIndex < 4
-
-                Log.i("CHECK_VAR", "isScrollUp: $isScrollingUp")
-                Log.i("CHECK_VAR", "CanScrollOutsideUp: $canScrollOutsideUp")
 
                 if (isScrollingUp && canScrollOutsideUp) {
                     coroutineScope.launch {
@@ -294,7 +297,7 @@ fun ProfileScreen(
                                 Box(
                                     modifier = modifier
                                         .clip(RoundedCornerShape(8.dp))
-                                        .background(color = Color.LightGray)
+                                        .background(color = Color.DarkGray)
                                         .clickable(onClick = onClick),
                                     contentAlignment = Alignment.Center
                                 ) {
@@ -392,27 +395,92 @@ fun ProfileScreen(
                     if (selectedTabIndex == 0) {
                         LazyColumn(
                             state = videoScrollState,
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
                             modifier = Modifier
                                 .height(screenHeight)
-                                .nestedScroll(insideScrollConnection),
+                                .nestedScroll(insideScrollConnection)
                         ) {
-                            items(100) { index ->
-                                Box(modifier = Modifier.padding(vertical = 8.dp)) {
-                                    TabVideoItem(title = index.toString())
+                            item {
+                                var selectedFilterIndex by remember { mutableIntStateOf(0) }
+                                @Composable
+                                fun CustomFilterChip(
+                                    label: String,
+                                    onClick: () -> Unit,
+                                    selected: Boolean,
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(color = if (selected) Color.White else Color.DarkGray)
+                                            .clickable(onClick = onClick)
+                                    ) {
+                                        Text(
+                                            text = label,
+                                            color = if (selected) Color.Black else Color.White,
+                                            modifier = Modifier.padding(8.dp)
+                                        )
+                                    }
                                 }
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    CustomFilterChip(
+                                        label = "Newest",
+                                        selected = selectedFilterIndex == 0,
+                                        onClick = { selectedFilterIndex = 0 }
+                                    )
+                                    CustomFilterChip(
+                                        label = "Popular",
+                                        selected = selectedFilterIndex == 1,
+                                        onClick = { selectedFilterIndex = 1 }
+                                    )
+                                    CustomFilterChip(
+                                        label = "Oldest",
+                                        selected = selectedFilterIndex == 2,
+                                        onClick = { selectedFilterIndex = 2 }
+                                    )
+                                }
+                            }
+
+                            items(100) { index ->
+                                TabVideoItem(title = index.toString())
                             }
                         }
                     } else {
                         LazyColumn(
                             state = playlistScrollState,
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
                             modifier = Modifier
                                 .height(screenHeight)
                                 .nestedScroll(insideScrollConnection),
                         ) {
-                            items(15) { index ->
-                                Box(modifier = Modifier.padding(vertical = 8.dp)) {
-                                    TabPlaylistItem(title = index.toString())
+                            item {
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.sort_24px),
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                    )
+                                    Text(
+                                        text = "Sort by",
+                                        color = Color.White,
+                                        modifier = Modifier.padding(8.dp)
+                                    )
+                                    Icon(
+                                        imageVector = Icons.Default.KeyboardArrowDown,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                    )
                                 }
+                            }
+
+                            items(15) { index ->
+                                TabPlaylistItem(title = index.toString())
                             }
                         }
                     }
@@ -480,16 +548,52 @@ fun TabVideoItem(
         modifier = modifier
             .height(120.dp)
             .fillMaxWidth()
-            .background(Color.DarkGray)
-            .padding(vertical = 16.dp)
     ) {
-        Text(
-            text = title,
-            fontWeight = FontWeight.Bold,
-            color = Color.White,
-            fontSize = 24.sp,
-            modifier = Modifier.align(Alignment.Center),
-        )
+        val cloudinaryImageUrl2 = "http://res.cloudinary.com/drnufn5sf/image/upload/v1743006316/videoplatform/thumbnail/67e42a68bb79412ece6f6399.jpg"
+        val title = "Trả cho anh Remix - Nguyễn Thạc Bảo Ngọc x H2O | Chúng Ta Hôm Nay Mất Nhau Rồi Đấy Remix Hot TikTok"
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            Box(modifier = Modifier.weight(1f)) {
+                AsyncImage(
+                    model = cloudinaryImageUrl2,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.clip(RoundedCornerShape(8.dp))
+                )
+            }
+            Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = title,
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .clickable {
+
+                            }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.padding(4.dp).align(Alignment.TopEnd)
+                        )
+                    }
+                }
+                Text(
+                    text = "111.4 Tr lượt xem - 3 tháng trước",
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontSize = 13.sp,
+                    color = Color.Gray,
+                )
+            }
+        }
     }
 }
 
@@ -500,18 +604,116 @@ fun TabPlaylistItem(
 ) {
     Box(
         modifier = modifier
-            .height(100.dp)
+            .height(120.dp)
             .fillMaxWidth()
-            .background(Color.Black)
-            .padding(vertical = 16.dp)
     ) {
-        Text(
-            text = title,
-            fontWeight = FontWeight.Bold,
-            color = Color.White,
-            fontSize = 24.sp,
-            modifier = Modifier.align(Alignment.Center),
-        )
+        val cloudinaryImageUrl1 = "http://res.cloudinary.com/drnufn5sf/image/upload/v1743006316/videoplatform/thumbnail/67e42a68bb79412ece6f6399.jpg"
+        val cloudinaryImageUrl2 = "http://res.cloudinary.com/drnufn5sf/image/upload/v1743007784/videoplatform/thumbnail/67e42e7fbb79412ece6f639b.jpg"
+        val title = "Nhạc Remix Căng Cực Cuốn Bay TikTok 2025"
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            Box(
+                modifier = Modifier
+                    .height(120.dp)
+                    .weight(1f)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .height(90.dp)
+                        .width(190.dp)
+                        .align(Alignment.TopCenter)
+                ) {
+                    AsyncImage(
+                        model = cloudinaryImageUrl1,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .blur(40.dp)
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .height(110.dp)
+                        .fillMaxWidth()
+                        .shadow(8.dp)
+                        .align(Alignment.BottomCenter)
+                ) {
+                    AsyncImage(
+                        model = cloudinaryImageUrl1,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.clip(RoundedCornerShape(8.dp))
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(
+                                end = 8.dp,
+                                bottom = 8.dp,
+                            )
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(color = Color.Black.copy(alpha = 0.7f))
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            modifier = Modifier.padding(2.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.playlist_play_24px),
+                                contentDescription = null,
+                                tint = Color.White,
+                            )
+                            Text(
+                                text = "56",
+                                color = Color.White,
+                            )
+                        }
+                    }
+                }
+            }
+            Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = title,
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .clickable {
+
+                            }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.padding(4.dp).align(Alignment.TopEnd)
+                        )
+                    }
+                }
+                Text(
+                    text = "H2O Remix - Danh sách phát",
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontSize = 13.sp,
+                    color = Color.Gray,
+                )
+                Text(
+                    text = "Cập nhật hôm nay",
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontSize = 13.sp,
+                    color = Color.Gray,
+                )
+            }
+        }
     }
 }
 
