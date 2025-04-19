@@ -18,6 +18,7 @@ fun FollowingScreen(
     modifier: Modifier = Modifier,
     onChangeTheme: (theme: AppTheme) -> Unit,
     bottomNavBar: @Composable () -> Unit,
+    navigateToTestScreen: () -> Unit,
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -34,6 +35,7 @@ fun FollowingScreen(
             Button(onClick = { onChangeTheme(AppTheme.LIGHT) }) { Text("Light theme") }
             Button(onClick = { onChangeTheme(AppTheme.DARK) }) { Text("Dark theme") }
             Button(onClick = { onChangeTheme(AppTheme.SYSTEM) }) { Text("System theme") }
+            Button(onClick = navigateToTestScreen) { Text("Test") }
         }
     }
 }

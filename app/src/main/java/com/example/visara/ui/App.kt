@@ -61,6 +61,7 @@ import com.example.visara.ui.screens.login.LoginScreen
 import com.example.visara.ui.screens.mail.MailScreen
 import com.example.visara.ui.screens.profile.ProfileScreen
 import com.example.visara.ui.screens.search.SearchScreen
+import com.example.visara.ui.screens.test.TestScreen
 import com.example.visara.ui.screens.video_detail.VideoDetailScreen
 import com.example.visara.ui.screens.video_detail.rememberVideoDetailState
 import com.example.visara.ui.theme.VisaraTheme
@@ -173,6 +174,7 @@ fun App(viewModel: AppViewModel = viewModel()) {
                             FollowingScreen(
                                 onChangeTheme = { viewModel.setTheme(it) },
                                 bottomNavBar = { BotNavNar(Destination.Main.Following) },
+                                navigateToTestScreen = { navController.navigate(Destination.Test) }
                             )
                         }
                         composable<Destination.Main.AddNewVideo>(
@@ -230,6 +232,9 @@ fun App(viewModel: AppViewModel = viewModel()) {
                         LoginScreen {
                             navController.popBackStack()
                         }
+                    }
+                    composable<Destination.Test> {
+                        TestScreen()
                     }
                 }
             }
