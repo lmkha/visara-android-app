@@ -61,6 +61,7 @@ import com.example.visara.ui.screens.login.LoginScreen
 import com.example.visara.ui.screens.mail.MailScreen
 import com.example.visara.ui.screens.profile.ProfileScreen
 import com.example.visara.ui.screens.search.SearchScreen
+import com.example.visara.ui.screens.settings.SettingsScreen
 import com.example.visara.ui.screens.test.TestScreen
 import com.example.visara.ui.screens.video_detail.VideoDetailScreen
 import com.example.visara.ui.screens.video_detail.rememberVideoDetailState
@@ -216,6 +217,9 @@ fun App(viewModel: AppViewModel = viewModel()) {
                                 isMyProfile = true,
                                 bottomNavBar = { BotNavNar(Destination.Main.Profile()) },
                                 onBack = { navController.popBackStack() },
+                                onNavigateToStudioScreen = {},
+                                onNavigateToSettingsScreen = { navController.navigate(Destination.Settings) },
+                                onNavigateToQRCodeScreen = {},
                             )
                         }
                     }
@@ -235,6 +239,11 @@ fun App(viewModel: AppViewModel = viewModel()) {
                     }
                     composable<Destination.Test> {
                         TestScreen()
+                    }
+                    composable<Destination.Settings> {
+                        SettingsScreen(
+                            onBack = { navController.popBackStack() }
+                        )
                     }
                 }
             }

@@ -35,8 +35,10 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -76,6 +78,7 @@ import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
 import com.example.visara.R
 import com.example.visara.ui.components.UserAvatar
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -85,6 +88,9 @@ fun ProfileScreen(
     isMyProfile: Boolean = false,
     bottomNavBar: @Composable () -> Unit,
     onBack: () -> Unit,
+    onNavigateToSettingsScreen: () -> Unit,
+    onNavigateToStudioScreen: () -> Unit,
+    onNavigateToQRCodeScreen: () -> Unit,
 ) {
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
     var displayBottomSheet by remember { mutableStateOf(false) }
@@ -488,51 +494,144 @@ fun ProfileScreen(
             }
 
         }
-        // Bottom Sheet
-        Box {
-            val backgroundAlpha by animateFloatAsState(
-                targetValue = if (displayBottomSheet) 0.5f else 0f,
-                animationSpec = tween(durationMillis = 300),
-                label = "backgroundAlpha"
-            )
-            // Back layer
-            AnimatedVisibility(
-                visible = displayBottomSheet,
-                enter = fadeIn(animationSpec = tween(300)),
-                exit = fadeOut(animationSpec = tween(300))
-            ) {
-                Box(
-                    modifier = Modifier
-                        .zIndex(1f)
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = backgroundAlpha))
-                        .clickable { displayBottomSheet = false }
-                )
-            }
 
-            // Content
-            AnimatedVisibility(
-                visible = displayBottomSheet,
-                enter = slideInVertically(
-                    initialOffsetY = { fullHeight -> fullHeight },
-                    animationSpec = tween(durationMillis = 300)
-                ),
-                exit = slideOutVertically(
-                    targetOffsetY = { fullHeight -> fullHeight },
-                    animationSpec = tween(durationMillis = 300)
-                ),
-                modifier = modifier
-                    .zIndex(2f)
-                    .align(Alignment.BottomCenter)
+        // Bottom Sheet
+        BottomSheet(
+            displayBottomSheet = displayBottomSheet,
+            onClose = { displayBottomSheet = false },
+            onItemSelected = { item ->
+                displayBottomSheet = false
+                coroutineScope.launch {
+                    delay(350)
+                    when (item) {
+                        "studio" -> { onNavigateToStudioScreen() }
+                        "qr" -> { onNavigateToQRCodeScreen() }
+                        "settings" -> { onNavigateToSettingsScreen() }
+                    }
+                }
+            }
+        )
+    }
+}
+
+@Composable
+private fun BottomSheet(
+    displayBottomSheet: Boolean,
+    onClose: () -> Unit,
+    onItemSelected: (item: String) -> Unit = {},
+) {
+    Box {
+        val backgroundAlpha by animateFloatAsState(
+            targetValue = if (displayBottomSheet) 0.5f else 0f,
+            animationSpec = tween(durationMillis = 300),
+            label = "backgroundAlpha"
+        )
+        // Back layer
+        AnimatedVisibility(
+            visible = displayBottomSheet,
+            enter = fadeIn(animationSpec = tween(300)),
+            exit = fadeOut(animationSpec = tween(300))
+        ) {
+            Box(
+                modifier = Modifier
+                    .zIndex(1f)
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = backgroundAlpha))
+                    .clickable(onClick = onClose)
+            )
+        }
+
+        // Content
+        AnimatedVisibility(
+            visible = displayBottomSheet,
+            enter = slideInVertically(
+                initialOffsetY = { fullHeight -> fullHeight },
+                animationSpec = tween(durationMillis = 300)
+            ),
+            exit = slideOutVertically(
+                targetOffsetY = { fullHeight -> fullHeight },
+                animationSpec = tween(durationMillis = 300)
+            ),
+            modifier = Modifier
+                .zIndex(2f)
+                .align(Alignment.BottomCenter)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp)
+                    .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
+                    .background(color = Color.White)
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(300.dp)
-                        .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
-                        .background(color = Color.White)
-                        .clickable { }
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+                    @Composable
+                    fun Item(
+                        icon: @Composable () -> Unit,
+                        label: String,
+                        onClick: () -> Unit,
+                        hasBottomBorder: Boolean = true,
+                    ) {
+                        Column {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .height(60.dp)
+                                    .fillMaxWidth()
+//                                    .background(Color.Blue)
+                                    .clickable(onClick = onClick)
+                            ) {
+                                icon()
+
+                                Text(
+                                    text = label,
+                                )
+                            }
+                            if (hasBottomBorder) {
+                                HorizontalDivider(
+                                    thickness = 1.dp,
+                                    color = Color.LightGray.copy(alpha = 0.5f)
+                                )
+                            }
+                        }
+                    }
+
+                    Item(
+                        icon = {
+                            Icon(
+                                painter = painterResource(id = R.drawable.studio_24px),
+                                contentDescription = null,
+                            )
+                        },
+                        label = "VSara Studio",
+                        onClick = { onItemSelected("studio") },
+                    )
+
+                    Item(
+                        icon = {
+                            Icon(
+                                painter = painterResource(id = R.drawable.qr_code_24px),
+                                contentDescription = null,
+                            )
+                        },
+                        label = "My QR Code",
+                        onClick = { onItemSelected("qr") },
+                    )
+
+                    Item(
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Default.Settings,
+                                contentDescription = null,
+                            )
+                        },
+                        label = "Settings and privacy",
+                        onClick = { onItemSelected("settings") },
+                        hasBottomBorder = false,
+                    )
                 }
             }
         }
@@ -540,7 +639,7 @@ fun ProfileScreen(
 }
 
 @Composable
-fun TabVideoItem(
+private fun TabVideoItem(
     modifier: Modifier = Modifier,
     title: String,
 ) {
@@ -598,7 +697,7 @@ fun TabVideoItem(
 }
 
 @Composable
-fun TabPlaylistItem(
+private fun TabPlaylistItem(
     modifier: Modifier = Modifier,
     title: String,
 ) {
@@ -608,7 +707,7 @@ fun TabPlaylistItem(
             .fillMaxWidth()
     ) {
         val cloudinaryImageUrl1 = "http://res.cloudinary.com/drnufn5sf/image/upload/v1743006316/videoplatform/thumbnail/67e42a68bb79412ece6f6399.jpg"
-        val cloudinaryImageUrl2 = "http://res.cloudinary.com/drnufn5sf/image/upload/v1743007784/videoplatform/thumbnail/67e42e7fbb79412ece6f639b.jpg"
+//        val cloudinaryImageUrl2 = "http://res.cloudinary.com/drnufn5sf/image/upload/v1743007784/videoplatform/thumbnail/67e42e7fbb79412ece6f639b.jpg"
         val title = "Nhạc Remix Căng Cực Cuốn Bay TikTok 2025"
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -718,7 +817,7 @@ fun TabPlaylistItem(
 }
 
 @Composable
-fun MetricItem(
+private fun MetricItem(
     modifier: Modifier = Modifier,
     label: String,
     count: String,
