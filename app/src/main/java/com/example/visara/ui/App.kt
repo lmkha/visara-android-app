@@ -44,6 +44,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -58,7 +59,7 @@ import com.example.visara.ui.screens.add_new_video.AddNewVideoScreen
 import com.example.visara.ui.screens.following.FollowingScreen
 import com.example.visara.ui.screens.home.HomeScreen
 import com.example.visara.ui.screens.login.LoginScreen
-import com.example.visara.ui.screens.mail.MailScreen
+import com.example.visara.ui.screens.inbox.InboxScreen
 import com.example.visara.ui.screens.profile.ProfileScreen
 import com.example.visara.ui.screens.search.SearchScreen
 import com.example.visara.ui.screens.settings.SettingsScreen
@@ -67,6 +68,7 @@ import com.example.visara.ui.screens.video_detail.VideoDetailScreen
 import com.example.visara.ui.screens.video_detail.rememberVideoDetailState
 import com.example.visara.ui.theme.VisaraTheme
 import com.example.visara.viewmodels.AppViewModel
+import com.example.visara.viewmodels.SettingsViewModel
 import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -100,9 +102,9 @@ fun App(viewModel: AppViewModel = viewModel()) {
                     destination = Destination.Main.AddNewVideo
                 ),
                 BottomNavigationItemData(
-                    label = "Mail",
+                    label = "Inbox",
                     icon = Icons.Filled.Email,
-                    destination = Destination.Main.Mail
+                    destination = Destination.Main.Inbox
                 ),
                 BottomNavigationItemData(
                     label = "Profile",
@@ -173,7 +175,7 @@ fun App(viewModel: AppViewModel = viewModel()) {
                         }
                         composable<Destination.Main.Following> {
                             FollowingScreen(
-                                onChangeTheme = { viewModel.setTheme(it) },
+                                onChangeTheme = {  },
                                 bottomNavBar = { BotNavNar(Destination.Main.Following) },
                                 navigateToTestScreen = { navController.navigate(Destination.Test) }
                             )
@@ -207,9 +209,9 @@ fun App(viewModel: AppViewModel = viewModel()) {
                                     .background(MaterialTheme.colorScheme.background),
                             )
                         }
-                        composable<Destination.Main.Mail> {
-                            MailScreen(
-                                bottomNavBar = { BotNavNar(Destination.Main.Mail) },
+                        composable<Destination.Main.Inbox> {
+                            InboxScreen(
+                                bottomNavBar = { BotNavNar(Destination.Main.Inbox) },
                             )
                         }
                         composable<Destination.Main.Profile> { backStackEntry->
@@ -241,7 +243,9 @@ fun App(viewModel: AppViewModel = viewModel()) {
                         TestScreen()
                     }
                     composable<Destination.Settings> {
+                        val settingsViewModel: SettingsViewModel = hiltViewModel()
                         SettingsScreen(
+                            viewModel = settingsViewModel,
                             onBack = { navController.popBackStack() }
                         )
                     }

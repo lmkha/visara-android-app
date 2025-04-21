@@ -1,4 +1,4 @@
-package com.example.visara.ui.screens.mail
+package com.example.visara.ui.screens.inbox
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,7 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
 @Composable
-fun MailScreen(
+fun InboxScreen(
    modifier: Modifier = Modifier,
    bottomNavBar: @Composable () -> Unit,
 ) {

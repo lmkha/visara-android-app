@@ -561,7 +561,7 @@ private fun BottomSheet(
                     .fillMaxWidth()
                     .height(300.dp)
                     .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
-                    .background(color = Color.White)
+                    .background(color = MaterialTheme.colorScheme.surface)
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -588,6 +588,8 @@ private fun BottomSheet(
 
                                 Text(
                                     text = label,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface,
                                 )
                             }
                             if (hasBottomBorder) {

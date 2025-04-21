@@ -20,8 +20,8 @@ class LoginViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val userRepository: UserRepository,
 ) : ViewModel() {
-    private var _uiState: MutableStateFlow<UiState> = MutableStateFlow<UiState>(UiState())
-    val uiState: StateFlow<UiState> = _uiState.asStateFlow()
+    private var _uiState: MutableStateFlow<LoginScreenUiState> = MutableStateFlow<LoginScreenUiState>(LoginScreenUiState())
+    val uiState: StateFlow<LoginScreenUiState> = _uiState.asStateFlow()
 
     init {
         val token = authRepository.getToken()
@@ -60,7 +60,7 @@ class LoginViewModel @Inject constructor(
 
 }
 
-data class UiState(
+data class LoginScreenUiState(
     val authenticated: Boolean = false,
     val accessToken: String = "",
     val email: String = "",
