@@ -20,13 +20,13 @@ import com.example.visara.viewmodels.LoginViewModel
 
 @Composable
 fun LoginScreen(
-    viewModel: LoginViewModel = hiltViewModel<LoginViewModel>(),
+    viewModel: LoginViewModel = hiltViewModel(),
     onAuthenticated: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(uiState.authenticated) {
-        if (uiState.authenticated) {
+    LaunchedEffect(uiState.isLogged) {
+        if (uiState.isLogged) {
             onAuthenticated()
         }
     }

@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.visara.data.local.data_store.settingsDataStore
+import com.example.visara.data.repository.AuthRepository
 import com.example.visara.ui.theme.AppTheme
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -20,6 +21,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     @ApplicationContext appContext: Context,
+    private val authRepository: AuthRepository,
 ) : ViewModel() {
     private val _uiState: MutableStateFlow<SettingsScreenUiState> = MutableStateFlow(SettingsScreenUiState())
     val uiState: StateFlow<SettingsScreenUiState> = _uiState.asStateFlow()
@@ -44,6 +46,12 @@ class SettingsViewModel @Inject constructor(
                 prefs[THEME_KEY] = theme.name
                 _uiState.value = _uiState.value.copy(theme = theme)
             }
+        }
+    }
+
+    fun logout() {
+        viewModelScope.launch(Dispatchers.IO) {
+            authRepository.logout()
         }
     }
 }

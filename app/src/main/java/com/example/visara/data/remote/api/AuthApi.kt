@@ -4,12 +4,13 @@ import com.example.visara.BuildConfig
 import com.example.visara.data.remote.dto.EmailAvailabilityDto
 import com.example.visara.data.remote.dto.RegisterAccountDto
 import com.example.visara.data.remote.dto.UsernameAvailabilityDto
-import com.example.visara.data.remote.response.ApiResponse
+import com.example.visara.data.remote.ApiResult
+import com.example.visara.data.remote.ApiError
 import com.example.visara.di.AuthorizedOkHttpClient
 import com.example.visara.di.UnauthenticatedOkhttpClient
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import okhttp3.HttpUrl
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
@@ -23,116 +24,182 @@ class AuthApi @Inject constructor(
     @UnauthenticatedOkhttpClient private val unauthorizedOkHttpClient: OkHttpClient,
     private val gson: Gson,
 ) {
-    fun login(username: String, password: String): ApiResponse<String>? {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
-            .addPathSegments("auth/signIn")
-            .build()
+    suspend fun login(username: String, password: String): ApiResult<String> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val url = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+                    .addPathSegments("auth/signIn")
+                    .build()
 
-        val requestBody: RequestBody = gson.toJson(
-            mapOf(
-                "username" to username,
-                "password" to password,
-            )
-        ).toRequestBody("application/json".toMediaTypeOrNull())
+                val requestBody = gson.toJson(
+                    mapOf(
+                        "username" to username,
+                        "password" to password,
+                    )
+                ).toRequestBody("application/json".toMediaTypeOrNull())
 
-        val request: Request = Request.Builder()
-            .url(url)
-            .post(requestBody)
-            .build()
+                val request = Request.Builder()
+                    .url(url)
+                    .post(requestBody)
+                    .build()
 
-        unauthorizedOkHttpClient.newCall(request).execute().use { response->
-            val responseBody = response.body?.string()
-            if (!response.isSuccessful) {
-                println("API Error: ${response.code} - ${response.message} - $responseBody")
-                return null
+                unauthorizedOkHttpClient.newCall(request).execute().use { response ->
+                    val responseBody = response.body?.string()
+
+                    if (!response.isSuccessful || responseBody.isNullOrEmpty()) {
+                        return@withContext ApiResult.Failure(
+                            ApiError(
+                                code = response.code,
+                                errorCode = response.code.toString(),
+                                message = response.message,
+                                rawBody = responseBody
+                            )
+                        )
+                    }
+
+                    val jsonObject = gson.fromJson(responseBody, Map::class.java)
+                    val token = jsonObject["data"] as? String
+
+                    return@withContext if (!token.isNullOrEmpty()) {
+                        ApiResult.Success(token)
+                    } else {
+                        ApiResult.Failure(
+                            ApiError(
+                                code = response.code,
+                                errorCode = response.code.toString(),
+                                message = "Token not found in response.",
+                                rawBody = responseBody
+                            )
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                return@withContext ApiResult.Error(e)
             }
-            if (responseBody.isNullOrEmpty()) return null
-            return gson.fromJson(responseBody, object : TypeToken<ApiResponse<String>>() {}.type)
         }
     }
+    suspend fun checkUsernameAvailability(username: String): ApiResult<UsernameAvailabilityDto> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val url = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+                    .addPathSegments("users/checkUsernameAvailability")
+                    .addQueryParameter("username", username)
+                    .build()
 
-    fun checkUsernameAvailability(username: String) : ApiResponse<UsernameAvailabilityDto>? {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
-            .addPathSegments("users/checkUsernameAvailability")
-            .addQueryParameter("username", username)
-            .build()
+                val request = Request.Builder()
+                    .url(url)
+                    .get()
+                    .build()
 
-        val request: Request = Request.Builder()
-            .url(url)
-            .get()
-            .build()
+                unauthorizedOkHttpClient.newCall(request).execute().use { response ->
+                    val responseBody = response.body?.string()
 
-        unauthorizedOkHttpClient.newCall(request).execute().use { response->
-            val responseBody = response.body?.string()
-            if (!response.isSuccessful) {
-                println("API Error: ${response.code} - ${response.message} - $responseBody")
-                return null
+                    if (!response.isSuccessful || responseBody.isNullOrEmpty()) {
+                        return@withContext ApiResult.Failure(
+                            ApiError(
+                                code = response.code,
+                                errorCode = response.code.toString(),
+                                message = response.message,
+                                rawBody = responseBody
+                            )
+                        )
+                    }
+
+                    val result = gson.fromJson(responseBody, UsernameAvailabilityDto::class.java)
+                    return@withContext ApiResult.Success(result)
+                }
+            } catch (e: Exception) {
+                return@withContext ApiResult.Error(e)
             }
-            if (responseBody.isNullOrEmpty()) return null
-            return gson.fromJson(responseBody, object : TypeToken<ApiResponse<UsernameAvailabilityDto>>() {}.type)
         }
     }
+    suspend fun checkEmailAvailability(email: String): ApiResult<EmailAvailabilityDto> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val url = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+                    .addPathSegments("users/checkEmailAvailability")
+                    .addQueryParameter("email", email)
+                    .build()
 
-    fun checkEmailAvailability(email: String) : ApiResponse<EmailAvailabilityDto>? {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
-            .addPathSegments("users/checkEmailAvailability")
-            .addQueryParameter("email", email)
-            .build()
+                val request = Request.Builder()
+                    .url(url)
+                    .get()
+                    .build()
 
-        val request: Request = Request.Builder()
-            .url(url)
-            .get()
-            .build()
+                unauthorizedOkHttpClient.newCall(request).execute().use { response ->
+                    val responseBody = response.body?.string()
 
-        unauthorizedOkHttpClient.newCall(request).execute().use { response->
-            val responseBody = response.body?.string()
-            if (!response.isSuccessful) {
-                println("API Error: ${response.code} - ${response.message} - $responseBody")
-                return null
+                    if (!response.isSuccessful || responseBody.isNullOrEmpty()) {
+                        return@withContext ApiResult.Failure(
+                            ApiError(
+                                code = response.code,
+                                errorCode = response.code.toString(),
+                                message = response.message,
+                                rawBody = responseBody
+                            )
+                        )
+                    }
+
+                    val result = gson.fromJson(responseBody, EmailAvailabilityDto::class.java)
+                    return@withContext ApiResult.Success(result)
+                }
+            } catch (e: Exception) {
+                return@withContext ApiResult.Error(e)
             }
-            if (responseBody.isNullOrEmpty()) return null
-            return gson.fromJson(responseBody, object : TypeToken<ApiResponse<EmailAvailabilityDto>>() {}.type)
         }
     }
-
-    fun registerAccount(
+    suspend fun registerAccount(
         username: String,
         password: String,
         email: String,
         phone: String,
         isPrivate: Boolean,
         dateOfBirth: String
-    ) : ApiResponse<RegisterAccountDto>? {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
-            .addPathSegments("auth/register")
-            .build()
+    ): ApiResult<RegisterAccountDto> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val url = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+                    .addPathSegments("auth/register")
+                    .build()
 
-        val requestBody: RequestBody = gson.toJson(
-            mapOf(
-                "username" to username,
-                "password" to password,
-                "email" to email,
-                "phone" to phone,
-                "isPrivate" to isPrivate,
-                "dateOfBirth" to dateOfBirth,
-            )
-        ).toRequestBody("application/json".toMediaTypeOrNull())
+                val requestBody: RequestBody = gson.toJson(
+                    mapOf(
+                        "username" to username,
+                        "password" to password,
+                        "email" to email,
+                        "phone" to phone,
+                        "isPrivate" to isPrivate,
+                        "dateOfBirth" to dateOfBirth
+                    )
+                ).toRequestBody("application/json".toMediaTypeOrNull())
 
-        val request: Request = Request.Builder()
-            .url(url)
-            .post(requestBody)
-            .build()
+                val request = Request.Builder()
+                    .url(url)
+                    .post(requestBody)
+                    .build()
 
-        unauthorizedOkHttpClient.newCall(request).execute().use { response->
-            val responseBody = response.body?.string()
-            if (!response.isSuccessful) {
-                println("API Error: ${response.code} - ${response.message} - $responseBody")
-                return null
+                unauthorizedOkHttpClient.newCall(request).execute().use { response ->
+                    val responseBody = response.body?.string()
+
+                    if (!response.isSuccessful || responseBody.isNullOrEmpty()) {
+                        if (!response.isSuccessful || responseBody.isNullOrEmpty()) {
+                            return@withContext ApiResult.Failure(
+                                ApiError(
+                                    code = response.code,
+                                    errorCode = response.code.toString(),
+                                    message = response.message,
+                                    rawBody = responseBody
+                                )
+                            )
+                        }
+                    }
+
+                    val result = gson.fromJson(responseBody, RegisterAccountDto::class.java)
+                    return@withContext ApiResult.Success(result)
+                }
+            } catch (e: Exception) {
+                return@withContext ApiResult.Error(e)
             }
-            if (responseBody.isNullOrEmpty()) return null
-            return gson.fromJson(responseBody, object : TypeToken<ApiResponse<RegisterAccountDto>>() {}.type)
         }
-
-        return null
     }
 }

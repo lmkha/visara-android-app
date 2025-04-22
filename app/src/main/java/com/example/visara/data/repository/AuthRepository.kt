@@ -8,19 +8,24 @@ class AuthRepository @Inject constructor(
     private val authRemoteDataSource: AuthRemoteDataSource,
     private val authLocalDataSource: AuthLocalDataSource,
 ) {
-    fun login(username: String, password: String) {
+    suspend fun login(username: String, password: String): Boolean {
         val newToken = authRemoteDataSource.login(username, password)
 
         if (!newToken.isNullOrEmpty()) {
+            authLocalDataSource.setCurrentUsername(username)
             authLocalDataSource.saveToken(newToken)
+            return true
         }
+
+        return false
     }
 
-    fun getToken() : String? {
-        return authLocalDataSource.getToken()
+    fun isUserLoggedIn(): Boolean {
+        val token = authLocalDataSource.getToken()
+        return !token.isNullOrEmpty()
     }
 
-    fun removeToken() {
+    suspend fun logout() {
         authLocalDataSource.removeToken()
     }
 }

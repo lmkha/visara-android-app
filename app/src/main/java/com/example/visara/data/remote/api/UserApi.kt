@@ -1,12 +1,14 @@
 package com.example.visara.data.remote.api
 
 import com.example.visara.BuildConfig
+import com.example.visara.data.remote.ApiError
+import com.example.visara.data.remote.ApiResult
 import com.example.visara.data.remote.dto.UserDto
-import com.example.visara.data.remote.response.ApiResponse
 import com.example.visara.di.AuthorizedOkHttpClient
 import com.example.visara.di.UnauthenticatedOkhttpClient
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
@@ -18,47 +20,74 @@ class UserApi @Inject constructor(
     @UnauthenticatedOkhttpClient private val unauthorizedOkHttpClient: OkHttpClient,
     private val gson: Gson,
 ) {
-    fun getPublicUserByUsername(username: String) : ApiResponse<UserDto>? {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
-            .addPathSegment("users")
-            .addPathSegment(username)
-            .addPathSegment("profile")
-            .build()
+    suspend fun getPublicUserByUsername(username: String): ApiResult<UserDto> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+                    .addPathSegment("users")
+                    .addPathSegment(username)
+                    .addPathSegment("profile")
+                    .build()
 
-        val request: Request = Request.Builder()
-            .url(url)
-            .get()
-            .build()
+                val request: Request = Request.Builder()
+                    .url(url)
+                    .get()
+                    .build()
 
-        unauthorizedOkHttpClient.newCall(request).execute().use { response->
-            val responseBody = response.body?.string()
-            if (!response.isSuccessful) {
-                println("API Error: ${response.code} - ${response.message} - $responseBody")
-                return null
+                unauthorizedOkHttpClient.newCall(request).execute().use { response ->
+                    val responseBody = response.body?.string()
+
+                    if (!response.isSuccessful || responseBody.isNullOrEmpty()) {
+                        return@withContext ApiResult.Failure(
+                            ApiError(
+                                code = response.code,
+                                message = "API Error: ${response.code} - ${response.message} - $responseBody",
+                                rawBody = responseBody
+                            )
+                        )
+                    }
+
+                    val userDto = gson.fromJson(responseBody, UserDto::class.java)
+                    return@withContext ApiResult.Success(userDto)
+                }
+            } catch (e: Exception) {
+                return@withContext ApiResult.Error(e)
             }
-            if (responseBody.isNullOrEmpty()) return null
-            return gson.fromJson(responseBody, object : TypeToken<ApiResponse<UserDto>>() {}.type)
+        }
+    }
+    suspend fun getCurrentUser(): ApiResult<UserDto> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+                    .addPathSegments("users/")
+                    .build()
+
+                val request: Request = Request.Builder()
+                    .url(url)
+                    .get()
+                    .build()
+
+                authorizedOkHttpClient.newCall(request).execute().use { response ->
+                    val responseBody = response.body?.string()
+
+                    if (!response.isSuccessful || responseBody.isNullOrEmpty()) {
+                        return@withContext ApiResult.Failure(
+                            ApiError(
+                                code = response.code,
+                                message = "API Error: ${response.code} - ${response.message} - $responseBody",
+                                rawBody = responseBody
+                            )
+                        )
+                    }
+
+                    // Parse the response body into UserDto
+                    val userDto = gson.fromJson(responseBody, UserDto::class.java)
+                    return@withContext ApiResult.Success(userDto)
+                }
+            } catch (e: Exception) {
+                return@withContext ApiResult.Error(e)
+            }
         }
     }
 
-    fun getCurrentUser() : ApiResponse<UserDto>? {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
-            .addPathSegments("users/")
-            .build()
-
-        val request: Request = Request.Builder()
-            .url(url)
-            .get()
-            .build()
-
-        authorizedOkHttpClient.newCall(request).execute().use { response->
-            val responseBody = response.body?.string()
-            if (!response.isSuccessful) {
-                println("API Error: ${response.code} - ${response.message} - $responseBody")
-                return null
-            }
-            if (responseBody.isNullOrEmpty()) return null
-            return gson.fromJson(responseBody, object : TypeToken<ApiResponse<UserDto>>() {}.type)
-        }
-    }
 }

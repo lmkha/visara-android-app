@@ -1,6 +1,6 @@
 package com.example.visara.data.remote.interceptor
 
-import com.example.visara.data.local.preference.TokenStorage
+import com.example.visara.data.local.shared_preference.TokenStorage
 import okhttp3.Interceptor
 import okhttp3.Response
 import javax.inject.Inject

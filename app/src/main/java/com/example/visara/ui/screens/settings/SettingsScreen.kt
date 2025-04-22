@@ -2,9 +2,14 @@ package com.example.visara.ui.screens.settings
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,13 +29,13 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -43,23 +48,26 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.visara.R
-import com.example.visara.ui.App
 import com.example.visara.ui.components.UserAvatar
 import com.example.visara.ui.theme.AppTheme
+import com.example.visara.ui.theme.LocalVisaraCustomColors
 import com.example.visara.viewmodels.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     modifier: Modifier = Modifier,
-   viewModel: SettingsViewModel,
+    viewModel: SettingsViewModel = hiltViewModel(),
     onBack: () -> Unit,
+    navigateAfterLogout: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
     var selectedItem by remember { mutableStateOf<SettingItem?>(null) }
 
     BackHandler(selectedItem != null) {
@@ -105,21 +113,30 @@ fun SettingsScreen(
                     onItemSelected = { selectedItem = it }
                 )
                 LoginSettingsSection(
-                    onItemSelected = {}
+                    onItemSelected = { selectedItem = it }
                 )
             }
         }
 
-    }
+        ThemeSettingScreen(
+            onBack = { selectedItem = null },
+            isOpen = selectedItem == ContentDisplaySettings.Theme,
+            currentTheme = uiState.theme,
+            onSelected = { theme ->
+                viewModel.setTheme(theme)
+            },
+        )
 
-    ThemeSettingScreen(
-        onBack = { selectedItem = null },
-        isOpen = selectedItem == ContentDisplaySettings.Theme,
-        currentTheme = uiState.theme,
-        onSelected = { theme ->
-            viewModel.setTheme(theme)
-        },
-    )
+        LogoutBottomSheet(
+            displayBottomSheet = selectedItem == LoginSettings.Logout,
+            onClose = { selectedItem = null },
+            onLogoutSelected = {
+                viewModel.logout()
+                navigateAfterLogout()
+            },
+            onSwitchAccountSelected = {},
+        )
+    }
 }
 
 @Composable
@@ -144,22 +161,22 @@ fun AccountSettingsSection(
                 SettingsItem(
                     icon = { Icon(imageVector = Icons.Default.Person, contentDescription = null) },
                     label = "Account",
-                    onClick = {},
+                    onClick = { onItemSelected(AccountSettings.Account) },
                 )
                 SettingsItem(
                     icon = { Icon(imageVector = Icons.Default.Lock, contentDescription = null) },
                     label = "Privacy",
-                    onClick = {},
+                    onClick = { onItemSelected(AccountSettings.Privacy) },
                 )
                 SettingsItem(
                     icon = { Icon(painter = painterResource(id = R.drawable.security_24px), contentDescription = null) },
                     label = "Security and permissions",
-                    onClick = {},
+                    onClick = { onItemSelected(AccountSettings.SecurityAndPermission) },
                 )
                 SettingsItem(
                     icon = { Icon(painter = painterResource(id = R.drawable.forward_24px), contentDescription = null) },
                     label = "Share profile",
-                    onClick = {},
+                    onClick = { onItemSelected(AccountSettings.ShareProfile)},
                 )
             }
         }
@@ -188,7 +205,7 @@ fun ContentAndDisplaySettingsSection(
                 SettingsItem(
                     icon = { Icon(imageVector = Icons.Default.Person, contentDescription = null) },
                     label = "Notification",
-                    onClick = {},
+                    onClick = { onItemSelected(ContentDisplaySettings.Notification) },
                 )
                 SettingsItem(
                     icon = { Icon(painter = painterResource(id = R.drawable.dark_mode_24px), contentDescription = null) },
@@ -198,7 +215,7 @@ fun ContentAndDisplaySettingsSection(
                 SettingsItem(
                     icon = { Icon(painter = painterResource(id = R.drawable.security_24px), contentDescription = null) },
                     label = "Language",
-                    onClick = {},
+                    onClick = { onItemSelected(ContentDisplaySettings.Language) },
                 )
             }
         }
@@ -227,13 +244,13 @@ fun LoginSettingsSection(
                 SettingsItem(
                     icon = { Icon(painter = painterResource(id = R.drawable.published_with_changes_24px), contentDescription = null) },
                     label = "Switch account",
-                    onClick = {},
+                    onClick = { onItemSelected(LoginSettings.SwitchAccount) },
                 )
                 SettingsItem(
                     icon = { Icon(painter = painterResource(id = R.drawable.logout_24px), contentDescription = null) },
                     trailIcon = { UserAvatar(modifier = Modifier.size(24.dp)) },
                     label = "Logout",
-                    onClick = {},
+                    onClick = { onItemSelected(LoginSettings.Logout) },
                 )
             }
         }
@@ -251,7 +268,7 @@ private fun SettingsItem(
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier
+        modifier = modifier
             .height(50.dp)
             .fillMaxWidth()
             .clickable(onClick = onClick)
@@ -363,7 +380,7 @@ private fun ThemeSettingScreen(
 sealed interface SettingItem
 
 enum class AccountSettings : SettingItem {
-    Account, Privacy, SecurityAndPermission
+    Account, Privacy, SecurityAndPermission, ShareProfile
 }
 
 enum class ContentDisplaySettings : SettingItem {
@@ -372,4 +389,118 @@ enum class ContentDisplaySettings : SettingItem {
 
 enum class LoginSettings : SettingItem {
     SwitchAccount, Logout
+}
+
+@Composable
+private fun LogoutBottomSheet(
+    displayBottomSheet: Boolean,
+    onClose: () -> Unit,
+    onLogoutSelected: () -> Unit,
+    onSwitchAccountSelected: () -> Unit,
+) {
+    Box {
+        val backgroundAlpha by animateFloatAsState(
+            targetValue = if (displayBottomSheet) 0.5f else 0f,
+            animationSpec = tween(durationMillis = 300),
+            label = "backgroundAlpha"
+        )
+        // Back layer
+        AnimatedVisibility(
+            visible = displayBottomSheet,
+            enter = fadeIn(animationSpec = tween(300)),
+            exit = fadeOut(animationSpec = tween(300))
+        ) {
+            Box(
+                modifier = Modifier
+                    .zIndex(1f)
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = backgroundAlpha))
+                    .clickable(onClick = onClose)
+            )
+        }
+
+        // Content
+        AnimatedVisibility(
+            visible = displayBottomSheet,
+            enter = slideInVertically(
+                initialOffsetY = { fullHeight -> fullHeight },
+                animationSpec = tween(durationMillis = 300)
+            ),
+            exit = slideOutVertically(
+                targetOffsetY = { fullHeight -> fullHeight },
+                animationSpec = tween(durationMillis = 300)
+            ),
+            modifier = Modifier
+                .zIndex(2f)
+                .align(Alignment.BottomCenter)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
+                    .background(color = LocalVisaraCustomColors.current.bottomSheetBackground)
+                    .clickable {}
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            top = 16.dp,
+                            bottom = 32.dp,
+                        )
+                    ,
+                ) {
+                    Text(
+                        text = "Are you sure you want to log out?",
+                        fontWeight = FontWeight.Medium,
+                        color = Color.Gray,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .height(70.dp)
+                            .fillMaxWidth()
+                            .clickable(onClick = onSwitchAccountSelected)
+                    ) {
+                        Text(
+                            text = "Switch account",
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+                    HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f), thickness = 1.dp)
+                    Box(
+                        modifier = Modifier
+                            .height(70.dp)
+                            .fillMaxWidth()
+                            .clickable(onClick = onLogoutSelected)
+                    ) {
+                        Text(
+                            text = "Logout",
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+                    HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f), thickness = 1.dp)
+                    Box(
+                        modifier = Modifier
+                            .height(70.dp)
+                            .fillMaxWidth()
+                            .clickable(onClick = onClose)
+                    ) {
+                        Text(
+                            text = "Cancel",
+                            fontWeight = FontWeight.Normal,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+                }
+            }
+        }
+    }
 }

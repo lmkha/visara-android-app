@@ -1,6 +1,6 @@
 package com.example.visara.di
 
-import com.example.visara.data.local.preference.TokenStorage
+import com.example.visara.data.local.shared_preference.TokenStorage
 import com.example.visara.data.remote.interceptor.AuthInterceptor
 import com.example.visara.data.remote.interceptor.BaseUrlInterceptor
 import dagger.Module

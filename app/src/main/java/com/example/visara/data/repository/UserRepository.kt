@@ -7,7 +7,7 @@ import javax.inject.Inject
 class UserRepository @Inject constructor(
     private val userRemoteDataSource: UserRemoteDataSource,
 ) {
-    fun getCurrentUser() : UserModel? {
+    suspend fun getCurrentUser() : UserModel? {
         return userRemoteDataSource.getCurrentUser()
     }
 }

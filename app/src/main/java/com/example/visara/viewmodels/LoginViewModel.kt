@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.visara.data.repository.AuthRepository
 import com.example.visara.data.repository.UserRepository
-import com.example.visara.domain.LoginUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,7 +15,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val loginUseCase: LoginUseCase,
     private val authRepository: AuthRepository,
     private val userRepository: UserRepository,
 ) : ViewModel() {
@@ -24,27 +22,17 @@ class LoginViewModel @Inject constructor(
     val uiState: StateFlow<LoginScreenUiState> = _uiState.asStateFlow()
 
     init {
-        val token = authRepository.getToken()
-        if (!token.isNullOrEmpty()) {
-            _uiState.update { oldState-> oldState.copy(authenticated = true, accessToken = token) }
+        val isLogged = authRepository.isUserLoggedIn()
+        if (isLogged) {
+            _uiState.update { it.copy(isLogged = true) }
         }
     }
 
     fun login(username: String, password: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val token = loginUseCase(username, password)
-            if (!token.isNullOrEmpty()) {
-                _uiState.update {oldState-> oldState.copy(authenticated = true, accessToken = token) }
-            }
-        }
-    }
-
-    fun logout() {
-        viewModelScope.launch(Dispatchers.IO) {
-            authRepository.removeToken()
-            val token = authRepository.getToken()
-            if (token.isNullOrEmpty()) {
-                _uiState.update { oldState-> oldState.copy(authenticated = false, accessToken = "") }
+            val isLogged = authRepository.login(username, password)
+            if (isLogged) {
+                _uiState.update {oldState-> oldState.copy(isLogged = true) }
             }
         }
     }
@@ -61,7 +49,6 @@ class LoginViewModel @Inject constructor(
 }
 
 data class LoginScreenUiState(
-    val authenticated: Boolean = false,
-    val accessToken: String = "",
+    val isLogged: Boolean = false,
     val email: String = "",
 )

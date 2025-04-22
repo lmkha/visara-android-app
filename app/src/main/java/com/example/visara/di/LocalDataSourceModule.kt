@@ -1,7 +1,8 @@
 package com.example.visara.di
 
 import com.example.visara.data.local.datasource.AuthLocalDataSource
-import com.example.visara.data.local.preference.TokenStorage
+import com.example.visara.data.local.shared_preference.TokenStorage
+import com.example.visara.data.local.shared_preference.UserSessionManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -13,7 +14,7 @@ import javax.inject.Singleton
 object LocalDataSourceModule {
     @Provides
     @Singleton
-    fun provideAuthLocalDataSource(tokenStorage: TokenStorage) : AuthLocalDataSource {
-        return AuthLocalDataSource(tokenStorage)
+    fun provideAuthLocalDataSource(tokenStorage: TokenStorage, userSessionManager: UserSessionManager) : AuthLocalDataSource {
+        return AuthLocalDataSource(tokenStorage, userSessionManager)
     }
 }

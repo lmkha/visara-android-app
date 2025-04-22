@@ -46,7 +46,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
@@ -58,9 +57,11 @@ import com.example.visara.ui.navigation.Destination
 import com.example.visara.ui.screens.add_new_video.AddNewVideoScreen
 import com.example.visara.ui.screens.following.FollowingScreen
 import com.example.visara.ui.screens.home.HomeScreen
-import com.example.visara.ui.screens.login.LoginScreen
+//import com.example.visara.ui.screens.login.LoginScreen
 import com.example.visara.ui.screens.inbox.InboxScreen
+import com.example.visara.ui.screens.login.LoginScreen
 import com.example.visara.ui.screens.profile.ProfileScreen
+import com.example.visara.ui.screens.profile.UnauthenticatedProfileScreen
 import com.example.visara.ui.screens.search.SearchScreen
 import com.example.visara.ui.screens.settings.SettingsScreen
 import com.example.visara.ui.screens.test.TestScreen
@@ -68,12 +69,11 @@ import com.example.visara.ui.screens.video_detail.VideoDetailScreen
 import com.example.visara.ui.screens.video_detail.rememberVideoDetailState
 import com.example.visara.ui.theme.VisaraTheme
 import com.example.visara.viewmodels.AppViewModel
-import com.example.visara.viewmodels.SettingsViewModel
 import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun App(viewModel: AppViewModel = viewModel()) {
+fun App(viewModel: AppViewModel = hiltViewModel()) {
 
     val appState by viewModel.appState.collectAsStateWithLifecycle()
 
@@ -155,6 +155,7 @@ fun App(viewModel: AppViewModel = viewModel()) {
                     modifier = Modifier.fillMaxSize(),
                     navController = navController,
                     startDestination = Destination.Main(),
+//                    startDestination = Destination.Settings,
                 ) {
                     navigation<Destination.Main>(startDestination = Destination.Main.Home) {
                         composable<Destination.Main.Home> {
@@ -215,14 +216,26 @@ fun App(viewModel: AppViewModel = viewModel()) {
                             )
                         }
                         composable<Destination.Main.Profile> { backStackEntry->
-                            ProfileScreen(
-                                isMyProfile = true,
-                                bottomNavBar = { BotNavNar(Destination.Main.Profile()) },
-                                onBack = { navController.popBackStack() },
-                                onNavigateToStudioScreen = {},
-                                onNavigateToSettingsScreen = { navController.navigate(Destination.Settings) },
-                                onNavigateToQRCodeScreen = {},
-                            )
+                            if (appState.isLogged) {
+                                ProfileScreen(
+                                    isMyProfile = true,
+                                    bottomNavBar = { BotNavNar(Destination.Main.Profile()) },
+                                    onBack = { navController.popBackStack() },
+                                    onNavigateToStudioScreen = {},
+                                    onNavigateToSettingsScreen = {
+                                        navController.navigate(
+                                            Destination.Settings
+                                        )
+                                    },
+                                    onNavigateToQRCodeScreen = {},
+                                )
+                            } else {
+                                UnauthenticatedProfileScreen(
+                                    bottomNavBar = { BotNavNar(Destination.Main.Profile()) },
+                                    onBack = { navController.popBackStack() },
+                                    onNavigateToLoginScreen = { navController.navigate(Destination.Login) }
+                                )
+                            }
                         }
                     }
                     composable<Destination.Search> {
@@ -235,18 +248,24 @@ fun App(viewModel: AppViewModel = viewModel()) {
                         )
                     }
                     composable<Destination.Login> {
-                        LoginScreen {
-                            navController.popBackStack()
-                        }
+                        LoginScreen(
+                            onAuthenticated = { navController.popBackStack() }
+                        )
                     }
                     composable<Destination.Test> {
                         TestScreen()
                     }
                     composable<Destination.Settings> {
-                        val settingsViewModel: SettingsViewModel = hiltViewModel()
                         SettingsScreen(
-                            viewModel = settingsViewModel,
-                            onBack = { navController.popBackStack() }
+                            onBack = { navController.popBackStack() },
+                            navigateAfterLogout = {
+                                navController.navigate(Destination.Main.Home) {
+                                    popUpTo(Destination.Main.Home) {
+                                        inclusive = true
+                                    }
+                                    launchSingleTop = true
+                                }
+                            },
                         )
                     }
                 }
