@@ -16,7 +16,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object SharedPrefModule {
-    private const val PREFS_FILE_NAME ="app_prefs"
+    private const val PREFS_FILE_NAME ="secure_prefs"
     @Provides
     @Singleton
     fun provideEncryptedSharedPreference(@ApplicationContext context: Context) : SharedPreferences {

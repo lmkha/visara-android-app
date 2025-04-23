@@ -9,6 +9,7 @@ data class VisaraCustomColors(
     val darkGrayCustom: Color,
     val bottomSheetBackground: Color,
     val onBottomSheetBackground: Color,
+    val scrollToFirstItemButtonBackground: Color,
 )
 
 val LocalVisaraCustomColors = staticCompositionLocalOf<VisaraCustomColors> {
@@ -21,6 +22,7 @@ val LightCustomColors = VisaraCustomColors(
     darkGrayCustom = Color(0xFF2C2A32),
     bottomSheetBackground = Color.White,
     onBottomSheetBackground = Color.Black,
+    scrollToFirstItemButtonBackground = Color.LightGray,
 )
 
 val DarkCustomColors = VisaraCustomColors(
@@ -29,4 +31,5 @@ val DarkCustomColors = VisaraCustomColors(
     darkGrayCustom = Color(0xFF2C2A32),
     bottomSheetBackground = Color.DarkGray,
     onBottomSheetBackground = Color.White,
+    scrollToFirstItemButtonBackground = Color.Gray,
 )

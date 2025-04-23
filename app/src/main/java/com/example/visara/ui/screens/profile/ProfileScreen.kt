@@ -78,6 +78,7 @@ import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
 import com.example.visara.R
 import com.example.visara.ui.components.UserAvatar
+import com.example.visara.ui.theme.LocalVisaraCustomColors
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -561,7 +562,7 @@ private fun BottomSheet(
                     .fillMaxWidth()
                     .height(300.dp)
                     .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
-                    .background(color = MaterialTheme.colorScheme.surface)
+                    .background(color = LocalVisaraCustomColors.current.bottomSheetBackground)
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),

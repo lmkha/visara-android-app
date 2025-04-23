@@ -5,7 +5,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.visara.data.local.data_store.settingsDataStore
+import com.example.visara.data.local.data_store.appSettingsDataStore
 import com.example.visara.data.repository.AuthRepository
 import com.example.visara.ui.theme.AppTheme
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,6 +23,7 @@ class SettingsViewModel @Inject constructor(
     @ApplicationContext appContext: Context,
     private val authRepository: AuthRepository,
 ) : ViewModel() {
+    private val appSettingsDataStore = appContext.appSettingsDataStore
     private val _uiState: MutableStateFlow<SettingsScreenUiState> = MutableStateFlow(SettingsScreenUiState())
     val uiState: StateFlow<SettingsScreenUiState> = _uiState.asStateFlow()
     companion object {
@@ -31,18 +32,16 @@ class SettingsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            val prefs = dataStore.data.first()
+            val prefs = appSettingsDataStore.data.first()
             val themeName = prefs[THEME_KEY]
             val theme = AppTheme.entries.find { it.name == themeName } ?: AppTheme.SYSTEM
             _uiState.value = _uiState.value.copy(theme = theme)
         }
     }
 
-    private val dataStore = appContext.settingsDataStore
-
     fun setTheme(theme: AppTheme) {
         viewModelScope.launch(Dispatchers.IO) {
-            dataStore.edit { prefs ->
+            appSettingsDataStore.edit { prefs ->
                 prefs[THEME_KEY] = theme.name
                 _uiState.value = _uiState.value.copy(theme = theme)
             }

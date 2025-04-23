@@ -22,7 +22,7 @@ class LoginViewModel @Inject constructor(
     val uiState: StateFlow<LoginScreenUiState> = _uiState.asStateFlow()
 
     init {
-        val isLogged = authRepository.isUserLoggedIn()
+        val isLogged = authRepository.isAuthenticated.value
         if (isLogged) {
             _uiState.update { it.copy(isLogged = true) }
         }
@@ -32,20 +32,10 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val isLogged = authRepository.login(username, password)
             if (isLogged) {
-                _uiState.update {oldState-> oldState.copy(isLogged = true) }
+                _uiState.update { oldState-> oldState.copy(isLogged = true) }
             }
         }
     }
-
-    fun getCurrentUser() {
-        viewModelScope.launch(Dispatchers.IO) {
-            val currentUser = userRepository.getCurrentUser()
-            if (!currentUser?.email.isNullOrEmpty()) {
-                _uiState.update { oldState-> oldState.copy(email = currentUser.email) }
-            }
-        }
-    }
-
 }
 
 data class LoginScreenUiState(

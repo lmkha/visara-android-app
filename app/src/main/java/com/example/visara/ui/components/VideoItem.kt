@@ -36,7 +36,7 @@ fun VideoItem(
     videoHeight: Dp = 250.dp,
     onVideoSelect: (videoId: String) -> Unit = {},
 ) {
-    val cloudinaryImageUrl = "http://res.cloudinary.com/drnufn5sf/image/upload/v1743006773/videoplatform/thumbnail/67e42c30bb79412ece6f639a.jpg"
+//    val cloudinaryImageUrl = "http://res.cloudinary.com/drnufn5sf/image/upload/v1743006773/videoplatform/thumbnail/67e42c30bb79412ece6f639a.jpg"
     val cloudinaryImageUrl2 = "http://res.cloudinary.com/drnufn5sf/image/upload/v1743006316/videoplatform/thumbnail/67e42a68bb79412ece6f6399.jpg"
     Box(
         modifier = modifier

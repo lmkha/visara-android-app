@@ -5,4 +5,8 @@ data class UserModel(
     val username: String = "",
     val email: String = "",
     val phone: String = "",
-)
+) {
+    override fun toString(): String {
+        return "[UserModel] id = $id, username = $username, email = $email, phone = $phone"
+    }
+}

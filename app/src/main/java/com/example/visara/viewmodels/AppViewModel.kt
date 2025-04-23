@@ -3,8 +3,8 @@ package com.example.visara.viewmodels
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.visara.data.local.data_store.settingsDataStore
-import com.example.visara.data.local.shared_preference.TokenStorage
+import com.example.visara.data.local.data_store.appSettingsDataStore
+import com.example.visara.data.repository.AuthRepository
 import com.example.visara.ui.theme.AppTheme
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -20,10 +20,10 @@ import javax.inject.Inject
 @HiltViewModel
 class AppViewModel @Inject constructor(
     @ApplicationContext appContext: Context,
-    private val tokenStorage: TokenStorage,
+    private val authRepository: AuthRepository,
 ) : ViewModel() {
     private val themeKey = SettingsViewModel.THEME_KEY
-    private val dataStore = appContext.settingsDataStore
+    private val appSettingsDataStore = appContext.appSettingsDataStore
 
     private val _appState = MutableStateFlow(AppState())
     val appState: StateFlow<AppState> = _appState.asStateFlow()
@@ -35,7 +35,7 @@ class AppViewModel @Inject constructor(
 
     private fun observerTheme() {
         viewModelScope.launch {
-            dataStore.data
+            appSettingsDataStore.data
                 .map { prefs ->
                     val themeName = prefs[themeKey]
                     AppTheme.entries.firstOrNull { it.name == themeName } ?: AppTheme.SYSTEM
@@ -48,7 +48,7 @@ class AppViewModel @Inject constructor(
 
     private fun observerAuthenticationState() {
         viewModelScope.launch {
-            tokenStorage.isLoggedIn.collect { isLogged->
+            authRepository.isAuthenticated.collect { isLogged->
                 _appState.update { it.copy(isLogged = isLogged) }
             }
         }
@@ -58,5 +58,4 @@ class AppViewModel @Inject constructor(
 data class AppState(
     val appTheme: AppTheme = AppTheme.SYSTEM,
     val isLogged: Boolean = false,
-    val username: String = ""
 )

@@ -19,4 +19,8 @@ class AuthLocalDataSource @Inject constructor(
     fun setCurrentUsername(username: String) {
         userSessionManager.setCurrentUsername(username)
     }
+
+    fun clearCurrentUsername() {
+        userSessionManager.clearCurrentUsername()
+    }
 }

@@ -1,9 +1,6 @@
 package com.example.visara.data.remote.api
 
 import com.example.visara.BuildConfig
-import com.example.visara.data.remote.ApiError
-import com.example.visara.data.remote.ApiResult
-import com.example.visara.data.remote.dto.UserDto
 import com.example.visara.di.AuthorizedOkHttpClient
 import com.example.visara.di.UnauthenticatedOkhttpClient
 import com.google.gson.Gson
@@ -13,6 +10,7 @@ import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.Response
 import javax.inject.Inject
 
 class UserApi @Inject constructor(
@@ -20,6 +18,7 @@ class UserApi @Inject constructor(
     @UnauthenticatedOkhttpClient private val unauthorizedOkHttpClient: OkHttpClient,
     private val gson: Gson,
 ) {
+    /*
     suspend fun getPublicUserByUsername(username: String): ApiResult<UserDto> {
         return withContext(Dispatchers.IO) {
             try {
@@ -89,5 +88,19 @@ class UserApi @Inject constructor(
             }
         }
     }
+     */
+    suspend fun getCurrentUser(): Response {
+        return withContext(Dispatchers.IO) {
+            val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+                .addPathSegments("users/")
+                .build()
 
+            val request: Request = Request.Builder()
+                .url(url)
+                .get()
+                .build()
+
+            return@withContext authorizedOkHttpClient.newCall(request).execute()
+        }
+    }
 }
