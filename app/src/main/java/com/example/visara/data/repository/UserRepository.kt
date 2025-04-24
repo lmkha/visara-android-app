@@ -3,6 +3,7 @@ package com.example.visara.data.repository
 import com.example.visara.data.model.UserModel
 import com.example.visara.data.remote.ApiResult
 import com.example.visara.data.remote.datasource.UserRemoteDataSource
+import com.example.visara.data.remote.dto.toUserModel
 import javax.inject.Inject
 
 class UserRepository @Inject constructor(
@@ -11,13 +12,8 @@ class UserRepository @Inject constructor(
     suspend fun getCurrentUser() : UserModel? {
         val apiResult = userRemoteDataSource.getCurrentUser()
         if (apiResult is ApiResult.Success) {
-            val userDto = apiResult.data
-            return UserModel(
-                id = userDto.id,
-                username = userDto.username,
-                email = userDto.email,
-                phone = userDto.phone,
-            )
+            val userModel = apiResult.data.toUserModel()
+            return userModel
         }
         return null
     }

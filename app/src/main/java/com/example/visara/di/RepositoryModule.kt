@@ -1,6 +1,7 @@
 package com.example.visara.di
 
 import android.content.Context
+import com.example.visara.data.local.dao.UserDao
 import com.example.visara.data.local.datasource.AuthLocalDataSource
 import com.example.visara.data.remote.datasource.AuthRemoteDataSource
 import com.example.visara.data.remote.datasource.UserRemoteDataSource
@@ -22,8 +23,10 @@ object RepositoryModule {
     fun provideAuthRepository(
         authRemoteDataSource: AuthRemoteDataSource,
         authLocalDataSource: AuthLocalDataSource,
+        userRepository: UserRepository,
+        userDao: UserDao,
     ) : AuthRepository {
-        return AuthRepository(authRemoteDataSource, authLocalDataSource)
+        return AuthRepository(authRemoteDataSource, authLocalDataSource, userRepository, userDao)
     }
 
 
