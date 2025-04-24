@@ -7,12 +7,11 @@ import javax.inject.Inject
 
 class AuthInterceptor @Inject constructor(private val tokenStorage: TokenStorage) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
-        val token: String? = tokenStorage.getToken()
-        if (token.isNullOrEmpty()) throw IllegalStateException("Access token is not exist in storage!")
-        val request = chain.request().newBuilder()
-            .addHeader("Authorization", "Bearer $token")
-            .build()
-
-        return chain.proceed(request)
+        val token: String? = tokenStorage.getAccessToken()
+        val requestBuilder = chain.request().newBuilder()
+        if (!token.isNullOrEmpty()) {
+            requestBuilder.addHeader("Authorization", "Bearer $token")
+        }
+        return chain.proceed(requestBuilder.build())
     }
 }

@@ -1,12 +1,16 @@
 package com.example.visara.di
 
 import com.example.visara.data.local.shared_preference.TokenStorage
+import com.example.visara.data.remote.api.RefreshTokenApi
 import com.example.visara.data.remote.interceptor.AuthInterceptor
 import com.example.visara.data.remote.interceptor.BaseUrlInterceptor
+import com.example.visara.data.remote.interceptor.TokenAuthenticator
+import com.google.gson.Gson
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import okhttp3.Authenticator
 import okhttp3.OkHttpClient
 import javax.inject.Singleton
 
@@ -25,12 +29,23 @@ object NetworkModule {
         return BaseUrlInterceptor()
     }
 
+    @Provides
+    @Singleton
+    fun provideTokenAuthenticator(
+        tokenStorage: TokenStorage,
+        refreshTokenApi: RefreshTokenApi,
+        gson: Gson,
+    ) : Authenticator {
+        return TokenAuthenticator(tokenStorage, refreshTokenApi, gson)
+    }
+
     @AuthorizedOkHttpClient
     @Provides
     @Singleton
-    fun provideAuthorizedOkHttpClient(authInterceptor: AuthInterceptor) : OkHttpClient {
+    fun provideAuthorizedOkHttpClient(authInterceptor: AuthInterceptor, tokenAuthenticator: TokenAuthenticator) : OkHttpClient {
         return OkHttpClient.Builder()
             .addInterceptor(authInterceptor)
+            .authenticator(tokenAuthenticator)
             .build()
     }
 

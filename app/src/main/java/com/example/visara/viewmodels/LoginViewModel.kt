@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.visara.data.repository.AuthRepository
 import com.example.visara.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,7 +28,7 @@ class LoginViewModel @Inject constructor(
     }
 
     fun login(username: String, password: String) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             val isLogged = authRepository.login(username, password)
             if (isLogged) {
                 _uiState.update { oldState-> oldState.copy(isLogged = true) }

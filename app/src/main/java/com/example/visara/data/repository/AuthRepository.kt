@@ -26,7 +26,7 @@ class AuthRepository @Inject constructor(
             // Must set current username before saving token — token key depends on it.
             authLocalDataSource.setCurrentUsername(username)
             val token = loginResult.data
-            authLocalDataSource.saveToken(token)
+            authLocalDataSource.saveAccessToken(token)
             _isAuthenticated.value = true
             return true
         }
@@ -34,12 +34,12 @@ class AuthRepository @Inject constructor(
     }
     suspend fun logout() {
         // Clear token first — username is needed to locate the correct token key.
-        authLocalDataSource.removeToken()
+        authLocalDataSource.clearToken()
         authLocalDataSource.clearCurrentUsername()
         _isAuthenticated.value = false
     }
     fun refreshAuthenticationState() {
-        val token = authLocalDataSource.getToken()
-        _isAuthenticated.value = !token.isNullOrEmpty()
+        val hasToken = !authLocalDataSource.getAccessToken().isNullOrEmpty()
+        _isAuthenticated.value = hasToken
     }
 }

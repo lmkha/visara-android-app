@@ -1,6 +1,7 @@
 package com.example.visara.di
 
 import com.example.visara.data.remote.api.AuthApi
+import com.example.visara.data.remote.api.RefreshTokenApi
 import com.example.visara.data.remote.api.UserApi
 import com.google.gson.Gson
 import dagger.Module
@@ -31,5 +32,11 @@ object ApiModule {
         gson: Gson,
     ) : UserApi {
         return UserApi(authorizedOkHttpClient, unauthenticatedOkhttpClient, gson)
+    }
+
+    @Provides
+    @Singleton
+    fun provideRefreshTokenApi(@UnauthenticatedOkhttpClient unauthenticatedOkhttpClient: OkHttpClient) : RefreshTokenApi {
+        return RefreshTokenApi(unauthenticatedOkhttpClient)
     }
 }

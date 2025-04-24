@@ -8,19 +8,22 @@ class AuthLocalDataSource @Inject constructor(
     private val tokenStorage: TokenStorage,
     private val userSessionManager: UserSessionManager,
 ) {
-    fun getToken() : String? = tokenStorage.getToken()
-    suspend fun saveToken(token: String) {
-        tokenStorage.saveToken(token)
+    fun getAccessToken() : String? = tokenStorage.getAccessToken()
+    fun getRefreshToken() : String? = tokenStorage.getRefreshToken()
+    suspend fun saveAccessToken(accessToken: String) {
+        tokenStorage.saveAccessToken(accessToken)
     }
-    suspend fun removeToken() {
-        tokenStorage.removeToken()
+    suspend fun saveRefreshToken(refreshToken: String) {
+        tokenStorage.saveRefreshToken(refreshToken)
     }
-
     fun setCurrentUsername(username: String) {
         userSessionManager.setCurrentUsername(username)
     }
-
     fun clearCurrentUsername() {
         userSessionManager.clearCurrentUsername()
+    }
+    suspend fun clearToken() {
+        tokenStorage.removeAccessToken()
+        tokenStorage.removeRefreshToken()
     }
 }

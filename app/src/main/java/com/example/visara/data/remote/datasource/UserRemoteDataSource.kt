@@ -5,6 +5,8 @@ import com.example.visara.data.remote.ApiResult
 import com.example.visara.data.remote.api.UserApi
 import com.example.visara.data.remote.dto.UserDto
 import com.google.gson.Gson
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class UserRemoteDataSource @Inject constructor(
@@ -12,27 +14,29 @@ class UserRemoteDataSource @Inject constructor(
     private val gson: Gson,
 ) {
     suspend fun getCurrentUser() : ApiResult<UserDto> {
-        try {
-            val response = userApi.getCurrentUser()
-            val responseBody = response.body?.string()
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = userApi.getCurrentUser()
+                val responseBody = response.body?.string()
 
-            if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                val dataJson = gson.toJson(jsonObject["data"])
-                val user = gson.fromJson(dataJson, UserDto::class.java)
-                return ApiResult.Success(user)
-            } else {
-                return ApiResult.Failure(
-                    ApiError(
-                        code = response.code,
-                        errorCode = response.code.toString(),
-                        message = response.message,
-                        rawBody = responseBody
+                if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
+                    val jsonObject = gson.fromJson(responseBody, Map::class.java)
+                    val dataJson = gson.toJson(jsonObject["data"])
+                    val user = gson.fromJson(dataJson, UserDto::class.java)
+                    ApiResult.Success(user)
+                } else {
+                    ApiResult.Failure(
+                        ApiError(
+                            code = response.code,
+                            errorCode = response.code.toString(),
+                            message = response.message,
+                            rawBody = responseBody
+                        )
                     )
-                )
+                }
+            } catch (e: Exception) {
+                ApiResult.Error(e)
             }
-        } catch (e: Exception) {
-            return ApiResult.Error(e)
         }
     }
 }

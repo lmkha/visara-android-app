@@ -15,22 +15,39 @@ class TokenStorage @Inject constructor(
         val currentUsername = userSessionManager.getCurrentUsername()
         return "ACCESS_TOKEN_$currentUsername"
     }
+    private val keyRefreshToken: String get() {
+        val currentUsername = userSessionManager.getCurrentUsername()
+        return "REFRESH_TOKEN_$currentUsername"
+    }
 
-    fun getToken(): String? {
+    fun getAccessToken(): String? {
         return userSessionManager.getCurrentUsername()?.let {
             encryptedSharedPreference.getString(keyAccessToken, null)
         }
     }
-
-    suspend fun saveToken(token: String) = withContext(Dispatchers.IO) {
-        userSessionManager.getCurrentUsername()?.let {
-            encryptedSharedPreference.edit { putString(keyAccessToken, token) }
+    fun getRefreshToken(): String? {
+        return userSessionManager.getCurrentUsername()?.let {
+            encryptedSharedPreference.getString(keyRefreshToken, null)
         }
     }
-
-    suspend fun removeToken() = withContext(Dispatchers.IO) {
+    suspend fun saveAccessToken(accessToken: String) = withContext(Dispatchers.IO) {
+        userSessionManager.getCurrentUsername()?.let {
+            encryptedSharedPreference.edit { putString(keyAccessToken, accessToken) }
+        }
+    }
+    suspend fun saveRefreshToken(refreshToken: String) = withContext(Dispatchers.IO) {
+        userSessionManager.getCurrentUsername()?.let {
+            encryptedSharedPreference.edit { putString(keyRefreshToken, refreshToken) }
+        }
+    }
+    suspend fun removeAccessToken() = withContext(Dispatchers.IO) {
         userSessionManager.getCurrentUsername()?.let {
             encryptedSharedPreference.edit { remove(keyAccessToken) }
+        }
+    }
+    suspend fun removeRefreshToken() = withContext(Dispatchers.IO) {
+        userSessionManager.getCurrentUsername()?.let {
+            encryptedSharedPreference.edit { remove(keyRefreshToken) }
         }
     }
 }
