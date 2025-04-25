@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
+import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 
@@ -19,14 +20,25 @@ class DashVideoPlayerManager(context: Context) : VideoPlayerManager {
     override val player: ExoPlayer = ExoPlayer.Builder(context).build()
 
     fun play(url: String, playWhenReady: Boolean = true) {
+        player.stop()
         player.clearMediaItems()
+
         val mediaItem = MediaItem.Builder()
             .setUri(url)
             .setMimeType(MimeTypes.APPLICATION_MPD)
             .build()
+
         player.setMediaItem(mediaItem)
         player.prepare()
-        player.playWhenReady = playWhenReady
+
+        player.addListener(object : Player.Listener {
+            override fun onPlaybackStateChanged(state: Int) {
+                if (state == Player.STATE_READY) {
+                    player.playWhenReady = playWhenReady
+                    player.removeListener(this)
+                }
+            }
+        })
     }
 
     override fun release() {

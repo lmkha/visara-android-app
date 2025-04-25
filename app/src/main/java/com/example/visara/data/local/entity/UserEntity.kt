@@ -6,8 +6,8 @@ import com.example.visara.data.model.UserModel
 
 @Entity(tableName = "users")
 data class UserEntity(
-    @PrimaryKey val id: Long,
-    val username: String,
+    @PrimaryKey val username: String,
+    val id: Long,
     val fullName: String,
     val email: String,
     val phone: String,

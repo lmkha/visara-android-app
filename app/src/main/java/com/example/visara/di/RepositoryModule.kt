@@ -5,9 +5,11 @@ import com.example.visara.data.local.dao.UserDao
 import com.example.visara.data.local.datasource.AuthLocalDataSource
 import com.example.visara.data.remote.datasource.AuthRemoteDataSource
 import com.example.visara.data.remote.datasource.UserRemoteDataSource
+import com.example.visara.data.remote.datasource.VideoRemoteDataSource
 import com.example.visara.data.repository.AppSettingsRepository
 import com.example.visara.data.repository.AuthRepository
 import com.example.visara.data.repository.UserRepository
+import com.example.visara.data.repository.VideoRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -44,4 +46,11 @@ object RepositoryModule {
     fun provideAppSettingsRepository(@ApplicationContext appContext: Context) : AppSettingsRepository {
         return AppSettingsRepository(appContext)
     }
+
+    @Provides
+    @Singleton
+    fun provideVideoRepository(videoRemoteDataSource: VideoRemoteDataSource) : VideoRepository {
+        return VideoRepository(videoRemoteDataSource)
+    }
+
 }

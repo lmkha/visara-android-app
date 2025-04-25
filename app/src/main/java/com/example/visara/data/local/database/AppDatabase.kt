@@ -10,7 +10,7 @@ import com.example.visara.data.local.entity.UserEntity
     entities = [
         UserEntity::class,
     ],
-    exportSchema = false,
+//    exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao() : UserDao

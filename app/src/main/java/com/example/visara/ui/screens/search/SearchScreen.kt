@@ -119,13 +119,13 @@ fun SearchScreen(
                             .clickable { textFieldState.edit { replace(0, length, resultText) } }
                     )
                 }
-                items(10) {
-                    VideoItem(
-                        onVideoSelect = onSelectResult,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    )
-                }
+//                items(10) {
+//                    VideoItem(
+//                        onVideoSelect = onSelectResult,
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                    )
+//                }
             }
         }
     }

@@ -14,13 +14,13 @@ interface UserDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertUser(user: UserEntity)
 
-    @Query("SELECT * FROM users WHERE id = :id")
-    fun getUserById(id: Long): Flow<UserEntity>
+    @Query("SELECT * FROM users WHERE username = :username")
+    fun getUserByUsername(username: String): Flow<UserEntity>
 
     @Query("SELECT * FROM users")
     fun getAllUsers(): Flow<List<UserEntity>>
 
-    fun getUserByIdDistinctUntilChanged(id: Long): Flow<UserEntity> {
-        return getUserById(id).distinctUntilChanged()
+    fun getUserByUsernameDistinctUntilChanged(username: String): Flow<UserEntity> {
+        return getUserByUsername(username).distinctUntilChanged()
     }
 }

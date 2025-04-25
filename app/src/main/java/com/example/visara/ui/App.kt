@@ -8,6 +8,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -33,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -69,6 +71,7 @@ import com.example.visara.ui.screens.video_detail.VideoDetailScreen
 import com.example.visara.ui.screens.video_detail.rememberVideoDetailState
 import com.example.visara.ui.theme.VisaraTheme
 import com.example.visara.viewmodels.AppViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -117,7 +120,14 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
                     NavigationBarItem(
                         label = { Text(item.label) },
                         selected = item.destination.route == activeDestination.route,
-                        onClick = { scope.launch {navController.navigate(item.destination) }},
+                        onClick = {
+                            scope.launch {
+                                val popBack: Boolean = navController.popBackStack(route = item.destination, inclusive = false)
+                                if (!popBack) {
+                                    navController.navigate(item.destination)
+                                }
+                            }
+                        },
                         icon = {
                             if (item.destination != Destination.Main.Profile) {
                                 Icon(
@@ -155,17 +165,17 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
                     modifier = Modifier.fillMaxSize(),
                     navController = navController,
                     startDestination = Destination.Main(),
-//                    startDestination = Destination.Settings,
                 ) {
                     navigation<Destination.Main>(startDestination = Destination.Main.Home) {
                         composable<Destination.Main.Home> {
                             HomeScreen(
-                                onVideoSelect = {
+                                onVideoSelect = { selectedVideo->
                                     scope.launch {
-//                                val videoUrl = "http://10.0.2.2:8080/67d93e93ca386d2312a19f5c/output.mpd"
-                                        val videoUrl2 = "http://10.0.2.2:8080/67e42c30bb79412ece6f639a/output.mpd"
-                                        dashPlayerManager.play(videoUrl2)
-                                        videoDetailState.videoId = "mock-id"
+                                        val videoLink = "http://10.0.2.2:8080/${selectedVideo.id}/output.mpd"
+//                                        val videoLink = viewModel.getVideoLink(selectedVideo.id)
+                                        dashPlayerManager.play(videoLink)
+                                        videoDetailState.videoLink = videoLink
+                                        videoDetailState.video = selectedVideo
                                         videoDetailState.isVisible = true
                                         videoDetailState.isFullScreenMode = true
                                     }
@@ -271,42 +281,49 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
                 }
             }
 
-            VideoDetailScreen(
-                videoId = videoDetailState.videoId,
-                videoPlayerManager = dashPlayerManager,
-                isFullScreenMode = videoDetailState.isFullScreenMode,
-                onPlay = {
-                    scope.launch {
-                        dashPlayerManager.player.play()
-                    }
-                },
-                onPause = {
-                    scope.launch {
-                        dashPlayerManager.player.pause()
-                    }
-                },
-                onEnableFullScreenMode = {
-                    videoDetailState.enableFullScreenMode()
-                },
-                onClose = {
-                    scope.launch {
-                        dashPlayerManager.player.pause()
-                        videoDetailState.close()
-                    }
-                },
-                isPlaying = videoDetailState.isPlaying,
+            Box(
                 modifier = if (videoDetailState.isFullScreenMode) Modifier
                     .zIndex(if (videoDetailState.isVisible) 10f else -10f)
                     .fillMaxSize()
-                    .statusBarsPadding()
                 else Modifier
-                    .width(220.dp)
-                    .height(220.dp)
                     .zIndex(if (videoDetailState.isVisible) 10f else -10f)
-                    .align(Alignment.BottomEnd)
+                    .fillMaxSize()
                     .padding(bottom = 120.dp, end = 24.dp)
-                    .clip(RoundedCornerShape(15.dp)),
-            )
+            ) {
+                VideoDetailScreen(
+                    video = videoDetailState.video,
+                    videoPlayerManager = dashPlayerManager,
+                    isFullScreenMode = videoDetailState.isFullScreenMode,
+                    onPlay = {
+                        scope.launch {
+                            dashPlayerManager.player.play()
+                        }
+                    },
+                    onPause = {
+                        scope.launch {
+                            dashPlayerManager.player.pause()
+                        }
+                    },
+                    onEnableFullScreenMode = {
+                        videoDetailState.enableFullScreenMode()
+                    },
+                    onClose = {
+                        scope.launch {
+                            dashPlayerManager.player.pause()
+                            videoDetailState.close()
+                        }
+                    },
+                    isPlaying = videoDetailState.isPlaying,
+                    modifier = if (videoDetailState.isFullScreenMode) Modifier
+                        .fillMaxSize()
+                        .statusBarsPadding()
+                    else Modifier
+                        .width(300.dp)
+                        .clip(RoundedCornerShape(15.dp))
+                        .aspectRatio(16f / 9f)
+                        .align(Alignment.BottomEnd)
+                )
+            }
         }
     }
 }

@@ -3,8 +3,8 @@ package com.example.visara.data.model
 import com.example.visara.data.local.entity.UserEntity
 
 data class UserModel(
-    val id: Long = 0L,
     val username: String = "",
+    val id: Long = 0L,
     val fullName: String = "",
     val email: String = "",
     val phone: String = "",
@@ -22,8 +22,8 @@ data class UserModel(
     }
 }
 fun UserModel.toEntity(): UserEntity = UserEntity(
-    id = id,
     username = username,
+    id = id,
     fullName = fullName,
     email = email,
     phone = phone,

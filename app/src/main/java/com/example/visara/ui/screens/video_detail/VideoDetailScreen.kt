@@ -12,7 +12,7 @@ import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -41,8 +41,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
-import com.example.visara.ui.components.VideoItem
-import com.example.visara.ui.components.VideoPlayerManager
+import com.example.visara.data.model.VideoModel
+import com.example.visara.ui.components.DashVideoPlayerManager
 import com.example.visara.ui.components.VisaraVideoPlayer
 import com.example.visara.ui.screens.video_detail.components.ActionsSection
 import com.example.visara.ui.screens.video_detail.components.AuthorAccountInfoSection
@@ -57,8 +57,8 @@ import kotlin.math.roundToInt
 @Composable
 fun VideoDetailScreen(
     modifier: Modifier = Modifier,
-    videoId: String? = null,
-    videoPlayerManager: VideoPlayerManager,
+    video: VideoModel? = null,
+    videoPlayerManager: DashVideoPlayerManager,
     isFullScreenMode: Boolean,
     isPlaying: Boolean,
     onPlay: () -> Unit,
@@ -105,126 +105,123 @@ fun VideoDetailScreen(
         }
     }
 
-    Box(modifier = modifier.background(color = Color.Black)) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            // Video
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-            ) {
-                if (isFullScreenMode) {
-                    VisaraVideoPlayer(
-                        videoPlayerManager = videoPlayerManager,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                } else {
-                    VisaraVideoPlayer(
-                        videoPlayerManager = videoPlayerManager,
-                        showControls = false,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                    MinimizedModeControl(
-                        isPlaying = isPlaying,
-                        onPlay = onPlay,
-                        onPause = onPause,
-                        onClose = onClose,
-                        onEnableFullScreenMode = onEnableFullScreenMode,
-                    )
-                }
+    Column(modifier = modifier.background(color = Color.Black)) {
+        // Video
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .aspectRatio(16f / 9f),
+        ) {
+            VisaraVideoPlayer(
+                showControls = false,
+                videoPlayerManager = videoPlayerManager,
+                modifier = Modifier.fillMaxSize()
+            )
+            if (!isFullScreenMode) {
+                MinimizedModeControl(
+                    isPlaying = isPlaying,
+                    onPlay = onPlay,
+                    onPause = onPause,
+                    onClose = onClose,
+                    onEnableFullScreenMode = onEnableFullScreenMode,
+                )
             }
-            // Info
-            Box(
+        }
+        // Info
+        Box(
+            modifier = Modifier
+                .offset { IntOffset(0, offsetY.value.roundToInt()) }
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                .background(MaterialTheme.colorScheme.background)
+        ) {
+            LazyColumn(
+                state = columnState,
                 modifier = Modifier
-                    .offset { IntOffset(0, offsetY.value.roundToInt()) }
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                    .background(MaterialTheme.colorScheme.background)
-            ) {
-                LazyColumn(
-                    state = columnState,
-                    modifier = Modifier
-                        .nestedScroll(nestedScrollConnection)
+                    .nestedScroll(nestedScrollConnection)
 //                        .height(dynamicHeight)
-                        .height(if (isFullScreenMode) dynamicHeight else 0.dp)
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                        .draggable(
-                            orientation = Orientation.Vertical,
-                            state = rememberDraggableState { delta ->
-                                scope.launch {
-                                    offsetY.snapTo((offsetY.value + delta).coerceAtLeast(0f))
-                                }
-                            },
-                            onDragStopped = { velocity ->
-                                scope.launch {
-                                    if (offsetY.value > thresholdPx) {
-                                        offsetY.animateTo(defaultHeightPx)
-                                    } else {
-                                        offsetY.animateTo(0f)
-                                    }
+                    .height(if (isFullScreenMode) dynamicHeight else 0.dp)
+                    .fillMaxWidth()
+                    .padding(8.dp)
+                    .draggable(
+                        orientation = Orientation.Vertical,
+                        state = rememberDraggableState { delta ->
+                            scope.launch {
+                                offsetY.snapTo((offsetY.value + delta).coerceAtLeast(0f))
+                            }
+                        },
+                        onDragStopped = { velocity ->
+                            scope.launch {
+                                if (offsetY.value > thresholdPx) {
+                                    offsetY.animateTo(defaultHeightPx)
+                                } else {
+                                    offsetY.animateTo(0f)
                                 }
                             }
-                        ),
-                    horizontalAlignment = Alignment.Start,
-                ) {
-                    // Title, description
-                    item {
-                        VideoHeaderSection()
-                    }
-                    // Author account info, subscribe button
-                    item {
-                        AuthorAccountInfoSection()
-                    }
-                    // Actions: like, share, download, save, report
-                    item {
-                        ActionsSection()
-                    }
-                    // Comment
-                    item {
-                        MinimizedCommentSection(
-                            onClick = { isOpenExpandedCommentSection = true }
-                        )
-                    }
-                    // Recommend videos
-                    items(5) {
-                        VideoItem(
-                            onVideoSelect = {},
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            videoHeight = 200.dp,
-                        )
-                        Spacer(Modifier.height(8.dp))
-                    }
+                        }
+                    ),
+                horizontalAlignment = Alignment.Start,
+            ) {
+                // Title, description
+                item {
+                    VideoHeaderSection(
+                        title = video?.title ?: "",
+                        createdAt = video?.createdAt ?: "",
+                        viewsCount = video?.viewsCount ?: 0L,
+                    )
                 }
+                // Author account info, subscribe button
+                item {
+                    AuthorAccountInfoSection()
+                }
+                // Actions: like, share, download, save, report
+                item {
+                    ActionsSection()
+                }
+                // Comment
+                item {
+                    MinimizedCommentSection(
+                        onClick = { isOpenExpandedCommentSection = true }
+                    )
+                }
+                // Recommend videos
+//                    items(5) {
+//                        VideoItem(
+//                            onVideoSelect = {},
+//                            modifier = Modifier
+//                                .fillMaxWidth(),
+//                            videoHeight = 200.dp,
+//                        )
+//                        Spacer(Modifier.height(8.dp))
+//                    }
+            }
 
-                Column(modifier = Modifier.background(color = Color.Transparent)) {
-                    AnimatedVisibility(
-                        visible = isOpenExpandedCommentSection,
-                        enter = slideInVertically(
-                            initialOffsetY = { fullHeight -> fullHeight },
-                        ),
-                        exit = slideOutVertically(
-                            targetOffsetY = { fullHeight -> fullHeight },
-                            animationSpec = tween(durationMillis = 200)
-                        ),
-                    ) {
-                        ExpandedCommentSection(
-                            modifier = Modifier
-                                .height(defaultHeight)
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                                .background(color = LocalVisaraCustomColors.current.expandedCommentSectionBackground)
-                                // Prevent unexpected drag down
-                                .draggable(
-                                    state = rememberDraggableState {  },
-                                    orientation = Orientation.Vertical,
-                                )
-                            ,
-                            onClose = { isOpenExpandedCommentSection = false }
-                        )
-                    }
+            Column(modifier = Modifier.background(color = Color.Transparent)) {
+                AnimatedVisibility(
+                    visible = isOpenExpandedCommentSection,
+                    enter = slideInVertically(
+                        initialOffsetY = { fullHeight -> fullHeight },
+                    ),
+                    exit = slideOutVertically(
+                        targetOffsetY = { fullHeight -> fullHeight },
+                        animationSpec = tween(durationMillis = 200)
+                    ),
+                ) {
+                    ExpandedCommentSection(
+                        modifier = Modifier
+                            .height(defaultHeight)
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                            .background(color = LocalVisaraCustomColors.current.expandedCommentSectionBackground)
+                            // Prevent unexpected drag down
+                            .draggable(
+                                state = rememberDraggableState { },
+                                orientation = Orientation.Vertical,
+                            ),
+                        onClose = { isOpenExpandedCommentSection = false }
+                    )
                 }
             }
         }

@@ -3,6 +3,7 @@ package com.example.visara.di
 import com.example.visara.data.remote.api.AuthApi
 import com.example.visara.data.remote.api.RefreshTokenApi
 import com.example.visara.data.remote.api.UserApi
+import com.example.visara.data.remote.api.VideoApi
 import com.google.gson.Gson
 import dagger.Module
 import dagger.Provides
@@ -38,5 +39,15 @@ object ApiModule {
     @Singleton
     fun provideRefreshTokenApi(@UnauthenticatedOkhttpClient unauthenticatedOkhttpClient: OkHttpClient) : RefreshTokenApi {
         return RefreshTokenApi(unauthenticatedOkhttpClient)
+    }
+
+    @Provides
+    @Singleton
+    fun provideVideoApi(
+        @AuthorizedOkHttpClient authorizedOkHttpClient: OkHttpClient,
+        @UnauthenticatedOkhttpClient unauthenticatedOkhttpClient: OkHttpClient,
+        gson: Gson,
+    ) : VideoApi {
+        return VideoApi(authorizedOkHttpClient, unauthenticatedOkhttpClient, gson)
     }
 }

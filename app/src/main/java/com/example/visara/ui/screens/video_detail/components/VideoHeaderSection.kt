@@ -15,9 +15,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.visara.ui.utils.formatViews
+import com.example.visara.ui.utils.toTimeAgo
 
 @Composable
-fun VideoHeaderSection() {
+fun VideoHeaderSection(
+    title: String,
+    createdAt: String,
+    viewsCount: Long,
+    hashtags: List<String> = emptyList(),
+) {
     Column(
         modifier = Modifier
             .clickable {
@@ -26,7 +33,7 @@ fun VideoHeaderSection() {
         ,
     ) {
         Text(
-            text = "FC Barcelona 1 vs 1 Betis | Laliga 2024/25 MD30",
+            text = title,
             overflow = TextOverflow.Ellipsis,
             maxLines = 2,
             fontWeight = FontWeight.W600,
@@ -37,8 +44,8 @@ fun VideoHeaderSection() {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(text = "22,007 views", color = MaterialTheme.colorScheme.onBackground)
-            Text(text = "8h ago", color = MaterialTheme.colorScheme.onBackground)
+            Text(text = formatViews(viewsCount), color = MaterialTheme.colorScheme.onBackground)
+            Text(text = createdAt.toTimeAgo(), color = MaterialTheme.colorScheme.onBackground)
             Text(text = "#BLVAnhQuan", color = MaterialTheme.colorScheme.onBackground)
             Text(text = "...more", color = MaterialTheme.colorScheme.onBackground)
         }

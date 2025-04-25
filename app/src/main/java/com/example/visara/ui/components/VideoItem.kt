@@ -1,5 +1,7 @@
 package com.example.visara.ui.components
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -29,32 +31,34 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import com.example.visara.data.model.VideoModel
+import com.example.visara.ui.utils.formatViews
+import com.example.visara.ui.utils.toTimeAgo
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun VideoItem(
     modifier: Modifier = Modifier,
+    state: VideoModel,
     videoHeight: Dp = 250.dp,
-    onVideoSelect: (videoId: String) -> Unit = {},
+    onVideoSelect: (video: VideoModel) -> Unit = {},
 ) {
-//    val cloudinaryImageUrl = "http://res.cloudinary.com/drnufn5sf/image/upload/v1743006773/videoplatform/thumbnail/67e42c30bb79412ece6f639a.jpg"
-    val cloudinaryImageUrl2 = "http://res.cloudinary.com/drnufn5sf/image/upload/v1743006316/videoplatform/thumbnail/67e42a68bb79412ece6f6399.jpg"
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = {onVideoSelect("best-video-id")})
+            .clickable(onClick = {onVideoSelect(state)})
     ) {
         Column {
             Box {
                 AsyncImage(
+                    model = state.thumbnailUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .height(videoHeight)
                         .fillMaxWidth()
                         .padding(horizontal = 4.dp)
                         .clip(RoundedCornerShape(10.dp))
-                    ,
-                    model = cloudinaryImageUrl2,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
                 )
 
                 Box(
@@ -89,7 +93,7 @@ fun VideoItem(
                             modifier = Modifier
                                 .weight(1f)
                             ,
-                            text = "FC Barcelona 1 vs 1 Betis | Laliga 2024/25 MD30",
+                            text = state.title,
                             overflow = TextOverflow.Ellipsis,
                             maxLines = 2,
                             fontWeight = FontWeight.W600,
@@ -106,15 +110,15 @@ fun VideoItem(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
                         Text(
-                            text = "FC Barcelona"
+                            text = state.userId.toString(),
                         )
                         Text("-")
                         Text(
-                            text = "601K views"
+                            text = formatViews(state.viewsCount)
                         )
                         Text("-")
                         Text(
-                            text = "10 hours ago"
+                            text = state.createdAt.toTimeAgo(),
                         )
                     }
                 }
@@ -122,12 +126,3 @@ fun VideoItem(
         }
     }
 }
-
-/*
-    val videoUrl = "http://10.0.2.2:8080/67d93e93ca386d2312a19f5c/output.mpd"
-    VideoPlayerDash(
-        modifier = Modifier.fillMaxWidth(),
-        url = videoUrl,
-    )
- */
-

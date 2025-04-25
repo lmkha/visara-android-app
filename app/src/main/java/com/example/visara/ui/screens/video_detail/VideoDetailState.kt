@@ -6,16 +6,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.media3.common.Player
+import com.example.visara.data.model.VideoModel
 import com.example.visara.ui.components.VideoPlayerManager
 
 class VideoDetailState(
     manager: VideoPlayerManager,
-    initialVideoId: String? = null,
     initialIsVisible: Boolean = false,
     initialIsFullScreenMode: Boolean = false,
-    initialIsMinimizedMode: Boolean = false,
 ) {
-    var videoId by mutableStateOf(initialVideoId)
+    var video by mutableStateOf<VideoModel?>(null)
+    var videoLink by mutableStateOf<String?>(null)
     var isVisible by mutableStateOf(initialIsVisible)
     var isPlaying by mutableStateOf(manager.player.isPlaying)
     var isFullScreenMode by mutableStateOf(initialIsFullScreenMode)
@@ -37,7 +37,7 @@ class VideoDetailState(
     }
 
     fun close() {
-        videoId = null
+        video = null
         isVisible = false
         isFullScreenMode = false
     }

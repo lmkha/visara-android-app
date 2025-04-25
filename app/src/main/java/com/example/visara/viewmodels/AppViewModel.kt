@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.visara.data.repository.AppSettingsRepository
 import com.example.visara.data.repository.AuthRepository
+import com.example.visara.data.repository.VideoRepository
 import com.example.visara.ui.theme.AppTheme
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,6 +20,7 @@ import javax.inject.Inject
 class AppViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val appSettingsRepository: AppSettingsRepository,
+    private val videoRepository: VideoRepository,
 ) : ViewModel() {
     private val themeKey = SettingsViewModel.THEME_KEY
 
@@ -48,6 +50,10 @@ class AppViewModel @Inject constructor(
                 _appState.update { it.copy(isLogged = isLogged) }
             }
         }
+    }
+
+    fun getVideoLink(videoId: String) : String {
+        return videoRepository.getVideoLink(videoId)
     }
 }
 

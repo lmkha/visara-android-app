@@ -47,9 +47,13 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.visara.R
+import com.example.visara.data.model.VideoModel
 import com.example.visara.ui.components.VideoItem
 import com.example.visara.ui.theme.LocalVisaraCustomColors
+import com.example.visara.viewmodels.HomeViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -57,10 +61,13 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    onVideoSelect: (videoId: String) -> Unit = {},
+    viewModel: HomeViewModel = hiltViewModel(),
+    onVideoSelect: (video: VideoModel) -> Unit = {},
     onOpenSearchOverlay: () -> Unit = {},
     bottomNavBar: @Composable () -> Unit,
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
     val suggestionTags = listOf(
         "football",
         "barca",
@@ -152,9 +159,10 @@ fun HomeScreen(
                             state = lazyColumnState,
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
-                            items(videoCount) {
+                            items(uiState.videos.size) { index->
                                 VideoItem(
-                                    onVideoSelect = { videoId -> onVideoSelect(videoId) },
+                                    state = uiState.videos[index],
+                                    onVideoSelect = { onVideoSelect(it) },
                                     modifier = Modifier.fillMaxWidth()
                                 )
                             }
