@@ -50,12 +50,12 @@ import kotlinx.coroutines.launch
 fun AddDescriptionBox(
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
+    initialDescription: String = "",
+    initialAddedHashTags: List<String> = emptyList(),
+    onSubmit: (description: String, addedHashtags: List<String>) -> Unit,
 ) {
-    var description by remember { mutableStateOf("") }
-    var addedHashtags by remember { mutableStateOf<List<String>>(listOf(
-        "football",
-        "champion league champion league",
-    )) }
+    var description by remember { mutableStateOf(initialDescription) }
+    var addedHashtags by remember { mutableStateOf<List<String>>(initialAddedHashTags) }
     var newHashtag by remember { mutableStateOf("") }
     val allHashtags = listOf<String>(
         "music",
@@ -126,7 +126,7 @@ fun AddDescriptionBox(
                 )
 
                 Button(
-                    onClick = {},
+                    onClick = { onSubmit(description, addedHashtags) },
                     modifier = Modifier
                         .padding(horizontal = 10.dp)
                 ) {

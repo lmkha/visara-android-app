@@ -1,4 +1,4 @@
-package com.example.visara.data.remote
+package com.example.visara.data.remote.common
 
 sealed class ApiResult<out T> {
     data class Success<out T>(val data: T) : ApiResult<T>()

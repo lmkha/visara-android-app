@@ -31,16 +31,16 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun PrivacySelectBox (
     modifier: Modifier = Modifier,
-    currentPrivacy: Privacy,
+    currentPrivacy: PrivacyState,
     onBack: () -> Unit = {},
-    onSelected: (value: Privacy) -> Unit = {_ -> },
+    onSelected: (value: PrivacyState) -> Unit = { _ -> },
 ) {
-    val options = listOf<Privacy>(
-        Privacy.ALL,
-        Privacy.FOLLOWER,
-        Privacy.ONLY_ME
+    val options = listOf<PrivacyState>(
+        PrivacyState.ALL,
+        PrivacyState.FOLLOWER,
+        PrivacyState.ONLY_ME
     )
-    var selectedOption by remember { mutableStateOf<Privacy>(currentPrivacy) }
+    var selectedOption by remember { mutableStateOf<PrivacyState>(currentPrivacy) }
 
     Column(
         modifier = modifier

@@ -4,7 +4,7 @@ import android.util.Log
 import com.example.visara.data.local.dao.UserDao
 import com.example.visara.data.local.datasource.AuthLocalDataSource
 import com.example.visara.data.model.toEntity
-import com.example.visara.data.remote.ApiResult
+import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.datasource.AuthRemoteDataSource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

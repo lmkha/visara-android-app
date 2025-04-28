@@ -19,3 +19,7 @@ data class RegisterAccountDto(
     @SerializedName("profilePic")
     val profileImageLink: String = "",
 )
+
+data class RefreshTokenDto(
+    val accessToken: String = "",
+)

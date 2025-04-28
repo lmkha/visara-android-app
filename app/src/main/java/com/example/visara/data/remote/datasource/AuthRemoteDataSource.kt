@@ -1,7 +1,7 @@
 package com.example.visara.data.remote.datasource
 
-import com.example.visara.data.remote.ApiError
-import com.example.visara.data.remote.ApiResult
+import com.example.visara.data.remote.common.ApiError
+import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.api.AuthApi
 import com.example.visara.data.remote.dto.UsernameAvailabilityDto
 import com.google.gson.Gson

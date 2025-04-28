@@ -17,15 +17,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import com.example.visara.ui.components.LocalVideoPlayerManager
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.visara.ui.components.video_player.LocalVideoPlayerManager
 import com.example.visara.ui.screens.add_new_video.components.enter_video_info.EnterVideoInfoStep
 import com.example.visara.ui.screens.add_new_video.components.review.ReviewSectionStep
 import com.example.visara.ui.screens.add_new_video.components.select.SelectVideoStep
+import com.example.visara.viewmodels.AddNewVideoViewModel
 import kotlinx.coroutines.launch
 
 @Composable
 fun AddNewVideoScreen(
     modifier: Modifier = Modifier,
+    viewModel: AddNewVideoViewModel = hiltViewModel(),
     videoPlayerManager: LocalVideoPlayerManager,
 ) {
     var videoUri by remember { mutableStateOf<Uri?>(null) }
@@ -76,6 +79,9 @@ fun AddNewVideoScreen(
                 EnterVideoInfoStep(
                     videoUri = videoUri,
                     onBack = { step -= 1 },
+                    onSubmit = { title, description, hashtags, privacy, isAllowComment, thumbnailUri ->
+                        viewModel.postVideo(videoUri, thumbnailUri, title, description, hashtags, privacy.value, isAllowComment)
+                    }
                 )
             }
             else -> { }

@@ -10,7 +10,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -34,7 +33,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -53,13 +51,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.example.visara.ui.components.UserAvatar
-import com.example.visara.ui.components.rememberDashVideoPlayerManager
-import com.example.visara.ui.components.rememberLocalVideoPlayerManager
+import com.example.visara.ui.components.video_player.rememberDashVideoPlayerManager
+import com.example.visara.ui.components.video_player.rememberLocalVideoPlayerManager
 import com.example.visara.ui.navigation.Destination
 import com.example.visara.ui.screens.add_new_video.AddNewVideoScreen
 import com.example.visara.ui.screens.following.FollowingScreen
 import com.example.visara.ui.screens.home.HomeScreen
-//import com.example.visara.ui.screens.login.LoginScreen
 import com.example.visara.ui.screens.inbox.InboxScreen
 import com.example.visara.ui.screens.login.LoginScreen
 import com.example.visara.ui.screens.profile.ProfileScreen
@@ -71,7 +68,6 @@ import com.example.visara.ui.screens.video_detail.VideoDetailScreen
 import com.example.visara.ui.screens.video_detail.rememberVideoDetailState
 import com.example.visara.ui.theme.VisaraTheme
 import com.example.visara.viewmodels.AppViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -171,13 +167,12 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
                             HomeScreen(
                                 onVideoSelect = { selectedVideo->
                                     scope.launch {
-                                        val videoLink = "http://10.0.2.2:8080/${selectedVideo.id}/output.mpd"
-//                                        val videoLink = viewModel.getVideoLink(selectedVideo.id)
-                                        dashPlayerManager.play(videoLink)
-                                        videoDetailState.videoLink = videoLink
-                                        videoDetailState.video = selectedVideo
-                                        videoDetailState.isVisible = true
-                                        videoDetailState.isFullScreenMode = true
+                                        viewModel.getVideoLink(selectedVideo.id).let {
+                                            dashPlayerManager.play(it)
+                                            videoDetailState.video = selectedVideo
+                                            videoDetailState.isVisible = true
+                                            videoDetailState.isFullScreenMode = true
+                                        }
                                     }
                                 },
                                 onOpenSearchOverlay = { navController.navigate(Destination.Search) },
@@ -318,7 +313,7 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
                         .fillMaxSize()
                         .statusBarsPadding()
                     else Modifier
-                        .width(300.dp)
+                        .width(250.dp)
                         .clip(RoundedCornerShape(15.dp))
                         .aspectRatio(16f / 9f)
                         .align(Alignment.BottomEnd)

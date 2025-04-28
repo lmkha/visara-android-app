@@ -1,10 +1,12 @@
 package com.example.visara.data.local.shared_preference
 
 import android.content.SharedPreferences
+import android.util.Base64
 import javax.inject.Inject
 import androidx.core.content.edit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 
 class TokenStorage @Inject constructor(
     private val encryptedSharedPreference: SharedPreferences,
@@ -48,6 +50,26 @@ class TokenStorage @Inject constructor(
     suspend fun removeRefreshToken() = withContext(Dispatchers.IO) {
         userSessionManager.getCurrentUsername()?.let {
             encryptedSharedPreference.edit { remove(keyRefreshToken) }
+        }
+    }
+    fun isTokenExpired(token: String): Boolean {
+        return try {
+            val parts = token.split(".")
+            if (parts.size != 3) return true
+
+            val payloadJson = String(Base64.decode(parts[1], Base64.URL_SAFE))
+            val payload = JSONObject(payloadJson)
+
+            if (!payload.has("exp")) {
+                return true
+            }
+
+            val exp = payload.getLong("exp")
+            val now = System.currentTimeMillis() / 1000
+
+            exp < now
+        } catch (_: Exception) {
+            true
         }
     }
 }

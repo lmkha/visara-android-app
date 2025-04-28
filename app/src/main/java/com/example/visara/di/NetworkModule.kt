@@ -1,6 +1,7 @@
 package com.example.visara.di
 
 import com.example.visara.data.local.shared_preference.TokenStorage
+import com.example.visara.data.local.shared_preference.UserSessionManager
 import com.example.visara.data.remote.api.RefreshTokenApi
 import com.example.visara.data.remote.interceptor.AuthInterceptor
 import com.example.visara.data.remote.interceptor.BaseUrlInterceptor
@@ -33,10 +34,11 @@ object NetworkModule {
     @Singleton
     fun provideTokenAuthenticator(
         tokenStorage: TokenStorage,
+        userSessionManager: UserSessionManager,
         refreshTokenApi: RefreshTokenApi,
         gson: Gson,
     ) : Authenticator {
-        return TokenAuthenticator(tokenStorage, refreshTokenApi, gson)
+        return TokenAuthenticator(tokenStorage, userSessionManager, refreshTokenApi, gson)
     }
 
     @AuthorizedOkHttpClient

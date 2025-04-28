@@ -1,6 +1,7 @@
 package com.example.visara.di
 
 import com.example.visara.data.remote.api.AuthApi
+import com.example.visara.data.remote.api.CommentApi
 import com.example.visara.data.remote.api.RefreshTokenApi
 import com.example.visara.data.remote.api.UserApi
 import com.example.visara.data.remote.api.VideoApi
@@ -37,8 +38,11 @@ object ApiModule {
 
     @Provides
     @Singleton
-    fun provideRefreshTokenApi(@UnauthenticatedOkhttpClient unauthenticatedOkhttpClient: OkHttpClient) : RefreshTokenApi {
-        return RefreshTokenApi(unauthenticatedOkhttpClient)
+    fun provideRefreshTokenApi(
+        @UnauthenticatedOkhttpClient unauthenticatedOkhttpClient: OkHttpClient,
+        gson: Gson,
+    ) : RefreshTokenApi {
+        return RefreshTokenApi(unauthenticatedOkhttpClient, gson)
     }
 
     @Provides
@@ -49,5 +53,15 @@ object ApiModule {
         gson: Gson,
     ) : VideoApi {
         return VideoApi(authorizedOkHttpClient, unauthenticatedOkhttpClient, gson)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCommentApi (
+        @AuthorizedOkHttpClient authorizedOkHttpClient: OkHttpClient,
+        @UnauthenticatedOkhttpClient unauthenticatedOkhttpClient: OkHttpClient,
+        gson: Gson,
+    ) : CommentApi {
+        return CommentApi(authorizedOkHttpClient, unauthenticatedOkhttpClient, gson)
     }
 }

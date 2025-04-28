@@ -32,14 +32,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -54,7 +50,6 @@ import com.example.visara.data.model.VideoModel
 import com.example.visara.ui.components.VideoItem
 import com.example.visara.ui.theme.LocalVisaraCustomColors
 import com.example.visara.viewmodels.HomeViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -77,11 +72,9 @@ fun HomeScreen(
         "rap",
         "information technology"
     )
-    var videoCount by remember { mutableIntStateOf(3) }
     val lazyColumnState = rememberLazyListState()
     val scrollBehavior: TopAppBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scope = rememberCoroutineScope()
-    var isRefreshing by remember { mutableStateOf(false) }
     val shouldLoadMore by remember {
         derivedStateOf {
             lazyColumnState.layoutInfo.visibleItemsInfo.lastOrNull()?.index == lazyColumnState.layoutInfo.totalItemsCount - 1
@@ -90,24 +83,6 @@ fun HomeScreen(
     val showButton by remember {
         derivedStateOf {
             lazyColumnState.firstVisibleItemIndex > 0
-        }
-    }
-
-    LaunchedEffect(shouldLoadMore) {
-        if (shouldLoadMore) {
-            scope.launch {
-                delay(2000)
-                videoCount += 3
-            }
-        }
-    }
-
-    LaunchedEffect(isRefreshing) {
-        if (isRefreshing) {
-            scope.launch {
-                delay(1000)
-                isRefreshing = false
-            }
         }
     }
 
@@ -149,8 +124,8 @@ fun HomeScreen(
                 )
 
                 PullToRefreshBox(
-                    isRefreshing = isRefreshing,
-                    onRefresh = { isRefreshing = true },
+                    isRefreshing = uiState.isRefreshing,
+                    onRefresh = { viewModel.refresh() },
                     modifier = Modifier.weight(1f)
                 ) {
                     Column(modifier = modifier.fillMaxSize()) {

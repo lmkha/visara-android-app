@@ -2,6 +2,9 @@ package com.example.visara.ui.screens.add_new_video.components.enter_video_info
 
 import android.net.Uri
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
@@ -20,7 +23,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -53,29 +55,44 @@ import androidx.compose.ui.zIndex
 import com.example.visara.R
 import com.example.visara.ui.theme.LocalVisaraCustomColors
 import coil3.compose.AsyncImage
+import com.example.visara.ui.components.VideoThumbnailFromUri
 
 @Composable
 fun EnterVideoInfoStep(
     modifier: Modifier = Modifier,
     videoUri: Uri? = null,
     onBack: () -> Unit,
+    onSubmit: (
+        title: String,
+        description: String,
+        hashtags: List<String>,
+        privacy: PrivacyState,
+        isAllowComment: Boolean,
+        thumbnailUri: Uri?,
+    ) -> Unit,
 ) {
-    val thumbnail = "http://res.cloudinary.com/drnufn5sf/image/upload/v1743007784/videoplatform/thumbnail/67e42e7fbb79412ece6f639b.jpg"
+    var thumbnailUri by remember { mutableStateOf<Uri?>(null) }
+    val pickMedia = rememberLauncherForActivityResult(PickVisualMedia()) { uri->
+        uri?.let { thumbnailUri = uri }
+    }
+
+    var title by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+    var hashTags by remember { mutableStateOf<List<String>>(emptyList()) }
+    var privacy by remember { mutableStateOf(PrivacyState.ALL) }
     var isAllowComment by remember { mutableStateOf(true) }
+    var selectedPlaylists by remember { mutableStateOf<List<String>>(emptyList()) }
+
     var openAddDescriptionBox by remember { mutableStateOf(false) }
     var openSelectPrivacyBox by remember { mutableStateOf(false) }
     var openAddPlaylistBox by remember { mutableStateOf(false) }
-    var privacyState by remember { mutableStateOf(Privacy.ALL) }
-    var selectedPlaylists by remember { mutableStateOf<List<String>>(emptyList()) }
 
     BackHandler(enabled = openSelectPrivacyBox) {
         openSelectPrivacyBox = false
     }
-
     BackHandler(enabled = openAddPlaylistBox) {
         openAddPlaylistBox = false
     }
-
     BackHandler(enabled = openAddDescriptionBox) {
         openAddDescriptionBox = false
     }
@@ -96,7 +113,6 @@ fun EnterVideoInfoStep(
                 }
             }
 
-            // Body
             Column(
                 modifier = Modifier
                     .padding(horizontal = 8.dp)
@@ -112,18 +128,21 @@ fun EnterVideoInfoStep(
                             .background(color = Color.Black),
                         contentAlignment = Alignment.Center,
                     ) {
-//                        VideoThumbnailFromUri(
-//                            uri = videoUri,
-//                            modifier = Modifier
-//                                .clip(RoundedCornerShape(8.dp))
-//                        )
-                        AsyncImage(
-                            model = thumbnail,
-                            contentDescription = null,
-                        )
+                        if (thumbnailUri != null) {
+                            AsyncImage(
+                                model = thumbnailUri,
+                                contentDescription = null,
+                                modifier = Modifier.clip(RoundedCornerShape(8.dp)),
+                            )
+                        } else {
+                            VideoThumbnailFromUri(
+                                uri = videoUri,
+                                modifier = Modifier.clip(RoundedCornerShape(8.dp))
+                            )
+                        }
                     }
                     IconButton(
-                        onClick = {},
+                        onClick = { pickMedia.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly)) },
                         colors = IconButtonDefaults.iconButtonColors(
                             contentColor = Color.White,
                             containerColor = Color.Black,
@@ -146,8 +165,8 @@ fun EnterVideoInfoStep(
 
                 // Title
                 TextField(
-                    value = "",
-                    onValueChange = {},
+                    value = title,
+                    onValueChange = { title = it },
                     placeholder = {
                         Text(
                             text = "Add title for video",
@@ -223,7 +242,7 @@ fun EnterVideoInfoStep(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Icon(
-                        painter = painterResource(id = privacyState.iconId),
+                        painter = painterResource(id = privacy.iconId),
                         contentDescription = null,
                     )
                     Column(modifier = Modifier.weight(1f)) {
@@ -231,7 +250,7 @@ fun EnterVideoInfoStep(
                             text = "Who can see this video",
                         )
                         Text(
-                            text = privacyState.label,
+                            text = privacy.label,
                             color = Color.Gray,
                         )
                     }
@@ -344,7 +363,7 @@ fun EnterVideoInfoStep(
                 }
 
                 Button(
-                    onClick = {},
+                    onClick = { onSubmit(title, description, hashTags, privacy, isAllowComment, thumbnailUri) },
                     modifier = Modifier
                         .height(50.dp)
                         .weight(1f),
@@ -374,7 +393,14 @@ fun EnterVideoInfoStep(
         ) {
             AddDescriptionBox(
                 onBack = { openAddDescriptionBox = false },
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                initialDescription = description,
+                initialAddedHashTags = hashTags,
+                onSubmit = { newDescription, newHashTags ->
+                    description = newDescription
+                    hashTags = newHashTags
+                    openAddDescriptionBox = false
+                }
             )
         }
 
@@ -392,10 +418,10 @@ fun EnterVideoInfoStep(
         ) {
             PrivacySelectBox(
                 modifier = Modifier.fillMaxSize(),
-                currentPrivacy = privacyState,
+                currentPrivacy = privacy,
                 onBack = { openSelectPrivacyBox = false },
                 onSelected = {
-                    privacyState = it
+                    privacy = it
                     openSelectPrivacyBox = false
                 }
             )
