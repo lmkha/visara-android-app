@@ -33,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -68,6 +69,7 @@ import com.example.visara.ui.screens.video_detail.VideoDetailScreen
 import com.example.visara.ui.screens.video_detail.rememberVideoDetailState
 import com.example.visara.ui.theme.VisaraTheme
 import com.example.visara.viewmodels.AppViewModel
+import com.example.visara.viewmodels.VideoDetailViewModel
 import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -75,6 +77,7 @@ import kotlinx.coroutines.launch
 fun App(viewModel: AppViewModel = hiltViewModel()) {
 
     val appState by viewModel.appState.collectAsStateWithLifecycle()
+    val videoDetailViewModel: VideoDetailViewModel = hiltViewModel()
 
     VisaraTheme(appTheme = appState.appTheme) {
         val scope = rememberCoroutineScope()
@@ -167,12 +170,12 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
                             HomeScreen(
                                 onVideoSelect = { selectedVideo->
                                     scope.launch {
-                                        viewModel.getVideoLink(selectedVideo.id).let {
-                                            dashPlayerManager.play(it)
-                                            videoDetailState.video = selectedVideo
-                                            videoDetailState.isVisible = true
-                                            videoDetailState.isFullScreenMode = true
-                                        }
+                                        val videoUrl = viewModel.getVideoUrl(selectedVideo.id)
+                                        dashPlayerManager.play(videoUrl)
+                                        videoDetailState.video = selectedVideo
+                                        videoDetailState.isVisible = true
+                                        videoDetailState.isFullScreenMode = true
+                                        videoDetailViewModel.setVideo(selectedVideo)
                                     }
                                 },
                                 onOpenSearchOverlay = { navController.navigate(Destination.Search) },
@@ -285,39 +288,43 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
                     .fillMaxSize()
                     .padding(bottom = 120.dp, end = 24.dp)
             ) {
-                VideoDetailScreen(
-                    video = videoDetailState.video,
-                    videoPlayerManager = dashPlayerManager,
-                    isFullScreenMode = videoDetailState.isFullScreenMode,
-                    onPlay = {
-                        scope.launch {
-                            dashPlayerManager.player.play()
-                        }
-                    },
-                    onPause = {
-                        scope.launch {
-                            dashPlayerManager.player.pause()
-                        }
-                    },
-                    onEnableFullScreenMode = {
-                        videoDetailState.enableFullScreenMode()
-                    },
-                    onClose = {
-                        scope.launch {
-                            dashPlayerManager.player.pause()
-                            videoDetailState.close()
-                        }
-                    },
-                    isPlaying = videoDetailState.isPlaying,
-                    modifier = if (videoDetailState.isFullScreenMode) Modifier
-                        .fillMaxSize()
-                        .statusBarsPadding()
-                    else Modifier
-                        .width(250.dp)
-                        .clip(RoundedCornerShape(15.dp))
-                        .aspectRatio(16f / 9f)
-                        .align(Alignment.BottomEnd)
-                )
+                videoDetailState.video?.let { videoModel->
+                    key(videoModel.id) {
+                        VideoDetailScreen(
+                            viewModel = videoDetailViewModel,
+                            videoPlayerManager = dashPlayerManager,
+                            isFullScreenMode = videoDetailState.isFullScreenMode,
+                            onPlay = {
+                                scope.launch {
+                                    dashPlayerManager.player.play()
+                                }
+                            },
+                            onPause = {
+                                scope.launch {
+                                    dashPlayerManager.player.pause()
+                                }
+                            },
+                            onEnableFullScreenMode = {
+                                videoDetailState.enableFullScreenMode()
+                            },
+                            onClose = {
+                                scope.launch {
+                                    dashPlayerManager.player.pause()
+                                    videoDetailState.close()
+                                }
+                            },
+                            isPlaying = videoDetailState.isPlaying,
+                            modifier = if (videoDetailState.isFullScreenMode) Modifier
+                                .fillMaxSize()
+                                .statusBarsPadding()
+                            else Modifier
+                                .width(250.dp)
+                                .clip(RoundedCornerShape(15.dp))
+                                .aspectRatio(16f / 9f)
+                                .align(Alignment.BottomEnd)
+                        )
+                    }
+                }
             }
         }
     }

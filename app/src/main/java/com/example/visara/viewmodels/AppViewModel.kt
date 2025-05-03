@@ -52,8 +52,8 @@ class AppViewModel @Inject constructor(
         }
     }
 
-    fun getVideoLink(videoId: String) : String {
-        return videoRepository.getVideoLink(videoId)
+    fun getVideoUrl(videoId: String) : String {
+        return videoRepository.getVideoUrl(videoId)
     }
 }
 

@@ -1,6 +1,5 @@
 package com.example.visara.data.repository
 
-import android.util.Log
 import com.example.visara.data.local.dao.UserDao
 import com.example.visara.data.local.datasource.AuthLocalDataSource
 import com.example.visara.data.model.toEntity
@@ -27,15 +26,17 @@ class AuthRepository @Inject constructor(
     suspend fun login(username: String, password: String): Boolean {
         val loginResult = authRemoteDataSource.login(username, password)
 
-        if (loginResult is ApiResult.Success && !loginResult.data.isEmpty()) {
+        if (loginResult is ApiResult.Success) {
             // Must set current username before saving token — token key depends on it.
             authLocalDataSource.setCurrentUsername(username)
-            val token = loginResult.data
-            authLocalDataSource.saveAccessToken(token)
+            val accessToken = loginResult.data.accessToken
+            val refreshToken = loginResult.data.refreshToken
+            authLocalDataSource.saveAccessToken(accessToken)
+            authLocalDataSource.saveRefreshToken(refreshToken)
+
             _isAuthenticated.value = true
 
             val currentUserModel = userRepository.getCurrentUser()
-            Log.i("CHECK_VAR", "current user model: ${currentUserModel.toString()}")
             val userEntity = currentUserModel?.toEntity()
             if (userEntity != null) {
                 userDao.insertUser(userEntity)

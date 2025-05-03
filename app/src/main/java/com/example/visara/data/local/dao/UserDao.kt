@@ -15,12 +15,12 @@ interface UserDao {
     suspend fun insertUser(user: UserEntity)
 
     @Query("SELECT * FROM users WHERE username = :username")
-    fun getUserByUsername(username: String): Flow<UserEntity>
+    fun getUserByUsername(username: String): Flow<UserEntity?>
 
     @Query("SELECT * FROM users")
     fun getAllUsers(): Flow<List<UserEntity>>
 
-    fun getUserByUsernameDistinctUntilChanged(username: String): Flow<UserEntity> {
+    fun getUserByUsernameDistinctUntilChanged(username: String): Flow<UserEntity?> {
         return getUserByUsername(username).distinctUntilChanged()
     }
 }

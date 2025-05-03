@@ -23,6 +23,20 @@ class VideoApi @Inject constructor(
     @UnauthenticatedOkhttpClient private val unauthorizedOkHttpClient: OkHttpClient,
     private val gson: Gson,
 ) {
+    fun getVideoById(videoId: String) : Response {
+        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+            .addPathSegment("videos")
+            .addPathSegment(videoId)
+            .build()
+
+        val request: Request = Request.Builder()
+            .url(url)
+            .get()
+            .build()
+
+        return unauthorizedOkHttpClient.newCall(request).execute()
+    }
+
     fun getRandomVideos(numOfVideos: Int = 10) : Response {
         val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
             .addPathSegments("videos/random")

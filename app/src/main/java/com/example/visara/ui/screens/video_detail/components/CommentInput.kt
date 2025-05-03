@@ -17,6 +17,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -29,12 +30,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.visara.R
+import com.example.visara.data.model.UserModel
 import com.example.visara.ui.components.UserAvatar
 
 @Composable
 fun CommentInput(
     modifier: Modifier = Modifier,
+    currentUser: UserModel? = null,
     state: CommentInputState,
+    onSubmit: () -> Unit,
 ) {
     Box(modifier = modifier) {
         HorizontalDivider(color = MaterialTheme.colorScheme.onBackground)
@@ -48,7 +52,10 @@ fun CommentInput(
                     horizontal = 8.dp,
                 )
         ) {
-            UserAvatar(modifier = Modifier.size(56.dp))
+            UserAvatar(
+                avatarLink = currentUser?.networkAvatarUrl,
+                modifier = Modifier.size(56.dp)
+            )
             TextField(
                 modifier = Modifier
                     .weight(1f)
@@ -82,7 +89,7 @@ fun CommentInput(
                         }
                         if (state.content.isNotEmpty()) {
                             IconButton(
-                                onClick = {},
+                                onClick = onSubmit,
                                 modifier = Modifier
                                     .background(
                                         if (state.content.isNotEmpty()) MaterialTheme.colorScheme.primary
@@ -107,7 +114,16 @@ fun CommentInput(
 class CommentInputState {
     var content by mutableStateOf("")
     var repliedUsername by mutableStateOf<String?>(null)
+    var repliedCommentId by mutableStateOf<String?>(null)
+    var parentIndex by mutableIntStateOf(0)
     var focusRequester = FocusRequester()
+
+    fun reset() {
+        content = ""
+        repliedUsername = null
+        repliedCommentId = null
+        parentIndex = 0
+    }
 }
 
 @Composable

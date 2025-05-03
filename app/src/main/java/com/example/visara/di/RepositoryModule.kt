@@ -3,6 +3,7 @@ package com.example.visara.di
 import android.content.Context
 import com.example.visara.data.local.dao.UserDao
 import com.example.visara.data.local.datasource.AuthLocalDataSource
+import com.example.visara.data.local.datasource.UserLocalDataSource
 import com.example.visara.data.remote.datasource.AuthRemoteDataSource
 import com.example.visara.data.remote.datasource.CommentRemoteDataSource
 import com.example.visara.data.remote.datasource.UserRemoteDataSource
@@ -38,10 +39,10 @@ object RepositoryModule {
     @Singleton
     fun provideUserRepository(
         userRemoteDataSource: UserRemoteDataSource,
+        userLocalDataSource: UserLocalDataSource,
     ) : UserRepository {
-        return UserRepository(userRemoteDataSource)
+        return UserRepository(userRemoteDataSource, userLocalDataSource)
     }
-
 
     @Provides
     @Singleton
@@ -62,7 +63,8 @@ object RepositoryModule {
     @Singleton
     fun provideCommentRepository(
         commentRemoteDataSource: CommentRemoteDataSource,
+        authRepository: AuthRepository,
     ) : CommentRepository {
-        return CommentRepository(commentRemoteDataSource)
+        return CommentRepository(commentRemoteDataSource, authRepository)
     }
 }

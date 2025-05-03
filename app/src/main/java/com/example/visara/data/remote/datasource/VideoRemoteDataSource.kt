@@ -1,6 +1,7 @@
 package com.example.visara.data.remote.datasource
 
 import android.util.Log
+import com.example.visara.data.model.VideoModel
 import com.example.visara.data.remote.common.ApiError
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.api.VideoApi
@@ -16,6 +17,30 @@ class VideoRemoteDataSource @Inject constructor(
     private val videoApi: VideoApi,
     private val gson: Gson,
 ) {
+    suspend fun getVideoById(videoId: String) : ApiResult<VideoModel> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = videoApi.getVideoById(videoId)
+                val responseBody = response.body?.string()
+
+                if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
+                    val jsonObject = gson.fromJson(responseBody, Map::class.java)
+                    val dataJson = gson.toJson(jsonObject["data"])
+                    val videoModel = gson.fromJson(dataJson, VideoModel::class.java)
+                    ApiResult.Success(videoModel)
+                } else  ApiResult.Failure(
+                    ApiError(
+                        code = response.code,
+                        errorCode = response.code.toString(),
+                        message = response.message,
+                        rawBody = responseBody
+                    )
+                )
+            } catch (e : Exception) {
+                ApiResult.Error(e)
+            }
+        }
+    }
     suspend fun getRandomVideos(numOfVideos: Int = 10) : ApiResult<List<VideoDto>> {
         return withContext(Dispatchers.IO) {
             try {

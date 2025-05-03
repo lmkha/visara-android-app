@@ -3,6 +3,7 @@ package com.example.visara.data.remote.datasource
 import com.example.visara.data.remote.common.ApiError
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.api.AuthApi
+import com.example.visara.data.remote.dto.LoginDto
 import com.example.visara.data.remote.dto.UsernameAvailabilityDto
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
@@ -13,7 +14,7 @@ class AuthRemoteDataSource @Inject constructor(
     private val authApi: AuthApi,
     private val gson: Gson,
 ) {
-    suspend fun login(username: String, password: String): ApiResult<String> {
+    suspend fun login(username: String, password: String): ApiResult<LoginDto> {
         return withContext(Dispatchers.IO) {
             try {
                 val response = authApi.login(username, password)
@@ -21,10 +22,11 @@ class AuthRemoteDataSource @Inject constructor(
 
                 if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
                     val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                    val data = jsonObject["data"]
-                    val token = if (data is String && data.isNotBlank()) data else null
+                    val dataJson = gson.toJson(jsonObject["data"])
+                    val loginDto = gson.fromJson(dataJson, LoginDto::class.java)
 
-                    if (!token.isNullOrEmpty()) ApiResult.Success(token)
+                    if (loginDto.refreshToken.isNotBlank() && loginDto.accessToken.isNotBlank())
+                        ApiResult.Success(loginDto)
                     else ApiResult.Failure(
                         ApiError(
                             code = response.code,

@@ -4,6 +4,7 @@ import com.example.visara.BuildConfig
 import com.example.visara.di.UnauthenticatedOkhttpClient
 import com.google.gson.Gson
 import okhttp3.HttpUrl.Companion.toHttpUrl
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -22,7 +23,7 @@ class RefreshTokenApi @Inject constructor(
 
         val requestBody: RequestBody = gson.toJson(
             mapOf("username" to username)
-        ).toRequestBody()
+        ).toRequestBody("application/json".toMediaTypeOrNull())
 
         val request = Request.Builder()
             .url(url)

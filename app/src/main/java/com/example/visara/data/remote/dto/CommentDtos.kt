@@ -1,6 +1,7 @@
 package com.example.visara.data.remote.dto
 
-import com.google.gson.annotations.SerializedName
+import com.example.visara.data.model.CommentModel
+
 
 data class CommentDto(
     val createdAt: String = "",
@@ -9,16 +10,32 @@ data class CommentDto(
     val videoId: String = "",
     val userId: Long = 0L,
     val username: String = "",
-    @SerializedName("userFullname") val userFullName: String = "",
-    val userAvatarLink: String = "",
+    val userFullname: String = "",
+    val userProfilePic: String = "",
     val content: String = "",
     val replyTo: String? = null,
     val likeCount: Long = 0L,
     val replyCount: Long = 0L,
     val isEdited: Boolean = false,
+    val liked: Boolean = false,
 ) {
-    fun toCommentModel() {
-
+    fun toCommentModel() : CommentModel {
+        return CommentModel(
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+            id = id,
+            userId = userId,
+            videoId = videoId,
+            username = username,
+            userFullName = userFullname,
+            userAvatarUrl = userProfilePic,
+            content = content,
+            replyTo = replyTo,
+            likeCount = likeCount,
+            replyCount = replyCount,
+            isEdited = isEdited,
+            isLiked = liked,
+        )
     }
 }
 

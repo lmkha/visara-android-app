@@ -20,6 +20,13 @@ class VideoRepository @Inject constructor(
     private val videoRemoteDataSource: VideoRemoteDataSource,
     private val appContext: Context,
 ) {
+    suspend fun getVideoById(videoId: String) : VideoModel? {
+        val apiResult = videoRemoteDataSource.getVideoById(videoId)
+        if (apiResult is ApiResult.Success) {
+            return apiResult.data
+        }
+        return null
+    }
     suspend fun getVideoForHomeScreen(): List<VideoModel>? {
         return withContext(Dispatchers.IO) {
             val videoListResult = videoRemoteDataSource.getRandomVideos(50)
@@ -33,7 +40,7 @@ class VideoRepository @Inject constructor(
         }
     }
 
-    fun getVideoLink(videoId: String) : String {
+    fun getVideoUrl(videoId: String) : String {
         return "http://10.0.2.2:8080/${videoId}/output.mpd"
     }
 

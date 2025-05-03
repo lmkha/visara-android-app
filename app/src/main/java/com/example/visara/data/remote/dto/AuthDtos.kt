@@ -2,6 +2,11 @@ package com.example.visara.data.remote.dto
 
 import com.google.gson.annotations.SerializedName
 
+data class LoginDto(
+    val refreshToken: String = "",
+    val accessToken: String = "",
+)
+
 data class UsernameAvailabilityDto(
     val isExisted: Boolean = false
 )

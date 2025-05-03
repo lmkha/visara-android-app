@@ -20,11 +20,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.visara.ui.theme.LocalVisaraCustomColors
+import com.example.visara.viewmodels.CommentWithReplies
 
 @Composable
 fun ExpandedCommentSection(
     modifier: Modifier = Modifier,
-    onClose: () -> Unit
+    commentList: List<CommentWithReplies>,
+    onFetchReplies: (parentIndex: Int) -> Unit,
+    onLikeComment: (
+        commentId: String,
+        isUnlike: Boolean,
+        onImplementImmediateWhenAuthenticated: () -> Unit,
+        onFailure: () -> Unit,
+    ) -> Unit,
+    addComment: (
+        content: String,
+        parentId: String?,
+        parentIndex: Int
+    ) -> Unit,
+    onClose: () -> Unit,
 ) {
     val headerHeight = 50.dp
     val commentInputHeight = 100.dp
@@ -66,12 +80,18 @@ fun ExpandedCommentSection(
             ,
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(8) {
+            items(commentList.size) { index->
                 ParentCommentItem(
-                    onReply = {
-                        commentInputState.repliedUsername = "manrucdit"
+                    commentWithReplies = commentList.getOrNull(index = index),
+                    onReply = { commentId, username->
+                        commentInputState.reset()
+                        commentInputState.repliedUsername = username
+                        commentInputState.repliedCommentId = commentId
+                        commentInputState.parentIndex = index
                         commentInputState.focusRequester.requestFocus()
-                    }
+                    },
+                    fetchChildrenComment = { onFetchReplies(index) },
+                    onLikeComment = onLikeComment
                 )
             }
         }
@@ -83,6 +103,15 @@ fun ExpandedCommentSection(
                 .align(Alignment.BottomStart)
             ,
             state = commentInputState,
+            onSubmit = {
+                addComment(
+                    commentInputState.content,
+                    commentInputState.repliedCommentId,
+                    commentInputState.parentIndex,
+                )
+                commentInputState.reset()
+                commentInputState.focusRequester.freeFocus()
+            },
         )
     }
 }

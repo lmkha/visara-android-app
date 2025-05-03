@@ -24,10 +24,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,7 +39,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
-import com.example.visara.data.model.VideoModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.visara.ui.components.video_player.DashVideoPlayerManager
 import com.example.visara.ui.components.video_player.TestVideoPlayer
 import com.example.visara.ui.screens.video_detail.components.ActionsSection
@@ -51,13 +49,14 @@ import com.example.visara.ui.screens.video_detail.components.MinimizedCommentSec
 import com.example.visara.ui.screens.video_detail.components.MinimizedModeControl
 import com.example.visara.ui.screens.video_detail.components.VideoHeaderSection
 import com.example.visara.ui.theme.LocalVisaraCustomColors
+import com.example.visara.viewmodels.VideoDetailViewModel
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 @Composable
 fun VideoDetailScreen(
     modifier: Modifier = Modifier,
-    video: VideoModel? = null,
+    viewModel: VideoDetailViewModel,
     videoPlayerManager: DashVideoPlayerManager,
     isFullScreenMode: Boolean,
     isPlaying: Boolean,
@@ -66,6 +65,7 @@ fun VideoDetailScreen(
     onClose: () -> Unit,
     onEnableFullScreenMode: () -> Unit,
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val thresholdDp: Dp = 300.dp
     val defaultHeight = 600.dp
@@ -97,11 +97,10 @@ fun VideoDetailScreen(
             }
         }
     }
-    var isOpenExpandedCommentSection by remember { mutableStateOf(false) }
 
-    if (isOpenExpandedCommentSection) {
+    if (uiState.isOpenExpandedCommentSection) {
         BackHandler {
-            isOpenExpandedCommentSection = false
+            viewModel.minimizeCommentSection()
         }
     }
 
@@ -166,9 +165,9 @@ fun VideoDetailScreen(
                 // Title, description
                 item {
                     VideoHeaderSection(
-                        title = video?.title ?: "",
-                        createdAt = video?.createdAt ?: "",
-                        viewsCount = video?.viewsCount ?: 0L,
+                        title = uiState.video.title,
+                        createdAt = uiState.video.createdAt,
+                        viewsCount = uiState.video.viewsCount,
                     )
                 }
                 // Author account info, subscribe button
@@ -182,24 +181,29 @@ fun VideoDetailScreen(
                 // Comment
                 item {
                     MinimizedCommentSection(
-                        onClick = { isOpenExpandedCommentSection = true }
+                        commentsCount = uiState.video.commentsCount,
+                        coverComment = uiState.commentList.firstOrNull()?.comment,
+                        onClick = { viewModel.expandCommentSection() }
                     )
                 }
                 // Recommend videos
-//                    items(5) {
-//                        VideoItem(
-//                            onVideoSelect = {},
-//                            modifier = Modifier
-//                                .fillMaxWidth(),
-//                            videoHeight = 200.dp,
-//                        )
-//                        Spacer(Modifier.height(8.dp))
-//                    }
+                /*
+                    items(5) {
+                        VideoItem(
+                            onVideoSelect = {},
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            videoHeight = 200.dp,
+                        )
+                        Spacer(Modifier.height(8.dp))
+                    }
+                 */
             }
 
+            // Wrap content in column to use slideInVertically and slideOutVertically
             Column(modifier = Modifier.background(color = Color.Transparent)) {
                 AnimatedVisibility(
-                    visible = isOpenExpandedCommentSection,
+                    visible = uiState.isOpenExpandedCommentSection,
                     enter = slideInVertically(
                         initialOffsetY = { fullHeight -> fullHeight },
                     ),
@@ -219,7 +223,27 @@ fun VideoDetailScreen(
                                 state = rememberDraggableState { },
                                 orientation = Orientation.Vertical,
                             ),
-                        onClose = { isOpenExpandedCommentSection = false }
+                        commentList = uiState.commentList,
+                        onClose = {viewModel.minimizeCommentSection() },
+                        onFetchReplies = { parentIndex -> viewModel.fetchChildrenComment(parentIndex) },
+                        onLikeComment = {
+                                commentId: String,
+                                current: Boolean,
+                                onImplementImmediateWhenAuthenticated: () -> Unit,
+                                onFailure: () -> Unit
+                            ->
+                            if (uiState.isUserAuthenticated) {
+                                onImplementImmediateWhenAuthenticated()
+                                viewModel.changeCommentLike(
+                                    current = current,
+                                    commentId = commentId,
+                                    onFailure = onFailure
+                                )
+                            }
+                        },
+                        addComment = { content, parentId, parentIndex ->
+                            viewModel.addComment(content, parentId, parentIndex)
+                        }
                     )
                 }
             }

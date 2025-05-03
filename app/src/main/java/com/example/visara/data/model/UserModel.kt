@@ -16,11 +16,8 @@ data class UserModel(
     val isVerified: Boolean = false,
     val followerCount: Long = 0L,
     val followingCount: Long = 0L,
-) {
-    override fun toString(): String {
-        return "[UserModel] id = $id, username = $username, email = $email, phone = $phone"
-    }
-}
+)
+
 fun UserModel.toEntity(): UserEntity = UserEntity(
     username = username,
     id = id,

@@ -1,5 +1,6 @@
 package com.example.visara.data.remote.datasource
 
+import android.util.Log
 import com.example.visara.data.remote.api.CommentApi
 import com.example.visara.data.remote.common.ApiError
 import com.example.visara.data.remote.common.ApiResult
@@ -15,11 +16,16 @@ class CommentRemoteDataSource @Inject constructor(
     private val commentApi: CommentApi,
     private val gson: Gson,
 ) {
-    suspend fun addComment(videoId: String, replyTo: String, content: String) : ApiResult<CommentDto> {
+    suspend fun addComment(videoId: String, replyTo: String?, content: String) : ApiResult<CommentDto> {
         return withContext(Dispatchers.IO) {
             try {
                 val response = commentApi.addComment(videoId, replyTo, content)
                 val responseBody = response.body?.string()
+                Log.i("CHECK_VAR", "video id : $videoId")
+                Log.i("CHECK_VAR", "replyTo: $replyTo")
+                Log.i("CHECK_VAR", "content: $content")
+                Log.i("CHECK_VAR", "Add comment response: ${response.toString()}")
+                Log.i("CHECK_VAR", "Add comment responseBody: ${responseBody.toString()}")
 
                 if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
                     val jsonObject =  gson.fromJson(responseBody, Map::class.java)
@@ -70,6 +76,7 @@ class CommentRemoteDataSource @Inject constructor(
     }
 
     suspend fun getAllParentCommentsByVideoId(
+        needAuthenticate: Boolean = false,
         videoId: String,
         order: String,
         page: Int = 0,
@@ -77,7 +84,7 @@ class CommentRemoteDataSource @Inject constructor(
     ) : ApiResult<List<CommentDto>> {
         return withContext(Dispatchers.IO) {
             try {
-                val response = commentApi.getAllParentCommentsByVideoId(videoId, order, page, size)
+                val response = commentApi.getAllParentCommentsByVideoId(needAuthenticate, videoId, order, page, size)
                 val responseBody = response.body?.string()
 
                 if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
@@ -103,6 +110,7 @@ class CommentRemoteDataSource @Inject constructor(
     }
 
     suspend fun getAllChildrenComment(
+        needAuthenticate: Boolean = false,
         parentId: String,
         order: String,
         page: Int = 0,
@@ -110,7 +118,7 @@ class CommentRemoteDataSource @Inject constructor(
     ) : ApiResult<List<CommentDto>> {
         return withContext(Dispatchers.IO) {
             try {
-                val response = commentApi.getAllChildrenComment(parentId, order, page, size)
+                val response = commentApi.getAllChildrenComment(needAuthenticate, parentId, order, page, size)
                 val responseBody = response.body?.string()
 
                 if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
@@ -165,7 +173,7 @@ class CommentRemoteDataSource @Inject constructor(
     suspend fun unlikeComment(commentId: String) : ApiResult<Unit> {
         return withContext(Dispatchers.IO) {
             try {
-                val response = commentApi.likeComment(commentId)
+                val response = commentApi.unlikeComment(commentId)
                 val responseBody = response.body?.string()
 
                 if (response.isSuccessful && !responseBody.isNullOrEmpty()) {

@@ -2,6 +2,9 @@ package com.example.visara.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -12,16 +15,22 @@ import coil3.compose.AsyncImage
 @Composable
 fun UserAvatar(
     modifier: Modifier = Modifier,
+    avatarLink: String? = null,
 ) {
-    val userImgLink = "http://res.cloudinary.com/drnufn5sf/image/upload/v1743007869/videoplatform/profile/152.jpg"
-//    val barcelona = "http://res.cloudinary.com/drnufn5sf/image/upload/v1742437855/videoplatform/profile/102.png"
-
-    AsyncImage(
-        model = userImgLink,
-        contentDescription = null,
-        contentScale = ContentScale.Crop,
-        modifier = modifier
-            .clip(CircleShape)
-            .background(Color.Black)
-    )
+    if (avatarLink != null) {
+        AsyncImage(
+            model = avatarLink,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = modifier
+                .clip(CircleShape)
+                .background(Color.Black)
+        )
+    } else {
+        Icon(
+            imageVector = Icons.Default.AccountCircle,
+            contentDescription = null,
+            modifier = modifier,
+        )
+    }
 }

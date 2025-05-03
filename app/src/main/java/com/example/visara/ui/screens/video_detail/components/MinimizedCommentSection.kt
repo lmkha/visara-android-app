@@ -19,13 +19,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.example.visara.data.model.CommentModel
 import com.example.visara.ui.components.UserAvatar
 
 @Composable
 fun MinimizedCommentSection(
+    commentsCount: Long = 0L,
+    coverComment: CommentModel?,
     onClick: () -> Unit,
 ) {
     Box(
@@ -42,22 +46,38 @@ fun MinimizedCommentSection(
                 .fillMaxSize()
                 .padding(8.dp)
         ) {
-            Text(
-                text = "Comments",
-                color = MaterialTheme.colorScheme.onSurface,
-                fontWeight = FontWeight.Medium,
-            )
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.Top,
             ) {
-                UserAvatar(modifier = Modifier.size(36.dp))
                 Text(
-                    text = "bài hát khá là hay giai điệu khá là tuyệt vời một bài hát truyền cảm hứng tới dân bay phòng bay bar, một bài nhạc rất thích hợp với kẹo và keee, ông nào chơi vào mà nghe bài này chắc lên tận cung trăng. Nói chung là nhạc siêu hay",
+                    text = "Comments",
                     color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = FontWeight.Medium,
                 )
+
+                Text(
+                    text = commentsCount.toString(),
+                    color = Color.Gray,
+                    fontWeight = FontWeight.Medium,
+                )
+            }
+
+            coverComment?.let {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    UserAvatar(
+                        avatarLink = coverComment.userAvatarUrl,
+                        modifier = Modifier.size(36.dp)
+                    )
+                    Text(
+                        text = it.content,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
         }
     }

@@ -1,6 +1,6 @@
 package com.example.visara.data.remote.api
 
-import androidx.media3.exoplayer.dash.manifest.BaseUrl
+import android.util.Log
 import com.example.visara.BuildConfig
 import com.example.visara.di.AuthorizedOkHttpClient
 import com.example.visara.di.UnauthenticatedOkhttpClient
@@ -21,18 +21,21 @@ class CommentApi @Inject constructor(
     private val gson: Gson,
 ) {
 
-    fun addComment(videoId: String, replyTo: String, content: String) : Response {
+    fun addComment(videoId: String, replyTo: String?, content: String) : Response {
         val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
             .addPathSegments("comments/")
             .build()
 
-        val requestBody: RequestBody = gson.toJson(
-            mapOf(
-                "videoId" to videoId,
-                "replyTo" to replyTo,
-                "content" to content,
-            )
-        ).toRequestBody("application/json".toMediaTypeOrNull())
+        val payload = mutableMapOf<String, Any>(
+            "videoId" to videoId,
+            "content" to content,
+        )
+        replyTo?.let { payload["replyTo"] = it }
+
+        Log.i("CHECK_VAR", "payload: ${payload.toString()}")
+
+        val requestBody: RequestBody = gson.toJson(payload)
+            .toRequestBody("application/json".toMediaTypeOrNull())
 
         val request: Request = Request.Builder()
             .url(url)
@@ -57,13 +60,21 @@ class CommentApi @Inject constructor(
     }
 
     fun getAllParentCommentsByVideoId(
+        needAuthenticate: Boolean = false,
         videoId: String,
         order: String,
         page: Int = 0,
         size: Int = 10,
     ) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
-            .addPathSegments("comments/video/parent")
+        val urlBuilder: HttpUrl.Builder = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+
+        if (needAuthenticate) {
+            urlBuilder.addPathSegments("comments/video/parent/authenticated")
+        } else {
+            urlBuilder.addPathSegments("comments/video/parent")
+        }
+
+        val url: HttpUrl = urlBuilder
             .addPathSegment(videoId)
             .addQueryParameter("order", order)
             .addQueryParameter("page", page.toString())
@@ -75,18 +86,27 @@ class CommentApi @Inject constructor(
             .get()
             .build()
 
-        return unauthorizedOkHttpClient.newCall(request).execute()
+        return if (needAuthenticate) authorizedOkHttpClient.newCall(request).execute()
+        else unauthorizedOkHttpClient.newCall(request).execute()
     }
     fun getAllChildrenComment(
+        needAuthenticate: Boolean = false,
         parentId: String,
         order: String,
         page: Int = 0,
         size: Int = 10,
     ) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val urlBuilder= BuildConfig.BASE_URL.toHttpUrl().newBuilder()
             .addPathSegment("comments")
             .addPathSegment(parentId)
-            .addPathSegment("children")
+
+        if (needAuthenticate) {
+            urlBuilder.addPathSegments("children/authenticated")
+        } else {
+            urlBuilder.addPathSegment("children")
+        }
+
+        val url: HttpUrl = urlBuilder
             .addQueryParameter("order", order)
             .addQueryParameter("page", page.toString())
             .addQueryParameter("size", size.toString())
@@ -97,7 +117,8 @@ class CommentApi @Inject constructor(
             .get()
             .build()
 
-        return unauthorizedOkHttpClient.newCall(request).execute()
+        return if (needAuthenticate) authorizedOkHttpClient.newCall(request).execute()
+        else unauthorizedOkHttpClient.newCall(request).execute()
     }
 
     fun likeComment(commentId: String) : Response {

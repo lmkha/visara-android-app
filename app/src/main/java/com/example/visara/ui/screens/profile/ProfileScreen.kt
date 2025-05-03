@@ -75,10 +75,13 @@ import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.example.visara.R
 import com.example.visara.ui.components.UserAvatar
 import com.example.visara.ui.theme.LocalVisaraCustomColors
+import com.example.visara.viewmodels.ProfileViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -86,6 +89,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun ProfileScreen(
     modifier: Modifier = Modifier,
+    viewModel: ProfileViewModel = hiltViewModel(),
     isMyProfile: Boolean = false,
     bottomNavBar: @Composable () -> Unit,
     onBack: () -> Unit,
@@ -93,6 +97,7 @@ fun ProfileScreen(
     onNavigateToStudioScreen: () -> Unit,
     onNavigateToQRCodeScreen: () -> Unit,
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
     var displayBottomSheet by remember { mutableStateOf(false) }
     var mainScrollState = rememberLazyListState()
@@ -213,7 +218,10 @@ fun ProfileScreen(
                         horizontalArrangement = Arrangement.Center,
                     ) {
                         Box(modifier = Modifier.size(120.dp)) {
-                            UserAvatar(modifier = Modifier.size(120.dp))
+                            UserAvatar(
+                                avatarLink = uiState.user?.networkAvatarUrl,
+                                modifier = Modifier.size(120.dp)
+                            )
                             if (isMyProfile) {
                                 Box(
                                     contentAlignment = Alignment.Center,
@@ -245,12 +253,12 @@ fun ProfileScreen(
                             .padding(top = 8.dp),
                     ) {
                         Text(
-                            text = "lmkha27",
+                            text = uiState.user?.username ?: "username",
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                         )
                         Text(
-                            text = "lmkha27",
+                            text = uiState.user?.fullName ?: "Full Name",
                             fontWeight = FontWeight.Normal,
                             color = Color.Gray,
                         )

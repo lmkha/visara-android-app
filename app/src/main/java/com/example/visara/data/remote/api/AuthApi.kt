@@ -19,7 +19,7 @@ class AuthApi @Inject constructor(
 ) {
     fun login(username: String, password: String): Response {
         val url = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
-            .addPathSegments("auth/signIn")
+            .addPathSegments("auth/sign-in")
             .build()
 
         val requestBody = gson.toJson(
