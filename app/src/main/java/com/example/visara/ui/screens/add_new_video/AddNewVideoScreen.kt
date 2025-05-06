@@ -28,7 +28,6 @@ import kotlinx.coroutines.launch
 fun AddNewVideoScreen(
     modifier: Modifier = Modifier,
     viewModel: AddNewVideoViewModel = hiltViewModel(),
-    videoPlayerManager: LocalVideoPlayerManager,
 ) {
     var videoUri by remember { mutableStateOf<Uri?>(null) }
     val scope = rememberCoroutineScope()
@@ -37,7 +36,7 @@ fun AddNewVideoScreen(
         videoUri = uri
         uri?.let {
             scope.launch {
-                videoPlayerManager.play(it)
+                viewModel.manager.play(it)
                 step = 2
             }
         }
@@ -66,7 +65,7 @@ fun AddNewVideoScreen(
             2 -> {
                 if (videoUri != null) {
                     ReviewSectionStep(
-                        videoPlayerManager = videoPlayerManager,
+                        videoPlayerManager = viewModel.manager,
                         modifier = modifier,
                         onBack = { step -= 1 },
                         onGoNext = { step += 1 },

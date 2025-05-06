@@ -46,7 +46,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.visara.R
-import com.example.visara.data.model.VideoModel
 import com.example.visara.ui.components.VideoItem
 import com.example.visara.ui.theme.LocalVisaraCustomColors
 import com.example.visara.viewmodels.HomeViewModel
@@ -57,7 +56,6 @@ import kotlinx.coroutines.launch
 fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
-    onVideoSelect: (video: VideoModel) -> Unit = {},
     onOpenSearchOverlay: () -> Unit = {},
     bottomNavBar: @Composable () -> Unit,
 ) {
@@ -137,7 +135,9 @@ fun HomeScreen(
                             items(uiState.videos.size) { index->
                                 VideoItem(
                                     state = uiState.videos[index],
-                                    onVideoSelect = { onVideoSelect(it) },
+                                    onVideoSelect = {
+                                        viewModel.selectVideo(it)
+                                    },
                                     modifier = Modifier.fillMaxWidth()
                                 )
                             }

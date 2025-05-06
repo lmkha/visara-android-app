@@ -40,7 +40,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.visara.ui.components.video_player.DashVideoPlayerManager
 import com.example.visara.ui.components.video_player.VisaraVideoPlayer
 import com.example.visara.ui.screens.video_detail.components.ActionsSection
 import com.example.visara.ui.screens.video_detail.components.AuthorAccountInfoSection
@@ -57,13 +56,6 @@ import kotlin.math.roundToInt
 fun VideoDetailScreen(
     modifier: Modifier = Modifier,
     viewModel: VideoDetailViewModel,
-    videoPlayerManager: DashVideoPlayerManager,
-    isFullScreenMode: Boolean,
-    isPlaying: Boolean,
-    onPlay: () -> Unit,
-    onPause: () -> Unit,
-    onClose: () -> Unit,
-    onEnableFullScreenMode: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
@@ -114,16 +106,16 @@ fun VideoDetailScreen(
                 .aspectRatio(16f / 9f),
         ) {
             VisaraVideoPlayer(
-                player = videoPlayerManager.player,
+                player = viewModel.player,
                 modifier = Modifier.fillMaxSize()
             )
-            if (!isFullScreenMode) {
+            if (!uiState.isFullScreenMode) {
                 MinimizedModeControl(
-                    isPlaying = isPlaying,
-                    onPlay = onPlay,
-                    onPause = onPause,
-                    onClose = onClose,
-                    onEnableFullScreenMode = onEnableFullScreenMode,
+                    isPlaying = uiState.isPlaying,
+                    onPlay = viewModel::play,
+                    onPause = viewModel::pause,
+                    onClose = viewModel::close,
+                    onEnableFullScreenMode = viewModel::enableFullScreenMode,
                 )
             }
         }
@@ -140,7 +132,7 @@ fun VideoDetailScreen(
                 modifier = Modifier
                     .nestedScroll(nestedScrollConnection)
 //                        .height(dynamicHeight)
-                    .height(if (isFullScreenMode) dynamicHeight else 0.dp)
+                    .height(if (uiState.isFullScreenMode) dynamicHeight else 0.dp)
                     .fillMaxWidth()
                     .padding(8.dp)
                     .draggable(
@@ -165,9 +157,9 @@ fun VideoDetailScreen(
                 // Title, description
                 item {
                     VideoHeaderSection(
-                        title = uiState.video.title,
-                        createdAt = uiState.video.createdAt,
-                        viewsCount = uiState.video.viewsCount,
+                        title = uiState.video?.title ?: "",
+                        createdAt = uiState.video?.createdAt ?: "",
+                        viewsCount = uiState.video?.viewsCount ?: 0L,
                     )
                 }
                 // Author account info, subscribe button
@@ -181,7 +173,7 @@ fun VideoDetailScreen(
                 // Comment
                 item {
                     MinimizedCommentSection(
-                        commentsCount = uiState.video.commentsCount,
+                        commentsCount = uiState.video?.commentsCount ?: 0L,
                         coverComment = uiState.commentList.firstOrNull()?.comment,
                         onClick = { viewModel.expandCommentSection() }
                     )

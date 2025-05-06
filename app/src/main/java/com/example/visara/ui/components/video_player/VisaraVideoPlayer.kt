@@ -115,16 +115,6 @@ class LocalVideoPlayerManager(context: Context) : VideoPlayerManager {
     }
 }
 
-@Composable
-fun rememberDashVideoPlayerManager(context: Context): DashVideoPlayerManager {
-    return remember { DashVideoPlayerManager(context) }
-}
-
-@Composable
-fun rememberLocalVideoPlayerManager(context: Context): LocalVideoPlayerManager {
-    return remember { LocalVideoPlayerManager(context) }
-}
-
 @OptIn(UnstableApi::class)
 @Composable
 fun VisaraVideoPlayer(

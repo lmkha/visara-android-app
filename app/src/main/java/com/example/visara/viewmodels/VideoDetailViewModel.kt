@@ -8,12 +8,14 @@ import com.example.visara.data.model.VideoModel
 import com.example.visara.data.repository.AuthRepository
 import com.example.visara.data.repository.CommentRepository
 import com.example.visara.data.repository.UserRepository
+import com.example.visara.data.repository.VideoDetailRepository
 import com.example.visara.data.repository.VideoRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -24,6 +26,7 @@ class VideoDetailViewModel @Inject constructor(
     private val commentRepository: CommentRepository,
     private val userRepository: UserRepository,
     private val videoRepository: VideoRepository,
+    private val videoDetailRepository: VideoDetailRepository,
 ) : ViewModel() {
     private val _uiState: MutableStateFlow<VideoDetailScreenUiState> = MutableStateFlow(
         VideoDetailScreenUiState(
@@ -32,9 +35,11 @@ class VideoDetailViewModel @Inject constructor(
     )
     val uiState = _uiState.asStateFlow()
     var likeCommentJobMap = mutableMapOf<String, Job>()
+    val player get() = videoDetailRepository.dashVideoPlayerManager.player
 
     init {
         observerAuthenticationState()
+        observerVideoDetail()
         viewModelScope.launch {
             val currentUser = userRepository.getCurrentUser()
             if (currentUser != null) {
@@ -43,33 +48,6 @@ class VideoDetailViewModel @Inject constructor(
         }
     }
 
-    fun setVideo(videoModel: VideoModel) {
-        viewModelScope.launch {
-            val video = videoRepository.getVideoById(videoModel.id)
-            if (video != null) {
-                _uiState.update {
-                    VideoDetailScreenUiState(
-                        video = video,
-                        isUserAuthenticated = authRepository.isAuthenticated.value,
-                    )
-                }
-            } else {
-                _uiState.update {
-                    VideoDetailScreenUiState(
-                        video = videoModel,
-                        isUserAuthenticated = authRepository.isAuthenticated.value,
-                    )
-                }
-            }
-            _uiState.value.video.id.let { videoId->
-                if (videoId.isNotBlank()) {
-                    val parentComments = commentRepository.getAllParentCommentsByVideoId(videoId)
-                    val commentList = parentComments.map { CommentWithReplies(comment = it)}
-                    _uiState.update { it.copy(commentList = commentList) }
-                }
-            }
-        }
-    }
     fun fetchChildrenComment(parentCommentIndex: Int) {
         viewModelScope.launch {
             val parentComment = _uiState.value.commentList.getOrNull(parentCommentIndex) ?: return@launch
@@ -131,12 +109,12 @@ class VideoDetailViewModel @Inject constructor(
 
             // Add draft comment to commentList
             _uiState.update { oldState ->
-                val newCommentCount = oldState.video.commentsCount + 1
+                val newCommentCount = (oldState.video?.commentsCount ?: 0) + 1
                 if (repliedCommentId == null) {
                     val updatedList = listOf(CommentWithReplies(comment = newDraftComment)) + oldState.commentList
                     oldState.copy(
                         commentList = updatedList,
-                        video = oldState.video.copy(commentsCount = newCommentCount)
+                        video = oldState.video?.copy(commentsCount = newCommentCount)
                     )
                 } else {
                     val updatedList = oldState.commentList.mapIndexed { index, item ->
@@ -151,16 +129,18 @@ class VideoDetailViewModel @Inject constructor(
                     }
                     oldState.copy(
                         commentList = updatedList,
-                        video = oldState.video.copy(commentsCount = newCommentCount)
+                        video = oldState.video?.copy(commentsCount = newCommentCount)
                     )
                 }
             }
 
-            val newComment = commentRepository.addComment(
-                videoId = _uiState.value.video.id,
-                replyTo = repliedCommentId,
-                content = content,
-            )
+            val newComment = _uiState.value.video?.id?.let {
+                commentRepository.addComment(
+                    videoId = it,
+                    replyTo = repliedCommentId,
+                    content = content,
+                )
+            }
 
             if (newComment != null) {
                 // Replace draft with actual comment when add success
@@ -187,12 +167,12 @@ class VideoDetailViewModel @Inject constructor(
             } else {
                 // Rollback comment if failed
                 _uiState.update { oldState ->
-                    val newCommentCount = oldState.video.commentsCount - 1
+                    val newCommentCount = (oldState.video?.commentsCount ?: 0) - 1
                     if (repliedCommentId == null) {
                         val updatedList = oldState.commentList.filterNot { it.comment?.id == newDraftComment.id }
                         oldState.copy(
                             commentList = updatedList,
-                            video = oldState.video.copy(commentsCount = newCommentCount)
+                            video = oldState.video?.copy(commentsCount = newCommentCount)
                         )
                     } else {
                         val updatedList = oldState.commentList.mapIndexed { index, item ->
@@ -207,7 +187,7 @@ class VideoDetailViewModel @Inject constructor(
                         }
                         oldState.copy(
                             commentList = updatedList,
-                            video = oldState.video.copy(commentsCount = newCommentCount),
+                            video = oldState.video?.copy(commentsCount = newCommentCount),
                         )
                     }
                 }
@@ -222,16 +202,72 @@ class VideoDetailViewModel @Inject constructor(
             }
         }
     }
+
+    fun play() {
+        viewModelScope.launch {
+            videoDetailRepository.dashVideoPlayerManager.player.play()
+        }
+    }
+
+    fun pause() {
+        viewModelScope.launch {
+            videoDetailRepository.dashVideoPlayerManager.player.pause()
+        }
+    }
+
+    fun close() {
+        viewModelScope.launch {
+            videoDetailRepository.dashVideoPlayerManager.pause()
+            videoDetailRepository.close()
+        }
+    }
+
+    fun enableFullScreenMode() {
+        viewModelScope.launch {
+            videoDetailRepository.enableFullScreenMode()
+        }
+    }
+
+    private fun observerVideoDetail() {
+        viewModelScope.launch {
+            videoDetailRepository.videoDetail.collect { videoDetail ->
+                val isUserAuthenticated = authRepository.isAuthenticated.first()
+                val currentUser = userRepository.currentUser.first()
+                val video = if (videoDetail.video?.id == _uiState.value.video?.id) _uiState.value.video
+                else videoDetail.video?.id?.let { videoRepository.getVideoById(it) }
+
+                val commentList = if (videoDetail.video?.id == null) emptyList()
+                else if (videoDetail.video.id == _uiState.value.video?.id) _uiState.value.commentList
+                else {
+                    val parentComments = commentRepository.getAllParentCommentsByVideoId(videoDetail.video.id)
+                    parentComments.map { CommentWithReplies(comment = it)}
+                }
+
+                _uiState.update {
+                    VideoDetailScreenUiState(
+                        isUserAuthenticated = isUserAuthenticated,
+                        video = video,
+                        commentList = commentList,
+                        currentUser = currentUser,
+                        isFullScreenMode = videoDetail.isFullScreenMode,
+                        isPlaying = videoDetail.isPlaying,
+                    )
+                }
+            }
+        }
+    }
 }
 
 data class VideoDetailScreenUiState(
     val isUserAuthenticated: Boolean = false,
-    val video: VideoModel = VideoModel(),
+    val video: VideoModel? = null,
     val commentList: List<CommentWithReplies> = emptyList(),
     val isLoading: Boolean = true,
     val isOpenExpandedCommentSection: Boolean = false,
     val currentUser: UserModel? = null,
     val isAddingComment: Boolean = false,
+    val isFullScreenMode: Boolean = false,
+    val isPlaying: Boolean = false,
 )
 
 data class CommentWithReplies(

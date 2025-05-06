@@ -42,7 +42,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -53,8 +52,6 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.visara.ui.components.UserAvatar
-import com.example.visara.ui.components.video_player.rememberDashVideoPlayerManager
-import com.example.visara.ui.components.video_player.rememberLocalVideoPlayerManager
 import com.example.visara.ui.navigation.Destination
 import com.example.visara.ui.screens.add_new_video.AddNewVideoScreen
 import com.example.visara.ui.screens.following.FollowingScreen
@@ -66,7 +63,6 @@ import com.example.visara.ui.screens.search.SearchScreen
 import com.example.visara.ui.screens.settings.SettingsScreen
 import com.example.visara.ui.screens.test.TestScreen
 import com.example.visara.ui.screens.video_detail.VideoDetailScreen
-import com.example.visara.ui.screens.video_detail.rememberVideoDetailState
 import com.example.visara.ui.theme.VisaraTheme
 import com.example.visara.viewmodels.AppState
 import com.example.visara.viewmodels.AppViewModel
@@ -84,17 +80,14 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
         val scope = rememberCoroutineScope()
         val navController = rememberNavController()
         val snackBarHostState = remember { SnackbarHostState() }
-        val dashPlayerManager = rememberDashVideoPlayerManager(LocalContext.current)
-        val localVideoPlayerManager = rememberLocalVideoPlayerManager(LocalContext.current)
-        val videoDetailState = rememberVideoDetailState(manager = dashPlayerManager)
         fun botNavBarNavigate(dest: Destination) {
             scope.launch {
                 val popped = navController.popBackStack(route = dest, inclusive = false)
                 if (!popped) navController.navigate(dest)
             }
         }
-        BackHandler(enabled = videoDetailState.isFullScreenMode) {
-            videoDetailState.enableMinimizedMode()
+        BackHandler(enabled = appState.videoDetailState.isFullScreenMode) {
+            viewModel.minimizeVideoDetail()
         }
 
         Box(modifier = Modifier.fillMaxSize()) {
@@ -114,16 +107,6 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
                     navigation<Destination.Main>(startDestination = Destination.Main.Home) {
                         composable<Destination.Main.Home> {
                             HomeScreen(
-                                onVideoSelect = { selectedVideo->
-                                    scope.launch {
-                                        val videoUrl = viewModel.getVideoUrl(selectedVideo.id)
-                                        dashPlayerManager.play(videoUrl)
-                                        videoDetailState.video = selectedVideo
-                                        videoDetailState.isVisible = true
-                                        videoDetailState.isFullScreenMode = true
-                                        videoDetailViewModel.setVideo(selectedVideo)
-                                    }
-                                },
                                 onOpenSearchOverlay = { navController.navigate(Destination.Search) },
                                 bottomNavBar = {
                                     BotNavBar(
@@ -155,22 +138,21 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
                                 scaleOut(transformOrigin = TransformOrigin(0.5f, 1f), targetScale = 0.8f) + fadeOut()
                             }
                         ) {
-                            val isVideoDetailVisibleBefore = videoDetailState.isVisible
+                            val isVideoDetailVisibleBefore = appState.videoDetailState.isVisible
                             scope.launch {
-                                dashPlayerManager.player.pause()
-                                videoDetailState.isVisible = false
+                                viewModel.pauseVideoDetail()
+                                viewModel.hideVideoDetail()
                             }
 
                             DisposableEffect(Unit) {
                                 onDispose {
                                     if (isVideoDetailVisibleBefore) {
-                                        videoDetailState.isVisible = true
+                                        viewModel.displayVideoDetail()
                                     }
                                 }
                             }
 
                             AddNewVideoScreen(
-                                videoPlayerManager = localVideoPlayerManager,
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .background(MaterialTheme.colorScheme.background),
@@ -212,7 +194,6 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
                             modifier = Modifier.fillMaxSize(),
                             goBack = { navController.popBackStack() },
                             onSelectResult = { videoId ->
-                                videoDetailState.isFullScreenMode = true
                             }
                         )
                     }
@@ -241,41 +222,19 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
             }
 
             Box(
-                modifier = if (videoDetailState.isFullScreenMode) Modifier
-                    .zIndex(if (videoDetailState.isVisible) 10f else -10f)
+                modifier = if (appState.videoDetailState.isFullScreenMode) Modifier
+                    .zIndex(if (appState.videoDetailState.isVisible) 10f else -10f)
                     .fillMaxSize()
                 else Modifier
-                    .zIndex(if (videoDetailState.isVisible) 10f else -10f)
+                    .zIndex(if (appState.videoDetailState.isVisible) 10f else -10f)
                     .fillMaxSize()
                     .padding(bottom = 120.dp, end = 24.dp)
             ) {
-                videoDetailState.video?.let { videoModel->
+                appState.videoDetailState.video?.let { videoModel->
                     key(videoModel.id) {
                         VideoDetailScreen(
                             viewModel = videoDetailViewModel,
-                            videoPlayerManager = dashPlayerManager,
-                            isFullScreenMode = videoDetailState.isFullScreenMode,
-                            onPlay = {
-                                scope.launch {
-                                    dashPlayerManager.player.play()
-                                }
-                            },
-                            onPause = {
-                                scope.launch {
-                                    dashPlayerManager.player.pause()
-                                }
-                            },
-                            onEnableFullScreenMode = {
-                                videoDetailState.enableFullScreenMode()
-                            },
-                            onClose = {
-                                scope.launch {
-                                    dashPlayerManager.player.pause()
-                                    videoDetailState.close()
-                                }
-                            },
-                            isPlaying = videoDetailState.isPlaying,
-                            modifier = if (videoDetailState.isFullScreenMode) Modifier
+                            modifier = if (appState.videoDetailState.isFullScreenMode) Modifier
                                 .fillMaxSize()
                                 .statusBarsPadding()
                             else Modifier

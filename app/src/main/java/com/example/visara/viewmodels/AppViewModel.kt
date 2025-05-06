@@ -6,7 +6,8 @@ import com.example.visara.data.model.UserModel
 import com.example.visara.data.repository.AppSettingsRepository
 import com.example.visara.data.repository.AuthRepository
 import com.example.visara.data.repository.UserRepository
-import com.example.visara.data.repository.VideoRepository
+import com.example.visara.data.repository.VideoDetailRepository
+import com.example.visara.data.repository.VideoDetailState
 import com.example.visara.ui.theme.AppTheme
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,8 +23,8 @@ import javax.inject.Inject
 class AppViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val appSettingsRepository: AppSettingsRepository,
-    private val videoRepository: VideoRepository,
     private val userRepository: UserRepository,
+    private val videoDetailRepository: VideoDetailRepository,
 ) : ViewModel() {
     private val themeKey = SettingsViewModel.THEME_KEY
 
@@ -34,6 +35,7 @@ class AppViewModel @Inject constructor(
         observerTheme()
         observerAuthenticationState()
         observerCurrentUser()
+        observerVideoDetail()
     }
 
     private fun observerTheme() {
@@ -64,8 +66,32 @@ class AppViewModel @Inject constructor(
         }
     }
 
-    fun getVideoUrl(videoId: String) : String {
-        return videoRepository.getVideoUrl(videoId)
+    private fun observerVideoDetail() {
+        viewModelScope.launch {
+            videoDetailRepository.videoDetail.collect { videoDetail ->
+                _appState.update { it.copy(videoDetailState = videoDetail) }
+            }
+        }
+    }
+
+    fun minimizeVideoDetail() {
+        viewModelScope.launch {
+            videoDetailRepository.enableMinimizedMode()
+        }
+    }
+
+    fun pauseVideoDetail() {
+        viewModelScope.launch {
+            videoDetailRepository.dashVideoPlayerManager.player.pause()
+        }
+    }
+
+    fun hideVideoDetail() {
+        videoDetailRepository.hide()
+    }
+
+    fun displayVideoDetail() {
+        videoDetailRepository.display()
     }
 }
 
@@ -73,4 +99,5 @@ data class AppState(
     val appTheme: AppTheme = AppTheme.SYSTEM,
     val isAuthenticated: Boolean = false,
     val currentUser: UserModel? = null,
+    val videoDetailState: VideoDetailState = VideoDetailState(),
 )
