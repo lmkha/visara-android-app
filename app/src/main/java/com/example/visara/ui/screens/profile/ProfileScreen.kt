@@ -43,6 +43,7 @@ fun ProfileScreen(
                 onNavigateToSettingsScreen = onNavigateToSettingsScreen,
                 onNavigateToStudioScreen = onNavigateToStudioScreen,
                 onNavigateToQRCodeScreen = onNavigateToQRCodeScreen,
+                onVideoSelected = { video -> viewModel.selectVideo(video) }
             )
         }
     }

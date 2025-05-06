@@ -30,9 +30,11 @@ class UserRepository @Inject constructor(
         val user = getCurrentUser()
         _currentUser.value = user
     }
+
     suspend fun saveUser(userModel: UserModel) {
         userLocalDataSource.saveUser(userModel)
     }
+
     suspend fun getCurrentUser() : UserModel? {
         val currentLocalUser = userLocalDataSource.getCurrentUser()
         if (currentLocalUser != null) return currentLocalUser
@@ -44,6 +46,7 @@ class UserRepository @Inject constructor(
         }
         return null
     }
+
     suspend fun getPublicUser(username: String) : UserModel? {
         val apiResult =  userRemoteDataSource.getPublicUser(username)
         if (apiResult is ApiResult.Success) {

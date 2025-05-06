@@ -2,6 +2,7 @@ package com.example.visara.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.exoplayer.ExoPlayer
 import com.example.visara.data.model.CommentModel
 import com.example.visara.data.model.UserModel
 import com.example.visara.data.model.VideoModel
@@ -14,6 +15,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
@@ -28,21 +30,63 @@ class VideoDetailViewModel @Inject constructor(
     private val videoRepository: VideoRepository,
     private val videoDetailRepository: VideoDetailRepository,
 ) : ViewModel() {
-    private val _uiState: MutableStateFlow<VideoDetailScreenUiState> = MutableStateFlow(
-        VideoDetailScreenUiState(
-            isUserAuthenticated = authRepository.isAuthenticated.value,
-        )
-    )
-    val uiState = _uiState.asStateFlow()
-    var likeCommentJobMap = mutableMapOf<String, Job>()
-    val player get() = videoDetailRepository.dashVideoPlayerManager.player
+    private val _uiState: MutableStateFlow<VideoDetailScreenUiState> = MutableStateFlow(VideoDetailScreenUiState())
+    val uiState: StateFlow<VideoDetailScreenUiState> = _uiState.asStateFlow()
+    var likeCommentJobMap: MutableMap<String, Job> = mutableMapOf<String, Job>()
+    val player: ExoPlayer get() = videoDetailRepository.dashVideoPlayerManager.player
 
     init {
         observerAuthenticationState()
         observerVideoDetail()
+        observerCurrentUser()
+    }
+
+    private fun observerVideoDetail() {
         viewModelScope.launch {
-            val currentUser = userRepository.getCurrentUser()
-            if (currentUser != null) {
+            videoDetailRepository.videoDetail.collect { videoDetail ->
+                val isUserAuthenticated = authRepository.isAuthenticated.first()
+
+                val currentUser = userRepository.currentUser.first()
+
+                val video = if (videoDetail.video?.id == _uiState.value.video?.id) _uiState.value.video
+                else videoDetail.video?.id?.let { videoRepository.getVideoById(it) }
+
+                val author = if (videoDetail.video?.username == _uiState.value.author?.username) _uiState.value.author
+                else videoDetail.video?.username?.let { userRepository.getPublicUser(it) }
+
+                val commentList = if (videoDetail.video?.id == null) emptyList()
+                else if (videoDetail.video.id == _uiState.value.video?.id) _uiState.value.commentList
+                else {
+                    val parentComments = commentRepository.getAllParentCommentsByVideoId(videoDetail.video.id)
+                    parentComments.map { CommentWithReplies(comment = it)}
+                }
+
+                _uiState.update {
+                    VideoDetailScreenUiState(
+                        isUserAuthenticated = isUserAuthenticated,
+                        video = video,
+                        commentList = commentList,
+                        currentUser = currentUser,
+                        author = author,
+                        isFullScreenMode = videoDetail.isFullScreenMode,
+                        isPlaying = videoDetail.isPlaying,
+                    )
+                }
+            }
+        }
+    }
+
+    private fun observerAuthenticationState() {
+        viewModelScope.launch {
+            authRepository.isAuthenticated.collect { isLogged->
+                _uiState.update { it.copy(isUserAuthenticated = isLogged) }
+            }
+        }
+    }
+
+    private fun observerCurrentUser() {
+        viewModelScope.launch {
+            userRepository.currentUser.collect { currentUser ->
                 _uiState.update { it.copy(currentUser = currentUser) }
             }
         }
@@ -68,17 +112,24 @@ class VideoDetailViewModel @Inject constructor(
             }
         }
     }
+
     fun minimizeCommentSection() {
         viewModelScope.launch {
             _uiState.update { it.copy(isOpenExpandedCommentSection = false) }
         }
     }
+
     fun expandCommentSection() {
         viewModelScope.launch {
             _uiState.update { it.copy(isOpenExpandedCommentSection = true) }
         }
     }
-    fun changeCommentLike(commentId: String, current: Boolean = false, onFailure: () -> Unit) {
+
+    fun changeCommentLike(
+        commentId: String,
+        current: Boolean = false,
+        onFailure: () -> Unit
+    ) {
         likeCommentJobMap[commentId]?.cancel()
 
         val job = viewModelScope.launch {
@@ -94,10 +145,11 @@ class VideoDetailViewModel @Inject constructor(
 
         likeCommentJobMap[commentId] = job
     }
+
     fun addComment(
         content: String,
         repliedCommentId: String?,
-        repliedCommentIndex: Int?,
+        repliedCommentIndex: Int?
     ) {
         viewModelScope.launch {
             val newDraftComment = CommentModel(
@@ -195,14 +247,6 @@ class VideoDetailViewModel @Inject constructor(
         }
     }
 
-    private fun observerAuthenticationState() {
-        viewModelScope.launch {
-            authRepository.isAuthenticated.collect { isLogged->
-                _uiState.update { it.copy(isUserAuthenticated = isLogged) }
-            }
-        }
-    }
-
     fun play() {
         viewModelScope.launch {
             videoDetailRepository.dashVideoPlayerManager.player.play()
@@ -227,35 +271,6 @@ class VideoDetailViewModel @Inject constructor(
             videoDetailRepository.enableFullScreenMode()
         }
     }
-
-    private fun observerVideoDetail() {
-        viewModelScope.launch {
-            videoDetailRepository.videoDetail.collect { videoDetail ->
-                val isUserAuthenticated = authRepository.isAuthenticated.first()
-                val currentUser = userRepository.currentUser.first()
-                val video = if (videoDetail.video?.id == _uiState.value.video?.id) _uiState.value.video
-                else videoDetail.video?.id?.let { videoRepository.getVideoById(it) }
-
-                val commentList = if (videoDetail.video?.id == null) emptyList()
-                else if (videoDetail.video.id == _uiState.value.video?.id) _uiState.value.commentList
-                else {
-                    val parentComments = commentRepository.getAllParentCommentsByVideoId(videoDetail.video.id)
-                    parentComments.map { CommentWithReplies(comment = it)}
-                }
-
-                _uiState.update {
-                    VideoDetailScreenUiState(
-                        isUserAuthenticated = isUserAuthenticated,
-                        video = video,
-                        commentList = commentList,
-                        currentUser = currentUser,
-                        isFullScreenMode = videoDetail.isFullScreenMode,
-                        isPlaying = videoDetail.isPlaying,
-                    )
-                }
-            }
-        }
-    }
 }
 
 data class VideoDetailScreenUiState(
@@ -265,6 +280,7 @@ data class VideoDetailScreenUiState(
     val isLoading: Boolean = true,
     val isOpenExpandedCommentSection: Boolean = false,
     val currentUser: UserModel? = null,
+    val author: UserModel? = null,
     val isAddingComment: Boolean = false,
     val isFullScreenMode: Boolean = false,
     val isPlaying: Boolean = false,

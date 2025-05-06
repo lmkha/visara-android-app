@@ -43,6 +43,7 @@ class AuthRepository @Inject constructor(
         }
         return false
     }
+
     suspend fun logout() {
         // Clear token first — username is needed to locate the correct token key.
         authLocalDataSource.clearToken()
@@ -50,6 +51,7 @@ class AuthRepository @Inject constructor(
         _isAuthenticated.value = false
         userRepository.refreshCurrentUser()
     }
+
     fun refreshAuthenticationState() {
         val hasToken = !authLocalDataSource.getAccessToken().isNullOrEmpty()
         _isAuthenticated.value = hasToken

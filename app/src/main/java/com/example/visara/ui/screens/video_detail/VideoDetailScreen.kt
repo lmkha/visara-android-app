@@ -164,7 +164,10 @@ fun VideoDetailScreen(
                 }
                 // Author account info, subscribe button
                 item {
-                    AuthorAccountInfoSection()
+                    AuthorAccountInfoSection(
+                        author = uiState.author,
+                        currentUser = uiState.currentUser,
+                    )
                 }
                 // Actions: like, share, download, save, report
                 item {

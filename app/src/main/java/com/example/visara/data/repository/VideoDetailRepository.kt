@@ -30,10 +30,12 @@ class VideoDetailRepository @Inject constructor(
     }
 
     fun setVideoDetail(video: VideoModel) {
-        val videoUrl = videoRepository.getVideoUrl(video.id)
-        dashVideoPlayerManager.play(videoUrl)
+        if (video.id != _videoDetail.value.video?.id) {
+            val videoUrl = videoRepository.getVideoUrl(video.id)
+            dashVideoPlayerManager.play(videoUrl)
+        }
         _videoDetail.update {
-            VideoDetailState(
+            it.copy(
                 video = video,
                 isVisible = true,
                 isFullScreenMode = true,

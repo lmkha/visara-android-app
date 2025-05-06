@@ -17,7 +17,10 @@ sealed class Destination(val name: String) {
     }
 
     @Serializable object Settings: Destination("Settings")
-    @Serializable object Search: Destination("Search")
+    @Serializable data class Search(
+        val type: String = "",
+        val pattern: String = "",
+    ): Destination("Search")
     @Serializable object Login : Destination("Login")
     @Serializable object SignUp : Destination("SignUp")
     @Serializable object Studio : Destination("Studio")

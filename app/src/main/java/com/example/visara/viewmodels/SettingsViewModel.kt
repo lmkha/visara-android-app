@@ -1,6 +1,5 @@
 package com.example.visara.viewmodels
 
-import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.visara.data.repository.AppSettingsRepository
@@ -22,14 +21,12 @@ class SettingsViewModel @Inject constructor(
 ) : ViewModel() {
     private val _uiState: MutableStateFlow<SettingsScreenUiState> = MutableStateFlow(SettingsScreenUiState())
     val uiState: StateFlow<SettingsScreenUiState> = _uiState.asStateFlow()
-    companion object {
-        val THEME_KEY = stringPreferencesKey("theme_pref")
-    }
 
     init {
         viewModelScope.launch {
             val prefs = appSettingsRepository.appSettingsFlow.first()
-            val themeName = prefs[THEME_KEY]
+            val themeKey = appSettingsRepository.themeKey
+            val themeName = prefs[themeKey]
             val theme = AppTheme.entries.find { it.name == themeName } ?: AppTheme.SYSTEM
             _uiState.value = _uiState.value.copy(theme = theme)
         }

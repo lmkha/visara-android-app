@@ -15,10 +15,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.visara.data.model.UserModel
 import com.example.visara.ui.components.UserAvatar
 
 @Composable
-fun AuthorAccountInfoSection() {
+fun AuthorAccountInfoSection(
+    author: UserModel? = null,
+    currentUser: UserModel? = null,
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -28,25 +32,30 @@ fun AuthorAccountInfoSection() {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            UserAvatar(modifier = Modifier.size(40.dp))
+            UserAvatar(
+                avatarLink = author?.networkAvatarUrl,
+                modifier = Modifier.size(40.dp)
+            )
             Text(
-                text = "BLV Anh Quân",
+                text = author?.username ?: "username",
                 fontWeight = FontWeight.W500
             )
             Text(
-                text = "1.38M",
+                text = author?.followerCount.toString(),
                 fontWeight = FontWeight.Normal
             )
         }
 
-        FilledTonalButton(
-            onClick = {},
-            colors = ButtonDefaults.filledTonalButtonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-            )
-        ) {
-            Text("Subscribe")
+        if (currentUser?.username != author?.username) {
+            FilledTonalButton(
+                onClick = {},
+                colors = ButtonDefaults.filledTonalButtonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                )
+            ) {
+                Text("Subscribe")
+            }
         }
     }
     Spacer(Modifier.height(16.dp).fillMaxWidth())

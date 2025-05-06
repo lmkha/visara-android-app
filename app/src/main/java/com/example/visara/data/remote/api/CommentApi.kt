@@ -87,6 +87,7 @@ class CommentApi @Inject constructor(
         return if (needAuthenticate) authorizedOkHttpClient.newCall(request).execute()
         else unauthorizedOkHttpClient.newCall(request).execute()
     }
+
     fun getAllChildrenComment(
         needAuthenticate: Boolean = false,
         parentId: String,

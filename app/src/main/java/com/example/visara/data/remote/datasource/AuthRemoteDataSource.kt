@@ -50,6 +50,7 @@ class AuthRemoteDataSource @Inject constructor(
             }
         }
     }
+
     suspend fun checkUsernameAvailability(username: String): ApiResult<UsernameAvailabilityDto> {
         return withContext(Dispatchers.IO) {
             try {
@@ -74,6 +75,7 @@ class AuthRemoteDataSource @Inject constructor(
             }
         }
     }
+
     suspend fun refreshToken(refreshToken: String) : ApiResult<String> {
         return withContext(Dispatchers.IO) {
             ApiResult.Success("newAccessToken")

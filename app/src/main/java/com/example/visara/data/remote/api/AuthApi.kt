@@ -33,6 +33,7 @@ class AuthApi @Inject constructor(
 
         return unauthorizedOkHttpClient.newCall(request).execute()
     }
+
     fun checkUsernameAvailability(username: String): Response {
         val url = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
             .addPathSegments("users/checkUsernameAvailability")

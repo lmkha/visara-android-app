@@ -33,7 +33,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -86,8 +85,11 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
                 if (!popped) navController.navigate(dest)
             }
         }
-        BackHandler(enabled = appState.videoDetailState.isFullScreenMode) {
-            viewModel.minimizeVideoDetail()
+
+        if (appState.videoDetailState.isFullScreenMode) {
+            BackHandler {
+                viewModel.minimizeVideoDetail()
+            }
         }
 
         Box(modifier = Modifier.fillMaxSize()) {
@@ -107,7 +109,7 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
                     navigation<Destination.Main>(startDestination = Destination.Main.Home) {
                         composable<Destination.Main.Home> {
                             HomeScreen(
-                                onOpenSearchOverlay = { navController.navigate(Destination.Search) },
+                                onOpenSearchOverlay = { navController.navigate(Destination.Search()) },
                                 bottomNavBar = {
                                     BotNavBar(
                                         activeDestination = Destination.Main.Home,
@@ -193,8 +195,6 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
                         SearchScreen(
                             modifier = Modifier.fillMaxSize(),
                             goBack = { navController.popBackStack() },
-                            onSelectResult = { videoId ->
-                            }
                         )
                     }
                     composable<Destination.Login> {
@@ -230,21 +230,17 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
                     .fillMaxSize()
                     .padding(bottom = 120.dp, end = 24.dp)
             ) {
-                appState.videoDetailState.video?.let { videoModel->
-                    key(videoModel.id) {
-                        VideoDetailScreen(
-                            viewModel = videoDetailViewModel,
-                            modifier = if (appState.videoDetailState.isFullScreenMode) Modifier
-                                .fillMaxSize()
-                                .statusBarsPadding()
-                            else Modifier
-                                .width(250.dp)
-                                .clip(RoundedCornerShape(15.dp))
-                                .aspectRatio(16f / 9f)
-                                .align(Alignment.BottomEnd)
-                        )
-                    }
-                }
+                VideoDetailScreen(
+                    viewModel = videoDetailViewModel,
+                    modifier = if (appState.videoDetailState.isFullScreenMode) Modifier
+                        .fillMaxSize()
+                        .statusBarsPadding()
+                    else Modifier
+                        .width(250.dp)
+                        .clip(RoundedCornerShape(15.dp))
+                        .aspectRatio(16f / 9f)
+                        .align(Alignment.BottomEnd)
+                )
             }
         }
     }

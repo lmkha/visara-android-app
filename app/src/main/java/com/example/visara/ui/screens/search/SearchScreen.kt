@@ -32,9 +32,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.visara.R
 import com.example.visara.ui.components.VideoItem
 import com.example.visara.ui.theme.LocalVisaraCustomColors
+import com.example.visara.viewmodels.SearchViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -43,8 +45,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun SearchScreen(
     modifier: Modifier = Modifier,
+    viewModel: SearchViewModel = hiltViewModel(),
     goBack: () -> Unit,
-    onSelectResult: (videoId: String) -> Unit = {},
 ) {
     val textFieldState = remember { TextFieldState() }
     var filteredResults by remember { mutableStateOf(emptyList<String>()) }
@@ -64,8 +66,7 @@ fun SearchScreen(
 
     Box(modifier = modifier.fillMaxSize()) {
         Scaffold(
-            modifier = Modifier
-                .fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             topBar = {
                 TopAppBar(
                     modifier = Modifier.padding(bottom = 8.dp),

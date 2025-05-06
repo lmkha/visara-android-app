@@ -62,6 +62,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.example.visara.R
+import com.example.visara.data.model.VideoModel
 import com.example.visara.ui.components.UserAvatar
 import com.example.visara.ui.screens.profile.components.BottomSheet
 import com.example.visara.ui.screens.profile.components.MetricItem
@@ -81,6 +82,7 @@ fun ProfileScreenContainer(
     onNavigateToSettingsScreen: () -> Unit,
     onNavigateToStudioScreen: () -> Unit,
     onNavigateToQRCodeScreen: () -> Unit,
+    onVideoSelected: (video: VideoModel) -> Unit,
 ) {
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
     var displayBottomSheet by remember { mutableStateOf(false) }
@@ -444,7 +446,10 @@ fun ProfileScreenContainer(
                             }
 
                             items(uiState.videos.size) { index ->
-                                TabVideoItem(video = uiState.videos.getOrNull(index))
+                                TabVideoItem(
+                                    video = uiState.videos.getOrNull(index),
+                                    onVideoSelected = { uiState.videos.getOrNull(index)?.let { onVideoSelected(it) } }
+                                )
                             }
                         }
                     } else {

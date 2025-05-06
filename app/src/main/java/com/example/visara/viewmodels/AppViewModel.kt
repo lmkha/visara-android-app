@@ -26,8 +26,6 @@ class AppViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val videoDetailRepository: VideoDetailRepository,
 ) : ViewModel() {
-    private val themeKey = SettingsViewModel.THEME_KEY
-
     private val _appState = MutableStateFlow(AppState())
     val appState: StateFlow<AppState> = _appState.asStateFlow()
 
@@ -41,6 +39,7 @@ class AppViewModel @Inject constructor(
     private fun observerTheme() {
         viewModelScope.launch {
             appSettingsRepository.appSettingsFlow.map { prefs ->
+                val themeKey = appSettingsRepository.themeKey
                 val themeName = prefs[themeKey]
                 AppTheme.entries.firstOrNull { it.name == themeName } ?: AppTheme.SYSTEM
             }

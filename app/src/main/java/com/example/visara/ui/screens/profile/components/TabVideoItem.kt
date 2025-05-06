@@ -32,11 +32,13 @@ import com.example.visara.ui.utils.toTimeAgo
 fun TabVideoItem(
     modifier: Modifier = Modifier,
     video: VideoModel? = null,
+    onVideoSelected: () -> Unit,
 ) {
     Box(
         modifier = modifier
             .height(120.dp)
             .fillMaxWidth()
+            .clickable { onVideoSelected() }
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
