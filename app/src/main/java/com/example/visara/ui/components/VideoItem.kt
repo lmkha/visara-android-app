@@ -1,7 +1,5 @@
 package com.example.visara.ui.components
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -32,10 +30,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.example.visara.data.model.VideoModel
+import com.example.visara.ui.utils.formatDuration
 import com.example.visara.ui.utils.formatViews
 import com.example.visara.ui.utils.toTimeAgo
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun VideoItem(
     modifier: Modifier = Modifier,
@@ -75,7 +73,7 @@ fun VideoItem(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "27:12",
+                        text = formatDuration(state.duration),
                         color = Color.White,
                     )
                 }
@@ -86,7 +84,10 @@ fun VideoItem(
                 ,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                UserAvatar(modifier = Modifier.size(50.dp))
+                UserAvatar(
+                    avatarLink = state.userProfilePic,
+                    modifier = Modifier.size(50.dp)
+                )
                 Column {
                     Row {
                         Text(
@@ -110,7 +111,7 @@ fun VideoItem(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
                         Text(
-                            text = state.userId.toString(),
+                            text = state.username.toString(),
                         )
                         Text("-")
                         Text(

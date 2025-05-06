@@ -1,7 +1,6 @@
 package com.example.visara.di
 
 import android.content.Context
-import com.example.visara.data.local.dao.UserDao
 import com.example.visara.data.local.datasource.AuthLocalDataSource
 import com.example.visara.data.local.datasource.UserLocalDataSource
 import com.example.visara.data.remote.datasource.AuthRemoteDataSource
@@ -12,6 +11,7 @@ import com.example.visara.data.repository.AppSettingsRepository
 import com.example.visara.data.repository.AuthRepository
 import com.example.visara.data.repository.CommentRepository
 import com.example.visara.data.repository.UserRepository
+import com.example.visara.data.repository.VideoDetailRepository
 import com.example.visara.data.repository.VideoRepository
 import dagger.Module
 import dagger.Provides
@@ -29,9 +29,8 @@ object RepositoryModule {
         authRemoteDataSource: AuthRemoteDataSource,
         authLocalDataSource: AuthLocalDataSource,
         userRepository: UserRepository,
-        userDao: UserDao,
     ) : AuthRepository {
-        return AuthRepository(authRemoteDataSource, authLocalDataSource, userRepository, userDao)
+        return AuthRepository(authRemoteDataSource, authLocalDataSource, userRepository)
     }
 
 
@@ -66,5 +65,14 @@ object RepositoryModule {
         authRepository: AuthRepository,
     ) : CommentRepository {
         return CommentRepository(commentRemoteDataSource, authRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideVideoDetailRepository(
+        @ApplicationContext appContext: Context,
+        videoRepository: VideoRepository,
+    ) : VideoDetailRepository {
+        return VideoDetailRepository(appContext, videoRepository)
     }
 }

@@ -59,3 +59,16 @@ fun formatViews(views: Long): String {
         }
     }
 }
+
+@SuppressLint("DefaultLocale")
+fun formatDuration(durationSeconds: Long): String {
+    val hours = durationSeconds / 3600
+    val minutes = (durationSeconds % 3600) / 60
+    val seconds = durationSeconds % 60
+
+    return if (hours > 0) {
+        String.format("%02d:%02d:%02d", hours, minutes, seconds)
+    } else {
+        String.format("%02d:%02d", minutes, seconds)
+    }
+}

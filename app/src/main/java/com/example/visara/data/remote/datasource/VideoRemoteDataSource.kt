@@ -1,6 +1,5 @@
 package com.example.visara.data.remote.datasource
 
-import android.util.Log
 import com.example.visara.data.model.VideoModel
 import com.example.visara.data.remote.common.ApiError
 import com.example.visara.data.remote.common.ApiResult
@@ -111,7 +110,6 @@ class VideoRemoteDataSource @Inject constructor(
             try {
                 val response = videoApi.uploadThumbnailFile(videoId, thumbnailFile, progressListener)
                 val responseBody = response.body?.string()
-                Log.i("CHECK_VAR", "Upload thumbnail file response body: ${responseBody.toString()}")
 
                 if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
                     val jsonObject = gson.fromJson(responseBody, Map::class.java)
@@ -155,10 +153,36 @@ class VideoRemoteDataSource @Inject constructor(
                 val response = videoApi.uploadVideoFile(videoId, videoFile, progressListener)
                 val responseBody = response.body?.string()
 
-                Log.i("CHECK_VAR", "Upload video File response body: ${responseBody.toString()}")
-
                 if (response.isSuccessful) {
                     ApiResult.Success("OK")
+                } else {
+                    ApiResult.Failure(
+                        ApiError(
+                            code = response.code,
+                            errorCode = response.code.toString(),
+                            message = response.message,
+                            rawBody = responseBody
+                        )
+                    )
+                }
+            } catch (e : Exception) {
+                ApiResult.Error(e)
+            }
+        }
+    }
+
+    suspend fun getAllVideoByUserId(userId: Long) : ApiResult<List<VideoDto>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = videoApi.getAllVideoByUserId(userId)
+                val responseBody = response.body?.string()
+
+                if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
+                    val jsonObject =  gson.fromJson(responseBody, Map::class.java)
+                    val dataJson = gson.toJson(jsonObject["data"])
+                    val type = object : TypeToken<List<VideoDto>>() {}.type
+                    val videoDtoList: List<VideoDto> = gson.fromJson(dataJson, type)
+                    ApiResult.Success(videoDtoList)
                 } else {
                     ApiResult.Failure(
                         ApiError(

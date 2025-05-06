@@ -8,7 +8,6 @@ import com.example.visara.data.model.Privacy
 import com.example.visara.data.model.VideoModel
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.datasource.VideoRemoteDataSource
-import com.example.visara.data.remote.dto.toVideoModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -117,4 +116,16 @@ class VideoRepository @Inject constructor(
         }
         return null
     }
+
+    suspend fun getAllVideoByUserId(userId: Long) : List<VideoModel> {
+        val apiResult = videoRemoteDataSource.getAllVideoByUserId(userId)
+
+        if (apiResult is ApiResult.Success) {
+            val videoModelList = apiResult.data.map { it.toVideoModel() }
+            return videoModelList
+        }
+
+        return emptyList()
+    }
+
 }

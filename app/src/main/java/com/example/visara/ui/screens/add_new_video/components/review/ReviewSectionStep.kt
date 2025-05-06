@@ -15,7 +15,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.example.visara.ui.components.video_player.LocalVideoPlayerManager
-import com.example.visara.ui.components.video_player.TestVideoPlayer
+import com.example.visara.ui.components.video_player.VisaraVideoPlayer
 
 @Composable
 fun ReviewSectionStep(
@@ -43,7 +43,7 @@ fun ReviewSectionStep(
         }
         Box(modifier = modifier.weight(1f)) {
 //            VisaraVideoPlayer(videoPlayerManager = videoPlayerManager)
-            TestVideoPlayer(
+            VisaraVideoPlayer(
                 player = videoPlayerManager.player,
                 modifier = Modifier.fillMaxWidth(),
             )

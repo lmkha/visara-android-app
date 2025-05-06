@@ -10,7 +10,10 @@ sealed class Destination(val name: String) {
         @Serializable object Following : Destination("Main.Following")
         @Serializable object AddNewVideo : Destination("Main.AddNewVideo")
         @Serializable object Inbox : Destination("Main.Inbox")
-        @Serializable data class Profile(val username: String? = null) : Destination("Main.Profile")
+        @Serializable data class Profile(
+            val username: String? = null,
+            val shouldNavigateToMyProfile: Boolean = false,
+        ) : Destination("Main.Profile")
     }
 
     @Serializable object Settings: Destination("Settings")

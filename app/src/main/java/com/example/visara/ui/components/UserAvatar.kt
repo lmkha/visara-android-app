@@ -17,7 +17,7 @@ fun UserAvatar(
     modifier: Modifier = Modifier,
     avatarLink: String? = null,
 ) {
-    if (avatarLink != null) {
+    if (avatarLink != null && avatarLink.isNotBlank()) {
         AsyncImage(
             model = avatarLink,
             contentDescription = null,

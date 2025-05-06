@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UnauthenticatedProfileScreen(
+fun UnauthenticatedProfileContainer(
     modifier: Modifier = Modifier,
     onBack: () -> Unit,
     bottomNavBar: @Composable () -> Unit,
@@ -51,6 +51,7 @@ fun UnauthenticatedProfileScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            Text("Please log in to view your profile.")
             Button(
                 onClick = onNavigateToLoginScreen,
                 modifier = Modifier.height(50.dp).width(200.dp)

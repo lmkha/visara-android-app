@@ -1,6 +1,5 @@
 package com.example.visara.data.remote.interceptor
 
-import android.util.Log
 import com.example.visara.data.local.shared_preference.TokenStorage
 import okhttp3.Interceptor
 import okhttp3.Response
@@ -13,7 +12,6 @@ class AuthInterceptor @Inject constructor(private val tokenStorage: TokenStorage
         if (!token.isNullOrEmpty()) {
             requestBuilder.addHeader("Authorization", "Bearer $token")
         }
-        Log.i("CHECK_VAR", "token: $token")
         return chain.proceed(requestBuilder.build())
     }
 }

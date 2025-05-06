@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.visara.ui.components.video_player.DashVideoPlayerManager
-import com.example.visara.ui.components.video_player.TestVideoPlayer
+import com.example.visara.ui.components.video_player.VisaraVideoPlayer
 import com.example.visara.ui.screens.video_detail.components.ActionsSection
 import com.example.visara.ui.screens.video_detail.components.AuthorAccountInfoSection
 import com.example.visara.ui.screens.video_detail.components.ExpandedCommentSection
@@ -113,7 +113,7 @@ fun VideoDetailScreen(
                 .fillMaxWidth()
                 .aspectRatio(16f / 9f),
         ) {
-            TestVideoPlayer(
+            VisaraVideoPlayer(
                 player = videoPlayerManager.player,
                 modifier = Modifier.fillMaxSize()
             )

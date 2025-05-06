@@ -2,8 +2,10 @@ package com.example.visara.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.visara.data.model.UserModel
 import com.example.visara.data.repository.AppSettingsRepository
 import com.example.visara.data.repository.AuthRepository
+import com.example.visara.data.repository.UserRepository
 import com.example.visara.data.repository.VideoRepository
 import com.example.visara.ui.theme.AppTheme
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,6 +23,7 @@ class AppViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val appSettingsRepository: AppSettingsRepository,
     private val videoRepository: VideoRepository,
+    private val userRepository: UserRepository,
 ) : ViewModel() {
     private val themeKey = SettingsViewModel.THEME_KEY
 
@@ -30,6 +33,7 @@ class AppViewModel @Inject constructor(
     init {
         observerTheme()
         observerAuthenticationState()
+        observerCurrentUser()
     }
 
     private fun observerTheme() {
@@ -46,8 +50,16 @@ class AppViewModel @Inject constructor(
 
     private fun observerAuthenticationState() {
         viewModelScope.launch {
-            authRepository.isAuthenticated.collect { isLogged->
-                _appState.update { it.copy(isLogged = isLogged) }
+            authRepository.isAuthenticated.collect { isAuthenticated->
+                _appState.update { it.copy(isAuthenticated = isAuthenticated) }
+            }
+        }
+    }
+
+    private fun observerCurrentUser() {
+        viewModelScope.launch {
+            userRepository.currentUser.collect { currentUser->
+                _appState.update { it.copy(currentUser = currentUser) }
             }
         }
     }
@@ -59,5 +71,6 @@ class AppViewModel @Inject constructor(
 
 data class AppState(
     val appTheme: AppTheme = AppTheme.SYSTEM,
-    val isLogged: Boolean = false,
+    val isAuthenticated: Boolean = false,
+    val currentUser: UserModel? = null,
 )

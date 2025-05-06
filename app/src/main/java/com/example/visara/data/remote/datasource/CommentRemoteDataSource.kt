@@ -1,6 +1,5 @@
 package com.example.visara.data.remote.datasource
 
-import android.util.Log
 import com.example.visara.data.remote.api.CommentApi
 import com.example.visara.data.remote.common.ApiError
 import com.example.visara.data.remote.common.ApiResult
@@ -21,11 +20,6 @@ class CommentRemoteDataSource @Inject constructor(
             try {
                 val response = commentApi.addComment(videoId, replyTo, content)
                 val responseBody = response.body?.string()
-                Log.i("CHECK_VAR", "video id : $videoId")
-                Log.i("CHECK_VAR", "replyTo: $replyTo")
-                Log.i("CHECK_VAR", "content: $content")
-                Log.i("CHECK_VAR", "Add comment response: ${response.toString()}")
-                Log.i("CHECK_VAR", "Add comment responseBody: ${responseBody.toString()}")
 
                 if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
                     val jsonObject =  gson.fromJson(responseBody, Map::class.java)

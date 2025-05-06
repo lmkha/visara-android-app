@@ -30,4 +30,19 @@ class UserApi @Inject constructor(
 
         return authorizedOkHttpClient.newCall(request).execute()
     }
+
+    fun getPublicUser(username: String) : Response {
+        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+            .addPathSegment("users")
+            .addPathSegment(username)
+            .addPathSegment("public-username")
+            .build()
+
+        val request: Request = Request.Builder()
+            .url(url)
+            .get()
+            .build()
+
+        return unauthorizedOkHttpClient.newCall(request).execute()
+    }
 }

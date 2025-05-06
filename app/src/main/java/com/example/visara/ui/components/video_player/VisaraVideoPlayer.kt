@@ -45,13 +45,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.ui.PlayerView
 import androidx.media3.ui.compose.PlayerSurface
 import androidx.media3.ui.compose.SURFACE_TYPE_SURFACE_VIEW
 import androidx.media3.ui.compose.modifiers.resizeWithContentScale
@@ -127,26 +125,9 @@ fun rememberLocalVideoPlayerManager(context: Context): LocalVideoPlayerManager {
     return remember { LocalVideoPlayerManager(context) }
 }
 
-@Composable
-fun VisaraVideoPlayer(
-    modifier: Modifier = Modifier,
-    videoPlayerManager: VideoPlayerManager,
-    showControls: Boolean = true,
-) {
-    AndroidView(
-        factory = { context ->
-            PlayerView(context).apply {
-                player = videoPlayerManager.player
-                useController = showControls
-            }
-        },
-        modifier = modifier,
-    )
-}
-
 @OptIn(UnstableApi::class)
 @Composable
-fun TestVideoPlayer(
+fun VisaraVideoPlayer(
     modifier: Modifier = Modifier,
     player: ExoPlayer,
     showControls: Boolean = true,

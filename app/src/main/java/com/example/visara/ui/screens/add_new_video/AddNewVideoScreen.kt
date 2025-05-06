@@ -1,7 +1,6 @@
 package com.example.visara.ui.screens.add_new_video
 
 import android.net.Uri
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -38,7 +37,6 @@ fun AddNewVideoScreen(
         videoUri = uri
         uri?.let {
             scope.launch {
-                Log.i("CHECK_VAR", "URI: $videoUri")
                 videoPlayerManager.play(it)
                 step = 2
             }

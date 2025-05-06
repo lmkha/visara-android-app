@@ -7,6 +7,9 @@ data class VideoModel(
     val updatedAt: String = "",
     val id: String = "",
     val userId: Long = 0L,
+    val username: String = "",
+    val userFullName: String = "",
+    val userProfilePic: String = "",
     val playlistId: String? = null,
     val title: String = "",
     val description: String = "",
@@ -18,5 +21,6 @@ data class VideoModel(
     val isPrivate: Boolean = true,
     val isCommentOff: Boolean = true,
     val isUploaded: Boolean = false,
-    val isProcessed: Boolean = false
+    val isProcessed: Boolean = false,
+    val duration: Long = 0L,
 )

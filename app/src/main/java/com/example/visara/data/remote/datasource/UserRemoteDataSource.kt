@@ -39,4 +39,31 @@ class UserRemoteDataSource @Inject constructor(
             }
         }
     }
+
+    suspend fun getPublicUser(username: String) : ApiResult<UserDto> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = userApi.getPublicUser(username)
+                val responseBody = response.body?.string()
+
+                if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
+                    val jsonObject = gson.fromJson(responseBody, Map::class.java)
+                    val dataJson = gson.toJson(jsonObject["data"])
+                    val user = gson.fromJson(dataJson, UserDto::class.java)
+                    ApiResult.Success(user)
+                } else {
+                    ApiResult.Failure(
+                        ApiError(
+                            code = response.code,
+                            errorCode = response.code.toString(),
+                            message = response.message,
+                            rawBody = responseBody
+                        )
+                    )
+                }
+            } catch (e : Exception) {
+                ApiResult.Error(e)
+            }
+        }
+    }
 }

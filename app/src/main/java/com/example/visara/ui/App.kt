@@ -51,6 +51,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.example.visara.ui.components.UserAvatar
 import com.example.visara.ui.components.video_player.rememberDashVideoPlayerManager
 import com.example.visara.ui.components.video_player.rememberLocalVideoPlayerManager
@@ -61,13 +62,13 @@ import com.example.visara.ui.screens.home.HomeScreen
 import com.example.visara.ui.screens.inbox.InboxScreen
 import com.example.visara.ui.screens.login.LoginScreen
 import com.example.visara.ui.screens.profile.ProfileScreen
-import com.example.visara.ui.screens.profile.UnauthenticatedProfileScreen
 import com.example.visara.ui.screens.search.SearchScreen
 import com.example.visara.ui.screens.settings.SettingsScreen
 import com.example.visara.ui.screens.test.TestScreen
 import com.example.visara.ui.screens.video_detail.VideoDetailScreen
 import com.example.visara.ui.screens.video_detail.rememberVideoDetailState
 import com.example.visara.ui.theme.VisaraTheme
+import com.example.visara.viewmodels.AppState
 import com.example.visara.viewmodels.AppViewModel
 import com.example.visara.viewmodels.VideoDetailViewModel
 import kotlinx.coroutines.launch
@@ -86,67 +87,12 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
         val dashPlayerManager = rememberDashVideoPlayerManager(LocalContext.current)
         val localVideoPlayerManager = rememberLocalVideoPlayerManager(LocalContext.current)
         val videoDetailState = rememberVideoDetailState(manager = dashPlayerManager)
-        @Composable fun BotNavNar(activeDestination: Destination) {
-            val botNavItems = listOf<BottomNavigationItemData>(
-                BottomNavigationItemData(
-                    label = "Home",
-                    icon = Icons.Filled.Home,
-                    destination = Destination.Main.Home
-                ),
-                BottomNavigationItemData(
-                    label = "Following",
-                    icon = Icons.Filled.Star,
-                    destination = Destination.Main.Following
-                ),
-                BottomNavigationItemData(
-                    label = "Add",
-                    icon = Icons.Filled.AddCircle,
-                    destination = Destination.Main.AddNewVideo
-                ),
-                BottomNavigationItemData(
-                    label = "Inbox",
-                    icon = Icons.Filled.Email,
-                    destination = Destination.Main.Inbox
-                ),
-                BottomNavigationItemData(
-                    label = "Profile",
-                    icon = Icons.Filled.AccountCircle,
-                    destination = Destination.Main.Profile(username = "lmkha27")
-                ),
-            )
-            NavigationBar(containerColor = Color.Transparent) {
-                botNavItems.forEach { item ->
-                    NavigationBarItem(
-                        label = { Text(item.label) },
-                        selected = item.destination.route == activeDestination.route,
-                        onClick = {
-                            scope.launch {
-                                val popBack: Boolean = navController.popBackStack(route = item.destination, inclusive = false)
-                                if (!popBack) {
-                                    navController.navigate(item.destination)
-                                }
-                            }
-                        },
-                        icon = {
-                            if (item.destination != Destination.Main.Profile) {
-                                Icon(
-                                    imageVector = item.icon,
-                                    contentDescription = item.label
-                                )
-                            } else {
-                                UserAvatar(modifier = Modifier.size(24.dp))
-                            }
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.primary,
-                            selectedTextColor = MaterialTheme.colorScheme.primary,
-                            indicatorColor = MaterialTheme.colorScheme.surface,
-                        )
-                    )
-                }
+        fun botNavBarNavigate(dest: Destination) {
+            scope.launch {
+                val popped = navController.popBackStack(route = dest, inclusive = false)
+                if (!popped) navController.navigate(dest)
             }
         }
-
         BackHandler(enabled = videoDetailState.isFullScreenMode) {
             videoDetailState.enableMinimizedMode()
         }
@@ -179,14 +125,26 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
                                     }
                                 },
                                 onOpenSearchOverlay = { navController.navigate(Destination.Search) },
-                                bottomNavBar = { BotNavNar(Destination.Main.Home) }
+                                bottomNavBar = {
+                                    BotNavBar(
+                                        activeDestination = Destination.Main.Home,
+                                        appState = appState,
+                                        onNavigate = { botNavBarNavigate(it) }
+                                    )
+                                }
                             )
                         }
                         composable<Destination.Main.Following> {
                             FollowingScreen(
                                 onChangeTheme = {  },
-                                bottomNavBar = { BotNavNar(Destination.Main.Following) },
-                                navigateToTestScreen = { navController.navigate(Destination.Test) }
+                                navigateToTestScreen = { navController.navigate(Destination.Test) },
+                                bottomNavBar = {
+                                    BotNavBar(
+                                        activeDestination = Destination.Main.Following,
+                                        appState = appState,
+                                        onNavigate = { botNavBarNavigate(it) }
+                                    )
+                                },
                             )
                         }
                         composable<Destination.Main.AddNewVideo>(
@@ -220,30 +178,33 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
                         }
                         composable<Destination.Main.Inbox> {
                             InboxScreen(
-                                bottomNavBar = { BotNavNar(Destination.Main.Inbox) },
+                                bottomNavBar = {
+                                    BotNavBar(
+                                        activeDestination = Destination.Main.Inbox,
+                                        appState = appState,
+                                        onNavigate = { botNavBarNavigate(it) }
+                                    )
+                                },
                             )
                         }
                         composable<Destination.Main.Profile> { backStackEntry->
-                            if (appState.isLogged) {
-                                ProfileScreen(
-                                    isMyProfile = true,
-                                    bottomNavBar = { BotNavNar(Destination.Main.Profile()) },
-                                    onBack = { navController.popBackStack() },
-                                    onNavigateToStudioScreen = {},
-                                    onNavigateToSettingsScreen = {
-                                        navController.navigate(
-                                            Destination.Settings
-                                        )
-                                    },
-                                    onNavigateToQRCodeScreen = {},
-                                )
-                            } else {
-                                UnauthenticatedProfileScreen(
-                                    bottomNavBar = { BotNavNar(Destination.Main.Profile()) },
-                                    onBack = { navController.popBackStack() },
-                                    onNavigateToLoginScreen = { navController.navigate(Destination.Login) }
-                                )
-                            }
+                            val profile: Destination.Main.Profile = backStackEntry.toRoute()
+                            ProfileScreen(
+                                username = profile.username,
+                                isMyProfileRequested = profile.shouldNavigateToMyProfile,
+                                onBack = { navController.popBackStack() },
+                                onNavigateToLoginScreen = { navController.navigate(Destination.Login) },
+                                onNavigateToSettingsScreen = { navController.navigate(Destination.Settings) },
+                                onNavigateToStudioScreen = {},
+                                onNavigateToQRCodeScreen = {},
+                                bottomNavBar = {
+                                    BotNavBar(
+                                        activeDestination = Destination.Main.Profile(),
+                                        appState = appState,
+                                        onNavigate = { botNavBarNavigate(it) }
+                                    )
+                                },
+                            )
                         }
                     }
                     composable<Destination.Search> {
@@ -329,6 +290,46 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
         }
     }
 }
+@Composable
+private fun BotNavBar(
+    activeDestination: Destination,
+    appState: AppState,
+    onNavigate: (Destination) -> Unit
+) {
+    val botNavItems = listOf(
+        BottomNavigationItemData("Home", Icons.Filled.Home, Destination.Main.Home),
+        BottomNavigationItemData("Following", Icons.Filled.Star, Destination.Main.Following),
+        BottomNavigationItemData("Add", Icons.Filled.AddCircle, Destination.Main.AddNewVideo),
+        BottomNavigationItemData("Inbox", Icons.Filled.Email, Destination.Main.Inbox),
+        BottomNavigationItemData("Profile", Icons.Filled.AccountCircle, Destination.Main.Profile(shouldNavigateToMyProfile = true)),
+    )
+
+    NavigationBar(containerColor = Color.Transparent) {
+        botNavItems.forEach { item ->
+            NavigationBarItem(
+                label = { Text(item.label) },
+                selected = item.destination.route == activeDestination.route,
+                onClick = { onNavigate(item.destination) },
+                icon = {
+                    if (item.destination.route != Destination.Main.Profile().route) {
+                        Icon(imageVector = item.icon, contentDescription = item.label)
+                    } else {
+                        UserAvatar(
+                            avatarLink = appState.currentUser?.networkAvatarUrl,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.primary,
+                    selectedTextColor = MaterialTheme.colorScheme.primary,
+                    indicatorColor = MaterialTheme.colorScheme.surface,
+                )
+            )
+        }
+    }
+}
+
 private data class BottomNavigationItemData (
     val label: String,
     val icon: ImageVector,

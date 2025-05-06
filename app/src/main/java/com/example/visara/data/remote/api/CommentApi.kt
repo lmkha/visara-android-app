@@ -1,6 +1,5 @@
 package com.example.visara.data.remote.api
 
-import android.util.Log
 import com.example.visara.BuildConfig
 import com.example.visara.di.AuthorizedOkHttpClient
 import com.example.visara.di.UnauthenticatedOkhttpClient
@@ -32,7 +31,6 @@ class CommentApi @Inject constructor(
         )
         replyTo?.let { payload["replyTo"] = it }
 
-        Log.i("CHECK_VAR", "payload: ${payload.toString()}")
 
         val requestBody: RequestBody = gson.toJson(payload)
             .toRequestBody("application/json".toMediaTypeOrNull())

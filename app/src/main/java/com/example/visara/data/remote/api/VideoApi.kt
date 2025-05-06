@@ -51,6 +51,20 @@ class VideoApi @Inject constructor(
         return unauthorizedOkHttpClient.newCall(request).execute()
     }
 
+    fun getAllVideoByUserId(userId: Long) : Response {
+        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+            .addPathSegments("videos/user")
+            .addPathSegment(userId.toString())
+            .build()
+
+        val request: Request = Request.Builder()
+            .url(url)
+            .get()
+            .build()
+
+        return unauthorizedOkHttpClient.newCall(request).execute()
+    }
+
     fun uploadVideoFile(
         videoId: String,
         videoFile: File,

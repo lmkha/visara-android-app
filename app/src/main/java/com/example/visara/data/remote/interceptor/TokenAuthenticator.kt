@@ -1,6 +1,5 @@
 package com.example.visara.data.remote.interceptor
 
-import android.util.Log
 import com.example.visara.data.local.shared_preference.TokenStorage
 import com.example.visara.data.local.shared_preference.UserSessionManager
 import com.example.visara.data.remote.api.RefreshTokenApi
@@ -25,9 +24,6 @@ class TokenAuthenticator @Inject constructor(
         val currentUsername = userSessionManager.getCurrentUsername() ?: return null
         val newTokenApiResponse = runBlocking { refreshTokenApi.refreshToken(refreshToken, currentUsername) }
         val newTokenApiResponseBody = newTokenApiResponse.body?.string()
-        Log.i("CHECK_VAR", "refresh token: $refreshToken")
-        Log.i("CHECK_VAR", "current username: $currentUsername")
-        Log.i("CHECK_VAR", "call refresh: ${newTokenApiResponseBody.toString()}")
 
         if (newTokenApiResponse.isSuccessful && !newTokenApiResponseBody.isNullOrEmpty()) {
             val jsonObject = gson.fromJson(newTokenApiResponseBody, Map::class.java)

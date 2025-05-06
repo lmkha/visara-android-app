@@ -1,8 +1,6 @@
 package com.example.visara.data.repository
 
-import com.example.visara.data.local.dao.UserDao
 import com.example.visara.data.local.datasource.AuthLocalDataSource
-import com.example.visara.data.model.toEntity
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.datasource.AuthRemoteDataSource
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +12,6 @@ class AuthRepository @Inject constructor(
     private val authRemoteDataSource: AuthRemoteDataSource,
     private val authLocalDataSource: AuthLocalDataSource,
     private val userRepository: UserRepository,
-    private val userDao: UserDao,
 ) {
     private val _isAuthenticated: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val isAuthenticated: StateFlow<Boolean> = _isAuthenticated.asStateFlow()
@@ -37,9 +34,9 @@ class AuthRepository @Inject constructor(
             _isAuthenticated.value = true
 
             val currentUserModel = userRepository.getCurrentUser()
-            val userEntity = currentUserModel?.toEntity()
-            if (userEntity != null) {
-                userDao.insertUser(userEntity)
+            if (currentUserModel != null) {
+                userRepository.saveUser(currentUserModel)
+                userRepository.refreshCurrentUser()
             }
 
             return true
@@ -51,6 +48,7 @@ class AuthRepository @Inject constructor(
         authLocalDataSource.clearToken()
         authLocalDataSource.clearCurrentUsername()
         _isAuthenticated.value = false
+        userRepository.refreshCurrentUser()
     }
     fun refreshAuthenticationState() {
         val hasToken = !authLocalDataSource.getAccessToken().isNullOrEmpty()
