@@ -2,6 +2,8 @@ package com.example.visara.ui
 
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -33,6 +35,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -40,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -221,26 +225,42 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
                 }
             }
 
+            val isFullScreen = appState.videoDetailState.isFullScreenMode
+            val shape by animateDpAsState(targetValue = if (isFullScreen) 0.dp else 15.dp, label = "shape")
             Box(
-                modifier = if (appState.videoDetailState.isFullScreenMode) Modifier
-                    .zIndex(if (appState.videoDetailState.isVisible) 10f else -10f)
+                modifier = Modifier
                     .fillMaxSize()
-                else Modifier
-                    .zIndex(if (appState.videoDetailState.isVisible) 10f else -10f)
-                    .fillMaxSize()
-                    .padding(bottom = 120.dp, end = 24.dp)
+                    .padding(
+                        bottom = if (isFullScreen) 0.dp else 120.dp,
+                        end = if (isFullScreen) 0.dp else 24.dp
+                    )
+                    .zIndex(if (appState.videoDetailState.isVisible) 10f else -10f),
+                contentAlignment = if (isFullScreen) Alignment.TopStart else Alignment.BottomEnd
             ) {
-                VideoDetailScreen(
-                    viewModel = videoDetailViewModel,
-                    modifier = if (appState.videoDetailState.isFullScreenMode) Modifier
-                        .fillMaxSize()
-                        .statusBarsPadding()
-                    else Modifier
-                        .width(250.dp)
-                        .clip(RoundedCornerShape(15.dp))
-                        .aspectRatio(16f / 9f)
-                        .align(Alignment.BottomEnd)
-                )
+                key(appState.videoDetailState.video?.id) {
+                    VideoDetailScreen(
+                        viewModel = videoDetailViewModel,
+                        isFullScreenMode = isFullScreen,
+                        modifier = Modifier
+                            .then(
+                                if (isFullScreen)
+                                    Modifier
+                                        .fillMaxSize()
+                                        .graphicsLayer {
+                                            scaleX = 1f
+                                            scaleY = 1f
+                                            transformOrigin = TransformOrigin(1f, 1f)
+                                        }
+                                        .statusBarsPadding()
+                                else
+                                    Modifier
+                                        .width(250.dp)
+                                        .aspectRatio(16f / 9f)
+                                        .clip(RoundedCornerShape(shape))
+                            )
+                            .animateContentSize()
+                    )
+                }
             }
         }
     }

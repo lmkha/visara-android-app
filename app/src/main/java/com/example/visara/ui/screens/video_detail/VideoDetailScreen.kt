@@ -59,6 +59,7 @@ import kotlin.math.roundToInt
 fun VideoDetailScreen(
     modifier: Modifier = Modifier,
     viewModel: VideoDetailViewModel,
+    isFullScreenMode: Boolean,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var liked by remember(uiState.isVideoLiked) { mutableStateOf(uiState.isVideoLiked) }
@@ -114,7 +115,7 @@ fun VideoDetailScreen(
                 player = viewModel.player,
                 modifier = Modifier.fillMaxSize()
             )
-            if (!uiState.isFullScreenMode) {
+            if (!isFullScreenMode) {
                 MinimizedModeControl(
                     isPlaying = uiState.isPlaying,
                     onPlay = viewModel::play,
@@ -136,8 +137,7 @@ fun VideoDetailScreen(
                 state = columnState,
                 modifier = Modifier
                     .nestedScroll(nestedScrollConnection)
-//                        .height(dynamicHeight)
-                    .height(if (uiState.isFullScreenMode) dynamicHeight else 0.dp)
+                    .height(if (isFullScreenMode) dynamicHeight else 0.dp)
                     .fillMaxWidth()
                     .padding(8.dp)
                     .draggable(

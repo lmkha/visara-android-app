@@ -1,6 +1,5 @@
 package com.example.visara.viewmodels
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.exoplayer.ExoPlayer
@@ -46,28 +45,27 @@ class VideoDetailViewModel @Inject constructor(
     private fun observerVideoDetail() {
         viewModelScope.launch {
             videoDetailRepository.videoDetail.collect { videoDetail ->
-                val isUserAuthenticated = authRepository.isAuthenticated.first()
+                _uiState.update { oldState->
+                    val isUserAuthenticated = authRepository.isAuthenticated.first()
 
-                val currentUser = userRepository.currentUser.first()
+                    val currentUser = userRepository.currentUser.first()
 
-                val video = if (videoDetail.video?.id == _uiState.value.video?.id) _uiState.value.video
-                else videoDetail.video?.id?.let { videoRepository.getVideoById(it) }
+                    val video = if (videoDetail.video?.id == oldState.video?.id) oldState.video
+                    else videoDetail.video?.id?.let { videoRepository.getVideoById(it) }
 
-                val isVideoLiked = if (videoDetail.video?.id == _uiState.value.video?.id) _uiState.value.isVideoLiked
-                else videoDetail.video?.id?.let { videoRepository.isVideoLiked(it) } == true
-                Log.i("CHECK_VAR", "liked in viewmodel: $isVideoLiked")
+                    val isVideoLiked = if (video?.id == oldState.video?.id) oldState.isVideoLiked
+                    else video?.id?.let { videoRepository.isVideoLiked(it) } == true
 
-                val author = if (videoDetail.video?.username == _uiState.value.author?.username) _uiState.value.author
-                else videoDetail.video?.username?.let { userRepository.getPublicUser(it) }
+                    val author = if (video?.username == oldState.author?.username) oldState.author
+                    else video?.username?.let { userRepository.getPublicUser(it) }
 
-                val commentList = if (videoDetail.video?.id == null) emptyList()
-                else if (videoDetail.video.id == _uiState.value.video?.id) _uiState.value.commentList
-                else {
-                    val parentComments = commentRepository.getAllParentCommentsByVideoId(videoDetail.video.id)
-                    parentComments.map { CommentWithReplies(comment = it)}
-                }
+                    val commentList = if (video?.id == null) emptyList()
+                    else if (video.id == oldState.video?.id) oldState.commentList
+                    else {
+                        val parentComments = commentRepository.getAllParentCommentsByVideoId(video.id)
+                        parentComments.map { CommentWithReplies(comment = it)}
+                    }
 
-                _uiState.update {
                     VideoDetailScreenUiState(
                         isUserAuthenticated = isUserAuthenticated,
                         video = video,
