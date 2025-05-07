@@ -1,5 +1,6 @@
 package com.example.visara.data.remote.datasource
 
+import android.util.Log
 import com.example.visara.data.model.VideoModel
 import com.example.visara.data.remote.common.ApiError
 import com.example.visara.data.remote.common.ApiResult
@@ -184,6 +185,92 @@ class VideoRemoteDataSource @Inject constructor(
                     val type = object : TypeToken<List<VideoDto>>() {}.type
                     val videoDtoList: List<VideoDto> = gson.fromJson(dataJson, type)
                     ApiResult.Success(videoDtoList)
+                } else {
+                    ApiResult.Failure(
+                        ApiError(
+                            code = response.code,
+                            errorCode = response.code.toString(),
+                            message = response.message,
+                            rawBody = responseBody
+                        )
+                    )
+                }
+            } catch (e : Exception) {
+                ApiResult.Error(e)
+            }
+        }
+    }
+
+    suspend fun likeVideo(videoId: String) : ApiResult<Unit> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = videoApi.likeVideo(videoId)
+                val responseBody = response.body?.string()
+                val jsonObject = gson.fromJson(responseBody, Map::class.java)
+                val successValue = jsonObject["success"]
+                val success = successValue is Boolean && successValue == true
+
+                if (response.isSuccessful && success == true) {
+                    ApiResult.Success(Unit)
+                } else {
+                    ApiResult.Failure(
+                        ApiError(
+                            code = response.code,
+                            errorCode = response.code.toString(),
+                            message = response.message,
+                            rawBody = responseBody
+                        )
+                    )
+                }
+            } catch (e : Exception) {
+                ApiResult.Error(e)
+            }
+        }
+    }
+
+    suspend fun unlikeVideo(videoId: String) : ApiResult<Unit> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = videoApi.unlikeVideo(videoId)
+                val responseBody = response.body?.string()
+                val jsonObject = gson.fromJson(responseBody, Map::class.java)
+                val successValue = jsonObject["success"]
+                val success = successValue is Boolean && successValue == true
+
+                if (response.isSuccessful && success == true) {
+                    ApiResult.Success(Unit)
+                } else {
+                    ApiResult.Failure(
+                        ApiError(
+                            code = response.code,
+                            errorCode = response.code.toString(),
+                            message = response.message,
+                            rawBody = responseBody
+                        )
+                    )
+                }
+            } catch (e : Exception) {
+                ApiResult.Error(e)
+            }
+        }
+    }
+
+    suspend fun isVideoLiked(videoId: String) : ApiResult<Boolean> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = videoApi.getIsVideoLiked(videoId)
+                val responseBody = response.body?.string()
+                val jsonObject = gson.fromJson(responseBody, Map::class.java)
+                val messageValue = jsonObject["message"]
+                val liked = messageValue is String && messageValue == "Liked"
+
+                Log.i("CHECK_VAR", "check liked response: $response")
+                Log.i("CHECK_VAR", "check liked response body: ${responseBody.toString()}")
+                Log.i("CHECK_VAR", "check liked message: $messageValue")
+                Log.i("CHECK_VAR", "check liked liked value: $liked")
+
+                if (response.isSuccessful) {
+                    ApiResult.Success(liked)
                 } else {
                     ApiResult.Failure(
                         ApiError(

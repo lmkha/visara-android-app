@@ -1,5 +1,6 @@
 package com.example.visara.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.exoplayer.ExoPlayer
@@ -33,6 +34,7 @@ class VideoDetailViewModel @Inject constructor(
     private val _uiState: MutableStateFlow<VideoDetailScreenUiState> = MutableStateFlow(VideoDetailScreenUiState())
     val uiState: StateFlow<VideoDetailScreenUiState> = _uiState.asStateFlow()
     var likeCommentJobMap: MutableMap<String, Job> = mutableMapOf<String, Job>()
+    private var changeVideoLikeJob: Job? = null
     val player: ExoPlayer get() = videoDetailRepository.dashVideoPlayerManager.player
 
     init {
@@ -51,6 +53,10 @@ class VideoDetailViewModel @Inject constructor(
                 val video = if (videoDetail.video?.id == _uiState.value.video?.id) _uiState.value.video
                 else videoDetail.video?.id?.let { videoRepository.getVideoById(it) }
 
+                val isVideoLiked = if (videoDetail.video?.id == _uiState.value.video?.id) _uiState.value.isVideoLiked
+                else videoDetail.video?.id?.let { videoRepository.isVideoLiked(it) } == true
+                Log.i("CHECK_VAR", "liked in viewmodel: $isVideoLiked")
+
                 val author = if (videoDetail.video?.username == _uiState.value.author?.username) _uiState.value.author
                 else videoDetail.video?.username?.let { userRepository.getPublicUser(it) }
 
@@ -65,6 +71,7 @@ class VideoDetailViewModel @Inject constructor(
                     VideoDetailScreenUiState(
                         isUserAuthenticated = isUserAuthenticated,
                         video = video,
+                        isVideoLiked = isVideoLiked,
                         commentList = commentList,
                         currentUser = currentUser,
                         author = author,
@@ -271,11 +278,33 @@ class VideoDetailViewModel @Inject constructor(
             videoDetailRepository.enableFullScreenMode()
         }
     }
+
+    fun changeVideoLike(
+        current: Boolean,
+        onFailure: () -> Unit,
+    ) {
+        changeVideoLikeJob?.cancel()
+
+        changeVideoLikeJob = viewModelScope.launch {
+            delay(500)
+            val videoId = _uiState.value.video?.id
+            if (videoId != null) {
+                val result = if (current == true) {
+                    videoRepository.unlikeVideo(videoId)
+                } else {
+                    videoRepository.likeVideo(videoId)
+                }
+                if (!result) onFailure()
+            }
+            changeVideoLikeJob = null
+        }
+    }
 }
 
 data class VideoDetailScreenUiState(
     val isUserAuthenticated: Boolean = false,
     val video: VideoModel? = null,
+    val isVideoLiked: Boolean = false,
     val commentList: List<CommentWithReplies> = emptyList(),
     val isLoading: Boolean = true,
     val isOpenExpandedCommentSection: Boolean = false,

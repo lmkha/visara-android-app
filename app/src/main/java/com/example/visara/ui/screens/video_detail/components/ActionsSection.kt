@@ -21,10 +21,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -32,9 +28,11 @@ import androidx.compose.ui.unit.dp
 import com.example.visara.R
 
 @Composable
-fun ActionsSection() {
-    var liked by remember { mutableStateOf(false) }
-
+fun ActionsSection(
+    liked: Boolean,
+    likeCount: Long,
+    likeClick: () -> Unit,
+) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -42,9 +40,7 @@ fun ActionsSection() {
         // Like
         Row(verticalAlignment = Alignment.CenterVertically) {
             OutlinedButton(
-                onClick = {
-                    liked = !liked
-                },
+                onClick = likeClick,
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
             ) {
                 Icon(
@@ -54,7 +50,7 @@ fun ActionsSection() {
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    text = "19K",
+                    text = likeCount.toString(),
                 )
             }
         }

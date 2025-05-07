@@ -1,5 +1,6 @@
 package com.example.visara.data.repository
 
+import android.util.Log
 import com.example.visara.data.local.datasource.AuthLocalDataSource
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.datasource.AuthRemoteDataSource
@@ -28,6 +29,8 @@ class AuthRepository @Inject constructor(
             authLocalDataSource.setCurrentUsername(username)
             val accessToken = loginResult.data.accessToken
             val refreshToken = loginResult.data.refreshToken
+            Log.i("CHECK_VAR", "refresh token: $refreshToken")
+            Log.i("CHECK_VAR", "access token: $accessToken")
             authLocalDataSource.saveAccessToken(accessToken)
             authLocalDataSource.saveRefreshToken(refreshToken)
 

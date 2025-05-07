@@ -127,4 +127,19 @@ class VideoRepository @Inject constructor(
 
         return emptyList()
     }
+
+    suspend fun likeVideo(videoId: String) : Boolean {
+        val apiResult = videoRemoteDataSource.likeVideo(videoId)
+        return apiResult is ApiResult.Success
+    }
+
+    suspend fun unlikeVideo(videoId: String) : Boolean {
+        val apiResult = videoRemoteDataSource.unlikeVideo(videoId)
+        return apiResult is ApiResult.Success
+    }
+
+    suspend fun isVideoLiked(videoId: String) : Boolean {
+        val apiResult = videoRemoteDataSource.isVideoLiked(videoId)
+        return apiResult is ApiResult.Success && apiResult.data == true
+    }
 }

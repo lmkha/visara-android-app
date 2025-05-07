@@ -24,8 +24,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,6 +61,8 @@ fun VideoDetailScreen(
     viewModel: VideoDetailViewModel,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var liked by remember(uiState.isVideoLiked) { mutableStateOf(uiState.isVideoLiked) }
+    var likeCount by remember(uiState.video?.likesCount) { mutableLongStateOf(uiState.video?.likesCount ?: 0L) }
     val scope = rememberCoroutineScope()
     val thresholdDp: Dp = 300.dp
     val defaultHeight = 600.dp
@@ -171,7 +176,21 @@ fun VideoDetailScreen(
                 }
                 // Actions: like, share, download, save, report
                 item {
-                    ActionsSection()
+                    ActionsSection(
+                        liked = liked,
+                        likeCount = likeCount,
+                        likeClick = {
+                            if (uiState.isUserAuthenticated) {
+                                liked = !liked // change state first
+                                likeCount = if (liked) likeCount + 1
+                                else likeCount - 1
+                                viewModel.changeVideoLike(
+                                    current = !liked, // pass !liked because has been changed above, before call this function
+                                    onFailure = { liked = !liked }
+                                )
+                            }
+                        }
+                    )
                 }
                 // Comment
                 item {

@@ -157,4 +157,45 @@ class VideoApi @Inject constructor(
         return authorizedOkHttpClient.newCall(request).execute()
     }
 
+    fun likeVideo(videoId: String) : Response {
+        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+            .addPathSegments("videos/likes")
+            .addPathSegment(videoId)
+            .build()
+
+        val request: Request = Request.Builder()
+            .url(url)
+            .post("".toRequestBody())
+            .build()
+
+        return authorizedOkHttpClient.newCall(request).execute()
+    }
+
+    fun unlikeVideo(videoId: String) : Response {
+        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+            .addPathSegments("videos/likes")
+            .addPathSegment(videoId)
+            .build()
+
+        val request: Request = Request.Builder()
+            .url(url)
+            .delete()
+            .build()
+
+        return authorizedOkHttpClient.newCall(request).execute()
+    }
+
+    fun getIsVideoLiked(videoId: String): Response {
+        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+            .addPathSegments("videos/likes")
+            .addPathSegment(videoId)
+            .build()
+
+        val request: Request = Request.Builder()
+            .url(url)
+            .get()
+            .build()
+
+        return authorizedOkHttpClient.newCall(request).execute()
+    }
 }
