@@ -64,10 +64,12 @@ import androidx.compose.ui.zIndex
 import com.example.visara.R
 import com.example.visara.data.model.VideoModel
 import com.example.visara.ui.components.UserAvatar
+import com.example.visara.ui.screens.profile.components.ActionButton
 import com.example.visara.ui.screens.profile.components.BottomSheet
 import com.example.visara.ui.screens.profile.components.MetricItem
 import com.example.visara.ui.screens.profile.components.TabPlaylistItem
 import com.example.visara.ui.screens.profile.components.TabVideoItem
+import com.example.visara.ui.theme.LocalVisaraCustomColors
 import com.example.visara.viewmodels.ProfileScreenUiState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -142,7 +144,7 @@ fun ProfileScreenContainer(
                     title = {
                         if (showTitle) {
                             Text(
-                                text = "lmkha",
+                                text = uiState.user?.username ?: "username",
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -195,7 +197,6 @@ fun ProfileScreenContainer(
             LazyColumn(
                 state = mainScrollState,
                 modifier = Modifier.padding(innerPadding)
-                ,
             ) {
                 // Avatar, name and username(0)
                 item {
@@ -289,43 +290,66 @@ fun ProfileScreenContainer(
                             modifier = Modifier.align(Alignment.Center),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            @Composable
-                            fun ActionButton(
-                                modifier: Modifier = Modifier,
-                                onClick: () -> Unit,
-                                content: @Composable () -> Unit,
-                            ) {
-                                Box(
-                                    modifier = modifier
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(color = Color.DarkGray)
-                                        .clickable(onClick = onClick),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    content()
+                            if (uiState.isMyProfile) {
+                                ActionButton(onClick = {}) {
+                                    Text(
+                                        text = "Edit profile",
+                                        modifier = Modifier.padding(8.dp),
+                                        fontWeight = FontWeight.Bold,
+                                        color = LocalVisaraCustomColors.current.profileActionButtonContentColor,
+                                    )
                                 }
-                            }
-
-                            ActionButton(onClick = {}) {
-                                Text(
-                                    text = "Edit profile",
-                                    modifier = Modifier.padding(8.dp),
-                                    fontWeight = FontWeight.Bold,
-                                )
-                            }
-                            ActionButton(onClick = {}) {
-                                Text(
-                                    text = "Share profile",
-                                    modifier = Modifier.padding(8.dp),
-                                    fontWeight = FontWeight.Bold,
-                                )
-                            }
-                            ActionButton(onClick = {}) {
-                                Icon(
-                                    painter = painterResource(R.drawable.studio_24px),
-                                    contentDescription = null,
-                                    modifier = Modifier.padding(8.dp),
-                                )
+                                ActionButton(onClick = {}) {
+                                    Text(
+                                        text = "Share profile",
+                                        modifier = Modifier.padding(8.dp),
+                                        fontWeight = FontWeight.Bold,
+                                        color = LocalVisaraCustomColors.current.profileActionButtonContentColor,
+                                    )
+                                }
+                                ActionButton(onClick = {}) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.studio_24px),
+                                        contentDescription = null,
+                                        modifier = Modifier.padding(8.dp),
+                                        tint = LocalVisaraCustomColors.current.profileActionButtonContentColor,
+                                    )
+                                }
+                            } else {
+                                ActionButton(onClick = {}) {
+                                    Text(
+                                        text = "Send message",
+                                        modifier = Modifier.padding(8.dp),
+                                        fontWeight = FontWeight.Bold,
+                                        color = LocalVisaraCustomColors.current.profileActionButtonContentColor,
+                                    )
+                                }
+                                if (uiState.isFollowing) {
+                                    ActionButton(
+                                        onClick = {},
+                                        modifier = Modifier
+                                    ) {
+                                        Text(
+                                            text = "Followed",
+                                            modifier = Modifier.padding(8.dp),
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onPrimary,
+                                        )
+                                    }
+                                } else {
+                                    ActionButton(
+                                        isPrimary = true,
+                                        onClick = {},
+                                        modifier = Modifier
+                                    ) {
+                                        Text(
+                                            text = "Follow",
+                                            modifier = Modifier.padding(8.dp),
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onPrimary,
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
@@ -495,6 +519,7 @@ fun ProfileScreenContainer(
 
         // Bottom Sheet
         BottomSheet(
+            isAuthenticated = uiState.isAuthenticated,
             displayBottomSheet = displayBottomSheet,
             onClose = { displayBottomSheet = false },
             onItemSelected = { item ->

@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -34,8 +35,10 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -194,13 +197,15 @@ fun SuggestionTag(
     tags: List<String>,
     modifier: Modifier = Modifier,
 ) {
+    var selectedTag by remember { mutableStateOf("Explore") }
+
     LazyRow(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         item {
             AssistChip(
-                onClick = {},
+                onClick = { selectedTag = "Explore" },
                 label = { Text("Explore") },
                 leadingIcon = {
                     Icon(
@@ -208,18 +213,24 @@ fun SuggestionTag(
                         contentDescription = "Trending"
                     )
                 },
-            )
-        }
-        item {
-            SuggestionChip(
-                onClick = {},
-                label = { Text("All") }
+                colors = AssistChipDefaults.assistChipColors(
+                    containerColor = if (selectedTag == "Explore") LocalVisaraCustomColors.current.selectedChipContainerColor
+                    else LocalVisaraCustomColors.current.unselectedChipContainerColor,
+                    labelColor = if (selectedTag == "Explore") LocalVisaraCustomColors.current.selectedChipContentColor
+                    else LocalVisaraCustomColors.current.unselectedChipContentColor
+                )
             )
         }
         items(tags.size) {index->
             SuggestionChip(
-                onClick = {},
-                label = { Text(tags[index]) }
+                onClick = { selectedTag = tags[index] },
+                label = { Text(tags[index]) },
+                colors = AssistChipDefaults.assistChipColors(
+                    containerColor = if (selectedTag == tags[index]) LocalVisaraCustomColors.current.selectedChipContainerColor
+                    else LocalVisaraCustomColors.current.unselectedChipContainerColor,
+                    labelColor = if (selectedTag == tags[index]) LocalVisaraCustomColors.current.selectedChipContentColor
+                    else LocalVisaraCustomColors.current.unselectedChipContentColor
+                )
             )
         }
     }

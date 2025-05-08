@@ -18,6 +18,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
@@ -37,6 +38,7 @@ import com.example.visara.R
 import com.example.visara.ui.components.VideoItem
 import com.example.visara.ui.screens.search.components.SearchBar
 import com.example.visara.ui.screens.search.components.UserItem
+import com.example.visara.ui.theme.LocalVisaraCustomColors
 import com.example.visara.viewmodels.SearchViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -59,7 +61,7 @@ fun SearchScreen(
         ) {
             // Header + tab select
             stickyHeader {
-                Column(modifier = Modifier.background(Color.White)) {
+                Column(modifier = Modifier.background(color = MaterialTheme.colorScheme.background)) {
                     // Header
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -111,7 +113,10 @@ fun SearchScreen(
                             },
                             label = { Text("Videos") },
                             colors = SuggestionChipDefaults.suggestionChipColors(
-                                containerColor = if (selectedType == "title") Color.LightGray else Color.White
+                                containerColor = if (selectedType == "title") LocalVisaraCustomColors.current.selectedChipContainerColor
+                                else LocalVisaraCustomColors.current.unselectedChipContainerColor,
+                                labelColor = if (selectedType == "title") LocalVisaraCustomColors.current.selectedChipContentColor
+                                else LocalVisaraCustomColors.current.unselectedChipContentColor
                             )
                         )
                         SuggestionChip(
@@ -121,7 +126,10 @@ fun SearchScreen(
                             },
                             label = { Text("Users") },
                             colors = SuggestionChipDefaults.suggestionChipColors(
-                                containerColor = if (selectedType == "user") Color.LightGray else Color.White
+                                containerColor = if (selectedType == "user") LocalVisaraCustomColors.current.selectedChipContainerColor
+                                else LocalVisaraCustomColors.current.unselectedChipContainerColor,
+                                labelColor = if (selectedType == "user") LocalVisaraCustomColors.current.selectedChipContentColor
+                                else LocalVisaraCustomColors.current.unselectedChipContentColor
                             )
                         )
                     }

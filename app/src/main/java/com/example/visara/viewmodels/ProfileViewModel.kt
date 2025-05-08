@@ -102,6 +102,7 @@ data class ProfileScreenUiState(
     val isMyProfileRequested: Boolean = false,
     val isMyProfile: Boolean = false,
     val isAuthenticated: Boolean = false,
+    val isFollowing: Boolean = false,
     val user: UserModel? = null,
     val videos: List<VideoModel> = emptyList(),
     val isLoading: Boolean = false,

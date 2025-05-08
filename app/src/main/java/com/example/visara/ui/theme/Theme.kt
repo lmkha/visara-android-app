@@ -21,10 +21,6 @@ private val DarkColorScheme = darkColorScheme(
     onBackground = Color.White,
     surface = Color.DarkGray,
     onSurface = Color.LightGray,
-    /* Other default colors to override
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    */
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -36,10 +32,6 @@ private val LightColorScheme = lightColorScheme(
     onBackground = Color.Black,
     surface = Color.LightGray,
     onSurface = Color.DarkGray,
-    /* Other default colors to override
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    */
 )
 
 enum class AppTheme {

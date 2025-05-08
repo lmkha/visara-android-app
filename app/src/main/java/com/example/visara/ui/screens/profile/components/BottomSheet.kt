@@ -39,6 +39,7 @@ import com.example.visara.ui.theme.LocalVisaraCustomColors
 
 @Composable
 fun BottomSheet(
+    isAuthenticated: Boolean,
     displayBottomSheet: Boolean,
     onClose: () -> Unit,
     onItemSelected: (item: String) -> Unit = {},
@@ -60,7 +61,11 @@ fun BottomSheet(
                     .zIndex(1f)
                     .fillMaxSize()
                     .background(Color.Black.copy(alpha = backgroundAlpha))
-                    .clickable(onClick = onClose)
+                    .clickable(
+                        onClick = onClose,
+                        interactionSource = null,
+                        indication = null,
+                    )
             )
         }
 
@@ -104,7 +109,6 @@ fun BottomSheet(
                                 modifier = Modifier
                                     .height(60.dp)
                                     .fillMaxWidth()
-//                                    .background(Color.Blue)
                                     .clickable(onClick = onClick)
                             ) {
                                 icon()
@@ -124,27 +128,29 @@ fun BottomSheet(
                         }
                     }
 
-                    Item(
-                        icon = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.studio_24px),
-                                contentDescription = null,
-                            )
-                        },
-                        label = "VSara Studio",
-                        onClick = { onItemSelected("studio") },
-                    )
+                    if (isAuthenticated) {
+                        Item(
+                            icon = {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.studio_24px),
+                                    contentDescription = null,
+                                )
+                            },
+                            label = "VSara Studio",
+                            onClick = { onItemSelected("studio") },
+                        )
 
-                    Item(
-                        icon = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.qr_code_24px),
-                                contentDescription = null,
-                            )
-                        },
-                        label = "My QR Code",
-                        onClick = { onItemSelected("qr") },
-                    )
+                        Item(
+                            icon = {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.qr_code_24px),
+                                    contentDescription = null,
+                                )
+                            },
+                            label = "My QR Code",
+                            onClick = { onItemSelected("qr") },
+                        )
+                    }
 
                     Item(
                         icon = {

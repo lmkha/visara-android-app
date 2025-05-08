@@ -32,7 +32,8 @@ fun ProfileScreen(
             UnauthenticatedProfileContainer(
                 bottomNavBar = bottomNavBar,
                 onBack = onBack,
-                onNavigateToLoginScreen = onNavigateToLoginScreen
+                onNavigateToLoginScreen = onNavigateToLoginScreen,
+                onNavigateToSettingsScreen = onNavigateToSettingsScreen,
             )
         } else {
             ProfileScreenContainer(

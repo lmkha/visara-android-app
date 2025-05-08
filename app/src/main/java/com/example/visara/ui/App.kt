@@ -231,6 +231,7 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
                     composable<Destination.Settings> {
                         SettingsScreen(
                             onBack = { navController.popBackStack() },
+                            navigateToLoginScreen = { navController.navigate(Destination.Login) },
                             navigateAfterLogout = {
                                 navController.navigate(Destination.Main.Home) {
                                     popUpTo(Destination.Main.Home) {

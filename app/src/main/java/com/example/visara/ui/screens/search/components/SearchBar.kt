@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import com.example.visara.ui.theme.LocalVisaraCustomColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,7 +33,12 @@ fun SearchBar(
     val focusManager: FocusManager = LocalFocusManager.current
     TextField(
         value = text,
-        placeholder = { Text("Search ....") },
+        placeholder = {
+            Text(
+                text = "Search ....",
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        },
         onValueChange = { onTextChange(it) },
         keyboardOptions = KeyboardOptions(
             imeAction = ImeAction.Search
@@ -44,8 +50,10 @@ fun SearchBar(
             }
         ),
         colors = TextFieldDefaults.colors(
-            unfocusedContainerColor = Color.LightGray,
-            focusedContainerColor = Color.LightGray,
+            focusedTextColor = MaterialTheme.colorScheme.onBackground,
+            unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
+            unfocusedContainerColor = LocalVisaraCustomColors.current.searchBarContainerColor,
+            focusedContainerColor = LocalVisaraCustomColors.current.searchBarContainerColor,
             unfocusedIndicatorColor = Color.Transparent,
         ),
         modifier = modifier.clip(RoundedCornerShape(15.dp))
