@@ -142,4 +142,20 @@ class VideoRepository @Inject constructor(
         val apiResult = videoRemoteDataSource.isVideoLiked(videoId)
         return apiResult is ApiResult.Success && apiResult.data == true
     }
+
+    suspend fun searchVideo(type: String, pattern: String, count: Long) : List<VideoModel> {
+        if (type != "title" && type != "hashtag") return emptyList()
+        if (pattern.isEmpty() || pattern.isBlank()) return emptyList()
+        if (count <= 0) return emptyList()
+
+        val apiResult = videoRemoteDataSource.searchVideo(type, pattern, count)
+
+        val result = if (apiResult is ApiResult.Success) {
+            apiResult.data.map { it.toVideoModel() }
+        } else {
+            emptyList()
+        }
+
+        return result
+    }
 }

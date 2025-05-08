@@ -10,6 +10,7 @@ import com.example.visara.data.remote.datasource.VideoRemoteDataSource
 import com.example.visara.data.repository.AppSettingsRepository
 import com.example.visara.data.repository.AuthRepository
 import com.example.visara.data.repository.CommentRepository
+import com.example.visara.data.repository.SearchRepository
 import com.example.visara.data.repository.UserRepository
 import com.example.visara.data.repository.VideoDetailRepository
 import com.example.visara.data.repository.VideoRepository
@@ -74,5 +75,14 @@ object RepositoryModule {
         videoRepository: VideoRepository,
     ) : VideoDetailRepository {
         return VideoDetailRepository(appContext, videoRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSearchRepository(
+        videoRepository: VideoRepository,
+        userRepository: UserRepository,
+    ) : SearchRepository {
+        return SearchRepository(videoRepository, userRepository)
     }
 }

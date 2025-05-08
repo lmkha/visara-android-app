@@ -56,7 +56,7 @@ import kotlinx.coroutines.launch
 fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
-    onOpenSearchOverlay: () -> Unit = {},
+    navigateToSearchScreen: () -> Unit = {},
     bottomNavBar: @Composable () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -100,7 +100,7 @@ fun HomeScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = onOpenSearchOverlay) {
+                    IconButton(onClick = navigateToSearchScreen) {
                         Icon(imageVector = Icons.Outlined.Search, contentDescription = null)
                     }
                 },

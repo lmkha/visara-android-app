@@ -54,4 +54,16 @@ class UserRepository @Inject constructor(
         }
         return null
     }
+
+    suspend fun searchUser(pattern: String) : List<UserModel> {
+        if (pattern.isEmpty() || pattern.isBlank()) return emptyList()
+
+        val apiResult = userRemoteDataSource.searchUser(pattern)
+        val result = if (apiResult is ApiResult.Success) {
+            apiResult.data.map { it.toUserModel() }
+        } else {
+            emptyList()
+        }
+        return result
+    }
 }

@@ -12,6 +12,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -34,10 +36,13 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -69,6 +74,7 @@ import com.example.visara.ui.screens.video_detail.VideoDetailScreen
 import com.example.visara.ui.theme.VisaraTheme
 import com.example.visara.viewmodels.AppState
 import com.example.visara.viewmodels.AppViewModel
+import com.example.visara.viewmodels.SearchViewModel
 import com.example.visara.viewmodels.VideoDetailViewModel
 import kotlinx.coroutines.launch
 
@@ -83,6 +89,7 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
         val scope = rememberCoroutineScope()
         val navController = rememberNavController()
         val snackBarHostState = remember { SnackbarHostState() }
+        var enableBottomPaddingForVideoDetail by remember { mutableStateOf(true) }
         fun botNavBarNavigate(dest: Destination) {
             scope.launch {
                 val popped = navController.popBackStack(route = dest, inclusive = false)
@@ -113,7 +120,7 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
                     navigation<Destination.Main>(startDestination = Destination.Main.Home) {
                         composable<Destination.Main.Home> {
                             HomeScreen(
-                                onOpenSearchOverlay = { navController.navigate(Destination.Search()) },
+                                navigateToSearchScreen = { navController.navigate(Destination.Search()) },
                                 bottomNavBar = {
                                     BotNavBar(
                                         activeDestination = Destination.Main.Home,
@@ -195,10 +202,22 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
                             )
                         }
                     }
-                    composable<Destination.Search> {
+                    composable<Destination.Search> { backStackEntry ->
+                        val search: Destination.Search = backStackEntry.toRoute()
+                        val searchViewModel: SearchViewModel = hiltViewModel()
+                        if (search.type == "hashtag" && search.pattern.isNotBlank()) {
+                            searchViewModel.searchVideoByHashtag(search.pattern)
+                        }
+                        LaunchedEffect(Unit) { enableBottomPaddingForVideoDetail = false }
+                        DisposableEffect(Unit) { onDispose { enableBottomPaddingForVideoDetail = true } }
                         SearchScreen(
-                            modifier = Modifier.fillMaxSize(),
+                            viewModel = searchViewModel,
                             goBack = { navController.popBackStack() },
+                            onViewUserProfile = { username -> navController.navigate(Destination.Main.Profile(username = username))},
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .statusBarsPadding()
+                                .navigationBarsPadding()
                         )
                     }
                     composable<Destination.Login> {
@@ -230,8 +249,11 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
+                    .imePadding()
                     .padding(
-                        bottom = if (isFullScreen) 0.dp else 120.dp,
+                        bottom = if (isFullScreen) 0.dp
+                        else if (enableBottomPaddingForVideoDetail) 120.dp
+                        else 24.dp,
                         end = if (isFullScreen) 0.dp else 24.dp
                     )
                     .zIndex(if (appState.videoDetailState.isVisible) 10f else -10f),

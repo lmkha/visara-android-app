@@ -1,6 +1,5 @@
 package com.example.visara.data.remote.datasource
 
-import android.util.Log
 import com.example.visara.data.model.VideoModel
 import com.example.visara.data.remote.common.ApiError
 import com.example.visara.data.remote.common.ApiResult
@@ -264,11 +263,6 @@ class VideoRemoteDataSource @Inject constructor(
                 val messageValue = jsonObject["message"]
                 val liked = messageValue is String && messageValue == "Liked"
 
-                Log.i("CHECK_VAR", "check liked response: $response")
-                Log.i("CHECK_VAR", "check liked response body: ${responseBody.toString()}")
-                Log.i("CHECK_VAR", "check liked message: $messageValue")
-                Log.i("CHECK_VAR", "check liked liked value: $liked")
-
                 if (response.isSuccessful) {
                     ApiResult.Success(liked)
                 } else {
@@ -282,6 +276,34 @@ class VideoRemoteDataSource @Inject constructor(
                     )
                 }
             } catch (e : Exception) {
+                ApiResult.Error(e)
+            }
+        }
+    }
+
+    suspend fun searchVideo(type: String, pattern: String, count: Long) : ApiResult<List<VideoDto>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = videoApi.searchVideo(type, pattern, count)
+                val responseBody = response.body?.string()
+
+                if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
+                    val jsonObject = gson.fromJson(responseBody, Map::class.java)
+                    val dataJson = gson.toJson(jsonObject["data"])
+                    val type = object : TypeToken<List<VideoDto>>() {}.type
+                    val videoDtoList: List<VideoDto> = gson.fromJson(dataJson, type)
+                    ApiResult.Success(videoDtoList)
+                } else {
+                    ApiResult.Failure(
+                        ApiError(
+                            code = response.code,
+                            errorCode = response.code.toString(),
+                            message = response.message,
+                            rawBody = responseBody
+                        )
+                    )
+                }
+            } catch (e: Exception) {
                 ApiResult.Error(e)
             }
         }

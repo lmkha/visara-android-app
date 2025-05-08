@@ -198,4 +198,20 @@ class VideoApi @Inject constructor(
 
         return authorizedOkHttpClient.newCall(request).execute()
     }
+
+    fun searchVideo(type: String, pattern: String, count: Long) : Response {
+        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+            .addPathSegments("videos/search")
+            .addQueryParameter("type", type)
+            .addQueryParameter("pattern", pattern)
+            .addQueryParameter("count", count.toString())
+            .build()
+
+        val request: Request = Request.Builder()
+            .url(url)
+            .get()
+            .build()
+
+        return unauthorizedOkHttpClient.newCall(request).execute()
+    }
 }

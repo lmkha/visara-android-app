@@ -45,4 +45,18 @@ class UserApi @Inject constructor(
 
         return unauthorizedOkHttpClient.newCall(request).execute()
     }
+
+    fun searchUser(pattern: String) : Response {
+        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+            .addPathSegments("users/search")
+            .addQueryParameter("pattern", pattern)
+            .build()
+
+        val request: Request = Request.Builder()
+            .url(url)
+            .get()
+            .build()
+
+        return unauthorizedOkHttpClient.newCall(request).execute()
+    }
 }
