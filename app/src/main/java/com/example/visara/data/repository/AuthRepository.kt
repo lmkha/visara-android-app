@@ -7,6 +7,7 @@ import com.example.visara.data.remote.datasource.AuthRemoteDataSource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 class AuthRepository @Inject constructor(
@@ -24,34 +25,27 @@ class AuthRepository @Inject constructor(
     suspend fun login(username: String, password: String): Boolean {
         val loginResult = authRemoteDataSource.login(username, password)
 
-        if (loginResult is ApiResult.Success) {
-            // Must set current username before saving token — token key depends on it.
-            authLocalDataSource.setCurrentUsername(username)
-            val accessToken = loginResult.data.accessToken
-            val refreshToken = loginResult.data.refreshToken
-            Log.i("CHECK_VAR", "refresh token: $refreshToken")
-            Log.i("CHECK_VAR", "access token: $accessToken")
-            authLocalDataSource.saveAccessToken(accessToken)
-            authLocalDataSource.saveRefreshToken(refreshToken)
+        if (loginResult !is ApiResult.Success) return false
 
-            _isAuthenticated.value = true
+        // Must set current username before saving token — token key depends on it.
+        authLocalDataSource.setCurrentUsername(username)
+        val accessToken = loginResult.data.accessToken
+        val refreshToken = loginResult.data.refreshToken
+        Log.i("CHECK_VAR", "refresh token: $refreshToken")
+        Log.i("CHECK_VAR", "access token: $accessToken")
+        authLocalDataSource.saveAccessToken(accessToken)
+        authLocalDataSource.saveRefreshToken(refreshToken)
+        userRepository.syncCurrentUser()
+        _isAuthenticated.update { true }
 
-            val currentUserModel = userRepository.getCurrentUser()
-            if (currentUserModel != null) {
-                userRepository.saveUser(currentUserModel)
-                userRepository.refreshCurrentUser()
-            }
-
-            return true
-        }
-        return false
+        return true
     }
 
     suspend fun logout() {
         // Clear token first — username is needed to locate the correct token key.
         authLocalDataSource.clearToken()
         authLocalDataSource.clearCurrentUsername()
-        _isAuthenticated.value = false
+        _isAuthenticated.update { false }
         userRepository.refreshCurrentUser()
     }
 

@@ -100,43 +100,45 @@ fun SearchScreen(
                         }
                     }
                     // tab select
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(7.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 7.dp)
-                    ) {
-                        SuggestionChip(
-                            onClick = {
-                                selectedType = "title"
-                                viewModel.searchVideoByTitle(pattern)
-                            },
-                            label = { Text("Videos") },
-                            colors = SuggestionChipDefaults.suggestionChipColors(
-                                containerColor = if (selectedType == "title") LocalVisaraCustomColors.current.selectedChipContainerColor
-                                else LocalVisaraCustomColors.current.unselectedChipContainerColor,
-                                labelColor = if (selectedType == "title") LocalVisaraCustomColors.current.selectedChipContentColor
-                                else LocalVisaraCustomColors.current.unselectedChipContentColor
+                    if (uiState.hasSearched) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(7.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 7.dp)
+                        ) {
+                            SuggestionChip(
+                                onClick = {
+                                    selectedType = "title"
+                                    viewModel.searchVideoByTitle(pattern)
+                                },
+                                label = { Text("Videos") },
+                                colors = SuggestionChipDefaults.suggestionChipColors(
+                                    containerColor = if (selectedType == "title") LocalVisaraCustomColors.current.selectedChipContainerColor
+                                    else LocalVisaraCustomColors.current.unselectedChipContainerColor,
+                                    labelColor = if (selectedType == "title") LocalVisaraCustomColors.current.selectedChipContentColor
+                                    else LocalVisaraCustomColors.current.unselectedChipContentColor
+                                )
                             )
-                        )
-                        SuggestionChip(
-                            onClick = {
-                                selectedType = "user"
-                                viewModel.searchUser(pattern)
-                            },
-                            label = { Text("Users") },
-                            colors = SuggestionChipDefaults.suggestionChipColors(
-                                containerColor = if (selectedType == "user") LocalVisaraCustomColors.current.selectedChipContainerColor
-                                else LocalVisaraCustomColors.current.unselectedChipContainerColor,
-                                labelColor = if (selectedType == "user") LocalVisaraCustomColors.current.selectedChipContentColor
-                                else LocalVisaraCustomColors.current.unselectedChipContentColor
+                            SuggestionChip(
+                                onClick = {
+                                    selectedType = "user"
+                                    viewModel.searchUser(pattern)
+                                },
+                                label = { Text("Users") },
+                                colors = SuggestionChipDefaults.suggestionChipColors(
+                                    containerColor = if (selectedType == "user") LocalVisaraCustomColors.current.selectedChipContainerColor
+                                    else LocalVisaraCustomColors.current.unselectedChipContainerColor,
+                                    labelColor = if (selectedType == "user") LocalVisaraCustomColors.current.selectedChipContentColor
+                                    else LocalVisaraCustomColors.current.unselectedChipContentColor
+                                )
                             )
-                        )
+                        }
                     }
                 }
             }
 
-            if (uiState.searchType == "title" || uiState.searchType == "hashtag") {
+            if (selectedType == "title" || selectedType == "hashtag") {
                 items(uiState.videos.size) { index->
                     VideoItem(
                         state = uiState.videos[index],
@@ -144,7 +146,7 @@ fun SearchScreen(
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
-            } else if (uiState.searchType == "user") {
+            } else if (selectedType == "user") {
                 items(uiState.users.size) {  index ->
                     UserItem(
                         user = uiState.users[index],

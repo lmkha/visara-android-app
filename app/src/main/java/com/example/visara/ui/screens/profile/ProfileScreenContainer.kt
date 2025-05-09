@@ -67,6 +67,8 @@ import com.example.visara.ui.components.UserAvatar
 import com.example.visara.ui.screens.profile.components.ActionButton
 import com.example.visara.ui.screens.profile.components.BottomSheet
 import com.example.visara.ui.screens.profile.components.MetricItem
+import com.example.visara.ui.screens.profile.components.SheetResult
+import com.example.visara.ui.screens.profile.components.SheetType
 import com.example.visara.ui.screens.profile.components.TabPlaylistItem
 import com.example.visara.ui.screens.profile.components.TabVideoItem
 import com.example.visara.ui.theme.LocalVisaraCustomColors
@@ -81,9 +83,12 @@ fun ProfileScreenContainer(
     uiState: ProfileScreenUiState,
     bottomNavBar: @Composable () -> Unit,
     onBack: () -> Unit,
+    follow: () -> Unit,
+    unfollow: () -> Unit,
     onNavigateToSettingsScreen: () -> Unit,
     onNavigateToStudioScreen: () -> Unit,
     onNavigateToQRCodeScreen: () -> Unit,
+    onNavigateToLoginScreen: () -> Unit,
     onVideoSelected: (video: VideoModel) -> Unit,
 ) {
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
@@ -131,6 +136,7 @@ fun ProfileScreenContainer(
             }
         }
     }
+    var bottomSheetType by remember { mutableStateOf<SheetType>(SheetType.SETTINGS) }
 
     BackHandler(enabled = displayBottomSheet) {
         displayBottomSheet = false
@@ -174,7 +180,10 @@ fun ProfileScreenContainer(
                     },
                     actions = {
                         Row {
-                            IconButton(onClick = { displayBottomSheet = true }) {
+                            IconButton(onClick = {
+                                bottomSheetType = SheetType.SETTINGS
+                                displayBottomSheet = true
+                            }) {
                                 Icon(
                                     imageVector = Icons.Default.Menu,
                                     contentDescription = null,
@@ -326,20 +335,39 @@ fun ProfileScreenContainer(
                                 }
                                 if (uiState.isFollowing) {
                                     ActionButton(
-                                        onClick = {},
+                                        onClick = {
+                                            bottomSheetType = SheetType.UNFOLLOW_CONFIRM
+                                            displayBottomSheet = true
+                                        },
                                         modifier = Modifier
                                     ) {
-                                        Text(
-                                            text = "Followed",
-                                            modifier = Modifier.padding(8.dp),
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.onPrimary,
-                                        )
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                        ) {
+                                            Text(
+                                                text = "Followed",
+                                                modifier = Modifier.padding(8.dp),
+                                                fontWeight = FontWeight.Bold,
+                                                color = LocalVisaraCustomColors.current.profileActionButtonContentColor,
+                                            )
+
+                                            Icon(
+                                                imageVector = Icons.Default.KeyboardArrowDown,
+                                                contentDescription = null
+                                            )
+                                        }
                                     }
                                 } else {
                                     ActionButton(
                                         isPrimary = true,
-                                        onClick = {},
+                                        onClick = {
+                                            if (uiState.isAuthenticated) {
+                                                follow()
+                                            } else {
+                                                bottomSheetType = SheetType.LOGIN_REQUEST
+                                                displayBottomSheet = true
+                                            }
+                                        },
                                         modifier = Modifier
                                     ) {
                                         Text(
@@ -519,6 +547,7 @@ fun ProfileScreenContainer(
 
         // Bottom Sheet
         BottomSheet(
+            type = bottomSheetType,
             isAuthenticated = uiState.isAuthenticated,
             displayBottomSheet = displayBottomSheet,
             onClose = { displayBottomSheet = false },
@@ -527,9 +556,11 @@ fun ProfileScreenContainer(
                 coroutineScope.launch {
                     delay(350)
                     when (item) {
-                        "studio" -> { onNavigateToStudioScreen() }
-                        "qr" -> { onNavigateToQRCodeScreen() }
-                        "settings" -> { onNavigateToSettingsScreen() }
+                        SheetResult.STUDIO -> { onNavigateToStudioScreen() }
+                        SheetResult.MY_QR -> { onNavigateToQRCodeScreen() }
+                        SheetResult.SETTINGS ->  { onNavigateToSettingsScreen() }
+                        SheetResult.UNFOLLOW -> { unfollow() }
+                        SheetResult.LOGIN -> { onNavigateToLoginScreen() }
                     }
                 }
             }

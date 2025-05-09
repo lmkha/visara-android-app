@@ -1,5 +1,6 @@
 package com.example.visara.data.remote.datasource
 
+import android.util.Log
 import com.example.visara.data.remote.common.ApiError
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.api.UserApi
@@ -8,6 +9,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.Response
 import javax.inject.Inject
 
 class UserRemoteDataSource @Inject constructor(
@@ -91,6 +93,230 @@ class UserRemoteDataSource @Inject constructor(
                     )
                 }
             } catch (e : Exception) {
+                ApiResult.Error(e)
+            }
+        }
+    }
+
+    suspend fun followUser(username: String) : ApiResult<Unit> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = userApi.followUser(username)
+                val responseBody = response.body?.string()
+
+                val jsonObject = gson.fromJson(responseBody, Map::class.java)
+                val successValue = jsonObject["success"]
+                val success = successValue is Boolean && successValue == true
+
+                if (response.isSuccessful && success == true) {
+                    ApiResult.Success(Unit)
+                } else {
+                    ApiResult.Failure(
+                        ApiError(
+                            code = response.code,
+                            errorCode = response.code.toString(),
+                            message = response.message,
+                            rawBody = responseBody
+                        )
+                    )
+                }
+            } catch (e : Exception) {
+                ApiResult.Error(e)
+            }
+        }
+    }
+
+    suspend fun unfollowUser(username: String) : ApiResult<Unit> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = userApi.unfollowUser(username)
+                val responseBody = response.body?.string()
+
+                val jsonObject = gson.fromJson(responseBody, Map::class.java)
+                val successValue = jsonObject["success"]
+                val success = successValue is Boolean && successValue == true
+
+                if (response.isSuccessful && success == true) {
+                    ApiResult.Success(Unit)
+                } else {
+                    ApiResult.Failure(
+                        ApiError(
+                            code = response.code,
+                            errorCode = response.code.toString(),
+                            message = response.message,
+                            rawBody = responseBody
+                        )
+                    )
+                }
+            } catch (e : Exception) {
+                ApiResult.Error(e)
+            }
+        }
+    }
+
+    suspend fun checkUserIsMyFollower(username: String) : ApiResult<Unit> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = userApi.checkUserIsMyFollower(username)
+                val responseBody = response.body?.string()
+
+                val jsonObject = gson.fromJson(responseBody, Map::class.java)
+                val messageValue = jsonObject["message"]
+                val success = messageValue is String && messageValue == "Followed"
+
+                if (response.isSuccessful && success) {
+                    ApiResult.Success(Unit)
+                } else {
+                    ApiResult.Failure(
+                        ApiError(
+                            code = response.code,
+                            errorCode = response.code.toString(),
+                            message = response.message,
+                            rawBody = responseBody
+                        )
+                    )
+                }
+            } catch (e : Exception) {
+                ApiResult.Error(e)
+            }
+        }
+    }
+
+    suspend fun checkIsFollowingThisUser(username: String) : ApiResult<Unit> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = userApi.checkIsFollowingThisUser(username)
+                val responseBody = response.body?.string()
+
+                val jsonObject = gson.fromJson(responseBody, Map::class.java)
+                val messageValue = jsonObject["message"]
+                val success = messageValue is String && messageValue == "Followed"
+
+                if (response.isSuccessful && success) {
+                    ApiResult.Success(Unit)
+                } else {
+                    ApiResult.Failure(
+                        ApiError(
+                            code = response.code,
+                            errorCode = response.code.toString(),
+                            message = response.message,
+                            rawBody = responseBody
+                        )
+                    )
+                }
+            } catch (e : Exception) {
+                ApiResult.Error(e)
+            }
+        }
+    }
+
+    suspend fun getAllFollower(page: Int, size: Long) : ApiResult<List<UserDto>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = userApi.getAllFollower(page, size)
+                val responseBody = response.body?.string()
+
+                if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
+                    val jsonObject = gson.fromJson(responseBody, Map::class.java)
+                    val dataJson = gson.toJson(jsonObject["data"])
+                    val type = object : TypeToken<List<UserDto>>() {}.type
+                    val userDtoList: List<UserDto> = gson.fromJson(dataJson, type)
+                    ApiResult.Success(userDtoList)
+                } else {
+                    ApiResult.Failure(
+                        ApiError(
+                            code = response.code,
+                            errorCode = response.code.toString(),
+                            message = response.message,
+                            rawBody = responseBody
+                        )
+                    )
+                }
+            } catch (e: Exception) {
+                ApiResult.Error(e)
+            }
+        }
+    }
+
+    suspend fun getAllFollowing(page: Int, size: Long): ApiResult<List<UserDto>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = userApi.getAllFollowing(page, size)
+                val responseBody = response.body?.string()
+
+                if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
+                    val jsonObject = gson.fromJson(responseBody, Map::class.java)
+                    val dataJson = gson.toJson(jsonObject["data"])
+                    val type = object : TypeToken<List<UserDto>>() {}.type
+                    val userDtoList: List<UserDto> = gson.fromJson(dataJson, type)
+                    ApiResult.Success(userDtoList)
+                } else {
+                    ApiResult.Failure(
+                        ApiError(
+                            code = response.code,
+                            errorCode = response.code.toString(),
+                            message = response.message,
+                            rawBody = responseBody
+                        )
+                    )
+                }
+            } catch (e: Exception) {
+                ApiResult.Error(e)
+            }
+        }
+    }
+
+    suspend fun getAllFollowerTEMP(page: Int, size: Long) : ApiResult<List<String>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = userApi.getAllFollower(page, size)
+                val responseBody = response.body?.string()
+
+                if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
+                    val jsonObject = gson.fromJson(responseBody, Map::class.java)
+                    val dataJson = gson.toJson(jsonObject["data"])
+                    val type = object : TypeToken<List<String>>() {}.type
+                    val usernameList: List<String> = gson.fromJson(dataJson, type)
+                    ApiResult.Success(usernameList)
+                } else {
+                    ApiResult.Failure(
+                        ApiError(
+                            code = response.code,
+                            errorCode = response.code.toString(),
+                            message = response.message,
+                            rawBody = responseBody
+                        )
+                    )
+                }
+            } catch (e: Exception) {
+                ApiResult.Error(e)
+            }
+        }
+    }
+
+    suspend fun getAllFollowingTEMP(page: Int, size: Long): ApiResult<List<String>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = userApi.getAllFollowing(page, size)
+                val responseBody = response.body?.string()
+
+                if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
+                    val jsonObject = gson.fromJson(responseBody, Map::class.java)
+                    val dataJson = gson.toJson(jsonObject["data"])
+                    val type = object : TypeToken<List<String>>() {}.type
+                    val usernameList: List<String> = gson.fromJson(dataJson, type)
+                    ApiResult.Success(usernameList)
+                } else {
+                    ApiResult.Failure(
+                        ApiError(
+                            code = response.code,
+                            errorCode = response.code.toString(),
+                            message = response.message,
+                            rawBody = responseBody
+                        )
+                    )
+                }
+            } catch (e: Exception) {
                 ApiResult.Error(e)
             }
         }

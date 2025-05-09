@@ -56,6 +56,6 @@ fun SearchBar(
             focusedContainerColor = LocalVisaraCustomColors.current.searchBarContainerColor,
             unfocusedIndicatorColor = Color.Transparent,
         ),
-        modifier = modifier.clip(RoundedCornerShape(15.dp))
+        modifier = modifier.clip(RoundedCornerShape(20.dp))
     )
 }

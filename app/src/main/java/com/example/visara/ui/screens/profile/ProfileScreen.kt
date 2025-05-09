@@ -44,7 +44,10 @@ fun ProfileScreen(
                 onNavigateToSettingsScreen = onNavigateToSettingsScreen,
                 onNavigateToStudioScreen = onNavigateToStudioScreen,
                 onNavigateToQRCodeScreen = onNavigateToQRCodeScreen,
-                onVideoSelected = { video -> viewModel.selectVideo(video) }
+                onNavigateToLoginScreen = onNavigateToLoginScreen,
+                onVideoSelected = { video -> viewModel.selectVideo(video) },
+                follow = viewModel::follow,
+                unfollow = viewModel::unfollow,
             )
         }
     }

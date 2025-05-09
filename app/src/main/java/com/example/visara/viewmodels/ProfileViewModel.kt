@@ -29,6 +29,7 @@ class ProfileViewModel @Inject constructor(
 
     init {
         observerAuthenticationState()
+        observerCurrentUser()
     }
 
     fun setProfile(isMyProfileRequested: Boolean, username: String?) {
@@ -61,21 +62,23 @@ class ProfileViewModel @Inject constructor(
 
             // Only update when username is different with current username
             if (username!= null && username != _uiState.value.user?.username) {
-                val user = if (username == currentUser?.username) {
-                    currentUser
-                } else {
-                    userRepository.getPublicUser(username)
-                }
+                _uiState.update { oldState ->
+                    val user = if (username == oldState.user?.username) oldState.user
+                    else userRepository.getPublicUser(username)
 
-                val videos: List<VideoModel> = if (user?.id != null) videoRepository.getAllVideoByUserId(user.id)
-                else emptyList()
+                    val isFollowing = if (!oldState.isAuthenticated) false
+                    else if(username == oldState.user?.username) oldState.isFollowing
+                    else userRepository.checkIsFollowingThisUser(username)
 
-                _uiState.update {
+                    val videos: List<VideoModel> = if (user?.id != null) videoRepository.getAllVideoByUserId(user.id)
+                    else emptyList()
+
                     ProfileScreenUiState(
                         isMyProfileRequested = false,
                         isMyProfile = username == currentUser?.username,
                         isAuthenticated = currentUser != null,
                         user = user,
+                        isFollowing = isFollowing,
                         videos = videos,
                     )
                 }
@@ -91,9 +94,66 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    private fun observerCurrentUser() {
+        viewModelScope.launch {
+            userRepository.currentUser.collect { currentUser->
+                _uiState.update { oldState ->
+                    val isFollowing = if (currentUser == null) false
+                    else oldState.user?.username?.let { userRepository.checkIsFollowingThisUser(it) } == true
+
+                    oldState.copy(isFollowing = isFollowing)
+                }
+            }
+        }
+    }
+
     fun selectVideo(video: VideoModel) {
         viewModelScope.launch {
             videoDetailRepository.setVideoDetail(video)
+        }
+    }
+
+    fun follow() {
+        viewModelScope.launch {
+            val username = _uiState.value.user?.username
+            if (username == null) return@launch
+            if (_uiState.value.isFollowing) return@launch
+            val currentUser = userRepository.currentUser.first()
+            if (currentUser == null) return@launch
+
+            _uiState.value.user?.let { user ->
+                val newUser = user.copy(followerCount = user.followerCount + 1)
+                _uiState.update { it.copy(isFollowing = true, user = newUser) }
+
+                if (username != currentUser.username) {
+                    val result = userRepository.followUser(username)
+                    if (!result) {
+                        _uiState.update { it.copy(isFollowing = false, user = user) } // Rollback
+                    }
+                }
+            }
+        }
+    }
+
+    fun unfollow() {
+        viewModelScope.launch {
+            val username = _uiState.value.user?.username
+            if (username == null) return@launch
+            if (_uiState.value.isFollowing == false) return@launch
+            val currentUser = userRepository.currentUser.first()
+            if (currentUser == null) return@launch
+
+            _uiState.value.user?.let { user ->
+                val newUser = user.copy(followerCount = user.followerCount - 1)
+                _uiState.update { it.copy(isFollowing = false, user = newUser) }
+
+                if (username != currentUser.username) {
+                    val result = userRepository.unfollowUser(username)
+                    if (!result) {
+                        _uiState.update { it.copy(isFollowing = true, user = user) } // Rollback
+                    }
+                }
+            }
         }
     }
 }

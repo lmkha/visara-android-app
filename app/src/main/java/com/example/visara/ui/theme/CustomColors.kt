@@ -18,6 +18,8 @@ data class VisaraCustomColors(
     val profileActionButtonContentColor: Color,
     val searchBarContainerColor: Color,
     val searchResultUserItemContainerColor: Color,
+    val unfollowButtonContainerColor: Color,
+    val unfollowButtonContentColor: Color,
 )
 
 val LocalVisaraCustomColors = staticCompositionLocalOf<VisaraCustomColors> {
@@ -39,6 +41,8 @@ val LightCustomColors = VisaraCustomColors(
     profileActionButtonContentColor = Color.Black,
     searchBarContainerColor = Color.LightGray,
     searchResultUserItemContainerColor = Color.LightGray,
+    unfollowButtonContainerColor = Color.LightGray,
+    unfollowButtonContentColor = Color.Black,
 )
 
 val DarkCustomColors = VisaraCustomColors(
@@ -56,4 +60,6 @@ val DarkCustomColors = VisaraCustomColors(
     profileActionButtonContentColor = Color.White,
     searchBarContainerColor = Color(0xFF2C2A32),
     searchResultUserItemContainerColor = Color.DarkGray,
+    unfollowButtonContainerColor = Color.Gray,
+    unfollowButtonContentColor = Color.White,
 )

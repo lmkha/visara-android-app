@@ -32,6 +32,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.visara.ui.screens.profile.components.BottomSheet
+import com.example.visara.ui.screens.profile.components.SheetResult
+import com.example.visara.ui.screens.profile.components.SheetType
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -110,6 +112,7 @@ fun UnauthenticatedProfileContainer(
         }
 
         BottomSheet(
+            type = SheetType.SETTINGS,
             isAuthenticated = false,
             displayBottomSheet = displayBottomSheet,
             onClose = { displayBottomSheet = false },
@@ -118,7 +121,8 @@ fun UnauthenticatedProfileContainer(
                 coroutineScope.launch {
                     delay(350)
                     when (item) {
-                        "settings" -> { onNavigateToSettingsScreen() }
+                        SheetResult.SETTINGS -> { onNavigateToSettingsScreen() }
+                        else -> {}
                     }
                 }
             }
