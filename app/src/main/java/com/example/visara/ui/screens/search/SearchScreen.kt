@@ -39,6 +39,7 @@ import com.example.visara.ui.components.VideoItem
 import com.example.visara.ui.screens.search.components.SearchBar
 import com.example.visara.ui.screens.search.components.UserItem
 import com.example.visara.ui.theme.LocalVisaraCustomColors
+import com.example.visara.viewmodels.SearchType
 import com.example.visara.viewmodels.SearchViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -50,7 +51,7 @@ fun SearchScreen(
     onViewUserProfile: (username: String) -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var pattern by remember { mutableStateOf("") }
+    var pattern by remember(uiState.pattern) { mutableStateOf(uiState.pattern) }
     val lazyListState = rememberLazyListState()
     var selectedType by remember { mutableStateOf(uiState.searchType) }
 
@@ -78,12 +79,12 @@ fun SearchScreen(
                             text = pattern,
                             onTextChange = { newQuery -> pattern = newQuery },
                             onSubmit = {
-                                if (selectedType == "title") {
+                                if (selectedType == SearchType.TITLE) {
                                     viewModel.searchVideoByTitle(pattern)
-                                } else if (selectedType == "hashtag") {
+                                } else if (selectedType == SearchType.HASHTAG) {
                                     viewModel.searchVideoByHashtag(pattern)
 
-                                } else if (selectedType == "user") {
+                                } else if (selectedType == SearchType.USER) {
                                     viewModel.searchUser(pattern)
                                 }
                             },
@@ -109,27 +110,27 @@ fun SearchScreen(
                         ) {
                             SuggestionChip(
                                 onClick = {
-                                    selectedType = "title"
+                                    selectedType = SearchType.TITLE
                                     viewModel.searchVideoByTitle(pattern)
                                 },
                                 label = { Text("Videos") },
                                 colors = SuggestionChipDefaults.suggestionChipColors(
-                                    containerColor = if (selectedType == "title") LocalVisaraCustomColors.current.selectedChipContainerColor
+                                    containerColor = if (selectedType == SearchType.TITLE) LocalVisaraCustomColors.current.selectedChipContainerColor
                                     else LocalVisaraCustomColors.current.unselectedChipContainerColor,
-                                    labelColor = if (selectedType == "title") LocalVisaraCustomColors.current.selectedChipContentColor
+                                    labelColor = if (selectedType == SearchType.TITLE) LocalVisaraCustomColors.current.selectedChipContentColor
                                     else LocalVisaraCustomColors.current.unselectedChipContentColor
                                 )
                             )
                             SuggestionChip(
                                 onClick = {
-                                    selectedType = "user"
+                                    selectedType = SearchType.USER
                                     viewModel.searchUser(pattern)
                                 },
                                 label = { Text("Users") },
                                 colors = SuggestionChipDefaults.suggestionChipColors(
-                                    containerColor = if (selectedType == "user") LocalVisaraCustomColors.current.selectedChipContainerColor
+                                    containerColor = if (selectedType == SearchType.USER) LocalVisaraCustomColors.current.selectedChipContainerColor
                                     else LocalVisaraCustomColors.current.unselectedChipContainerColor,
-                                    labelColor = if (selectedType == "user") LocalVisaraCustomColors.current.selectedChipContentColor
+                                    labelColor = if (selectedType == SearchType.USER) LocalVisaraCustomColors.current.selectedChipContentColor
                                     else LocalVisaraCustomColors.current.unselectedChipContentColor
                                 )
                             )
@@ -138,24 +139,28 @@ fun SearchScreen(
                 }
             }
 
-            if (selectedType == "title" || selectedType == "hashtag") {
-                items(uiState.videos.size) { index->
-                    VideoItem(
-                        state = uiState.videos[index],
-                        onVideoSelect = { viewModel.selectVideo(it) },
-                        modifier = Modifier.fillMaxWidth()
-                    )
+            when (selectedType) {
+                SearchType.TITLE, SearchType.HASHTAG -> {
+                    items(uiState.videos.size) { index->
+                        VideoItem(
+                            state = uiState.videos[index],
+                            onVideoSelect = { viewModel.selectVideo(it) },
+                            onAuthorSelected = { onViewUserProfile(it) },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
                 }
-            } else if (selectedType == "user") {
-                items(uiState.users.size) {  index ->
-                    UserItem(
-                        user = uiState.users[index],
-                        onViewProfile = { onViewUserProfile(uiState.users[index].username) },
-                        modifier = Modifier
-                            .padding(4.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(color = Color.LightGray)
-                    )
+                SearchType.USER -> {
+                    items(uiState.users.size) {  index ->
+                        UserItem(
+                            user = uiState.users[index],
+                            onViewProfile = { onViewUserProfile(uiState.users[index].username) },
+                            modifier = Modifier
+                                .padding(4.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(color = Color.LightGray)
+                        )
+                    }
                 }
             }
         }

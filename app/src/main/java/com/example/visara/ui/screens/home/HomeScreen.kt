@@ -60,6 +60,7 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
     navigateToSearchScreen: () -> Unit = {},
+    navigateToProfileScreen: (username: String) -> Unit,
     bottomNavBar: @Composable () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -140,6 +141,9 @@ fun HomeScreen(
                                     state = uiState.videos[index],
                                     onVideoSelect = {
                                         viewModel.selectVideo(it)
+                                    },
+                                    onAuthorSelected = { username ->
+                                        navigateToProfileScreen(username)
                                     },
                                     modifier = Modifier.fillMaxWidth()
                                 )

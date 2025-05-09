@@ -25,10 +25,16 @@ class SearchViewModel @Inject constructor(
     fun searchVideoByTitle(pattern: String) {
         viewModelScope.launch {
             uiState.value.let { currentState ->
-                if (pattern != currentState.videoPattern || currentState.searchType != "title") {
+                if (pattern != currentState.videoPattern || currentState.searchType != SearchType.TITLE) {
                     val videos = searchRepository.searchVideo("title", pattern)
                     _uiState.update {
-                        it.copy(videos = videos, videoPattern = pattern, searchType = "title", hasSearched = true)
+                        it.copy(
+                            videos = videos,
+                            videoPattern = pattern,
+                            searchType = SearchType.TITLE,
+                            hasSearched = true,
+                            pattern = pattern,
+                        )
                     }
                 }
             }
@@ -38,10 +44,16 @@ class SearchViewModel @Inject constructor(
     fun searchVideoByHashtag(pattern: String) {
         viewModelScope.launch {
             uiState.value.let { currentState ->
-                if (pattern != currentState.videoPattern || currentState.searchType != "hashtag") {
+                if (pattern != currentState.videoPattern || currentState.searchType != SearchType.HASHTAG) {
                     val videos = searchRepository.searchVideo("hashtag", pattern)
                     _uiState.update {
-                        it.copy(videos = videos, videoPattern = pattern, searchType = "hashtag", hasSearched = true)
+                        it.copy(
+                            videos = videos,
+                            videoPattern = pattern,
+                            searchType = SearchType.HASHTAG,
+                            hasSearched = true,
+                            pattern = pattern,
+                        )
                     }
                 }
             }
@@ -52,7 +64,15 @@ class SearchViewModel @Inject constructor(
         viewModelScope.launch {
             if (pattern != uiState.value.userPattern) {
                 val users = searchRepository.searchUser(pattern)
-                _uiState.update { it.copy(users = users, userPattern = pattern, searchType = "user", hasSearched = true) }
+                _uiState.update {
+                    it.copy(
+                        users = users,
+                        userPattern = pattern,
+                        searchType = SearchType.USER,
+                        hasSearched = true,
+                        pattern = pattern,
+                    )
+                }
             }
         }
     }
@@ -69,6 +89,13 @@ data class SearchScreenUiState(
     val users: List<UserModel> = emptyList(),
     val userPattern: String = "",
     val videoPattern: String = "",
-    val searchType: String = "title",
+    val pattern: String = "",
+    val searchType: SearchType = SearchType.TITLE,
     val hasSearched: Boolean = false,
 )
+
+enum class SearchType {
+    TITLE,
+    HASHTAG,
+    USER,
+}

@@ -121,6 +121,7 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
                         composable<Destination.Main.Home> {
                             HomeScreen(
                                 navigateToSearchScreen = { navController.navigate(Destination.Search()) },
+                                navigateToProfileScreen = { navController.navigate(Destination.Main.Profile(username = it)) },
                                 bottomNavBar = {
                                     BotNavBar(
                                         activeDestination = Destination.Main.Home,

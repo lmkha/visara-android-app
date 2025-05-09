@@ -40,6 +40,7 @@ fun VideoItem(
     state: VideoModel,
     videoHeight: Dp = 250.dp,
     onVideoSelect: (video: VideoModel) -> Unit = {},
+    onAuthorSelected: (username: String) -> Unit = {},
 ) {
     Box(
         modifier = modifier
@@ -79,21 +80,23 @@ fun VideoItem(
                 }
             }
             Row(
-                modifier = Modifier
-                    .padding(8.dp)
-                ,
+                modifier = Modifier.padding(8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 UserAvatar(
                     avatarLink = state.userProfilePic,
-                    modifier = Modifier.size(50.dp)
+                    modifier = Modifier
+                        .size(50.dp)
+                        .clickable(
+                            onClick = { onAuthorSelected(state.username) },
+                            interactionSource = null,
+                            indication = null,
+                        )
                 )
                 Column {
                     Row {
                         Text(
-                            modifier = Modifier
-                                .weight(1f)
-                            ,
+                            modifier = Modifier.weight(1f),
                             text = state.title,
                             overflow = TextOverflow.Ellipsis,
                             maxLines = 2,
