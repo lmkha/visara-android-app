@@ -55,18 +55,20 @@ class FollowScreenViewModel @Inject constructor(
     }
 
     fun fetchData() {
-        if (uiState.value.startedTabIndex == 0) {
-            fetchAllFollowings()
-        } else if (uiState.value.startedTabIndex == 1) {
-            fetchAllFollowers()
-        }
+        fetchAllFollowings()
+        fetchAllFollowers()
     }
 
     fun fetchAllFollowings() {
         if (!uiState.value.hadFetchedFollowings) {
             viewModelScope.launch {
-                val followings = userRepository.getAllFollowingTEMP(0, 100)
-                _uiState.update { it.copy(followings = followings, hadFetchedFollowings = true) }
+                val followings = userRepository.getAllFollowings(0, 100)
+                _uiState.update {
+                    it.copy(
+                        followings = followings,
+                        hadFetchedFollowings = true
+                    )
+                }
             }
         }
     }
@@ -74,8 +76,13 @@ class FollowScreenViewModel @Inject constructor(
     fun fetchAllFollowers() {
         if (!uiState.value.hadFetchedFollowers) {
             viewModelScope.launch {
-                val followers = userRepository.getAllFollowerTEMP(0, 100)
-                _uiState.update { it.copy(followers = followers, hadFetchedFollowers = true) }
+                val followers = userRepository.getAllFollowers(0, 100)
+                _uiState.update {
+                    it.copy(
+                        followers = followers,
+                        hadFetchedFollowers = true
+                    )
+                }
             }
         }
     }
@@ -84,9 +91,33 @@ class FollowScreenViewModel @Inject constructor(
         followJobMap[user.user.username]?.cancel()
 
         val job = viewModelScope.launch {
-            delay(200)
+            delay(300)
             val result = userRepository.followUser(user.user.username)
-            if (!result) onFailure()
+            if (result) {
+                var hadExistInFollowings = false
+                var newFollowings = uiState.value.followings.map {
+                    if (it.user.username == user.user.username) {
+                        hadExistInFollowings = true
+                        it.copy(isFollowing = true)
+                    } else {
+                        it
+                    }
+                }
+                if (!hadExistInFollowings) newFollowings = newFollowings.plus(
+                    user.copy(isFollowing = true)
+                )
+
+                val newFollowers = uiState.value.followers.map {
+                    if (it.user.username == user.user.username) {
+                        it.copy(isFollowing = true)
+                    } else {
+                        it
+                    }
+                }
+                _uiState.update { it.copy(followings = newFollowings, followers = newFollowers) }
+            } else {
+                onFailure()
+            }
             followJobMap.remove(user.user.username)
         }
 
@@ -97,8 +128,27 @@ class FollowScreenViewModel @Inject constructor(
         followJobMap[user.user.username]?.cancel()
 
         val job = viewModelScope.launch {
+            delay(300)
             val result = userRepository.unfollowUser(user.user.username)
-            if (!result) onFailure()
+            if (result) {
+                val newFollowings = uiState.value.followings.map {
+                    if (it.user.username == user.user.username) {
+                        it.copy(isFollowing = false)
+                    } else {
+                        it
+                    }
+                }
+                val newFollowers = uiState.value.followers.map {
+                    if (it.user.username == user.user.username) {
+                        it.copy(isFollowing = false)
+                    } else {
+                        it
+                    }
+                }
+                _uiState.update { it.copy(followings = newFollowings, followers = newFollowers) }
+            } else {
+                onFailure()
+            }
             followJobMap.remove(user.user.username)
         }
 
@@ -111,9 +161,9 @@ class FollowScreenViewModel @Inject constructor(
         filterFollowingsJob = viewModelScope.launch {
             delay(500)
             val trimmedPattern: String = pattern.trim()
-            if (trimmedPattern.isNotBlank() && trimmedPattern != uiState.value.currentFollowingsFilterPattern) {
-                val filteredFollowings: List<FollowUserModel> = if (trimmedPattern.isBlank()) uiState.value.followings
-                else _uiState.value.followings.filter {
+            if (trimmedPattern.isBlank()) return@launch
+            if (trimmedPattern != uiState.value.currentFollowingsFilterPattern) {
+                val filteredFollowings: List<FollowUserModel> = _uiState.value.followings.filter {
                     it.user.username.contains(trimmedPattern) || it.user.fullName.contains(trimmedPattern)
                 }
                 _uiState.update {
@@ -132,9 +182,9 @@ class FollowScreenViewModel @Inject constructor(
         filterFollowersJob = viewModelScope.launch {
             delay(500)
             val trimmedPattern: String = pattern.trim()
-            if (trimmedPattern.isNotBlank() && trimmedPattern != uiState.value.currentFollowersFilterPattern) {
-                val filteredFollowers: List<FollowUserModel> = if (trimmedPattern.isBlank()) uiState.value.followers
-                else _uiState.value.followings.filter {
+            if (trimmedPattern.isBlank()) return@launch
+            if (trimmedPattern != uiState.value.currentFollowersFilterPattern) {
+                val filteredFollowers: List<FollowUserModel> = _uiState.value.followings.filter {
                     it.user.username.contains(trimmedPattern) || it.user.fullName.contains(trimmedPattern)
                 }
                 _uiState.update {

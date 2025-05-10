@@ -47,7 +47,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.visara.data.model.FollowUserModel
 import com.example.visara.data.model.UserModel
 import com.example.visara.ui.components.UserAvatar
 import com.example.visara.viewmodels.FollowScreenViewModel
@@ -111,6 +110,7 @@ fun FollowScreen(
                     Tab(
                         selected = selectedTabIndex == 0,
                         onClick = {
+                            pattern = ""
                             selectedTabIndex = 0
                             viewModel.fetchAllFollowings()
                         },
@@ -125,6 +125,7 @@ fun FollowScreen(
                     Tab(
                         selected = selectedTabIndex == 1,
                         onClick = {
+                            pattern = ""
                             selectedTabIndex = 1
                             viewModel.fetchAllFollowers()
                         },
@@ -169,28 +170,27 @@ fun FollowScreen(
         }
 
         // List of users
-        val count = if (pattern.trim().isBlank()) {
-            if (selectedTabIndex == 0) uiState.followings.size
-            else if (selectedTabIndex == 1)  uiState.followers.size
-            else 0
-        } else {
-            if (selectedTabIndex == 0) uiState.filteredFollowings.size
-            else if (selectedTabIndex == 1) uiState.filteredFollowers.size
-            else 0
-        }
-        items(count) { index ->
-            val user = if (pattern.trim().isBlank()) {
-                if (selectedTabIndex == 0) uiState.followings[index]
-                else if (selectedTabIndex == 1)  uiState.followers[index]
-                else FollowUserModel(UserModel())
+        val users = if (selectedTabIndex == 0) {
+            if (pattern.trim().isBlank()) {
+                uiState.followings
             } else {
-                if (selectedTabIndex == 0) uiState.filteredFollowings[index]
-                else if (selectedTabIndex == 1) uiState.filteredFollowers[index]
-                else FollowUserModel(UserModel())
+                uiState.filteredFollowings
             }
+        } else if (selectedTabIndex == 1) {
+            if (pattern.trim().isBlank()) {
+                uiState.followers
+            } else {
+                uiState.filteredFollowers
+            }
+        } else {
+            emptyList()
+        }
+
+        items(users.size) { index ->
+            val user = users[index]
             FollowUserItem(
                 user = user.user,
-                isFollowingInitialValue = if (selectedTabIndex == 0) true else user.isFollowing,
+                isFollowingInitialValue = user.isFollowing,
                 follow = { onFailure: () -> Unit ->
                     viewModel.follow(user = user) { onFailure() }
                 },
@@ -214,7 +214,7 @@ private fun FollowUserItem(
     follow: (onFailure: () -> Unit) -> Unit = {},
     unfollow: (onFailure: () -> Unit) -> Unit = {},
 ) {
-    var isFollowing by remember { mutableStateOf(isFollowingInitialValue) }
+    var isFollowing by remember(isFollowingInitialValue) { mutableStateOf(isFollowingInitialValue) }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,

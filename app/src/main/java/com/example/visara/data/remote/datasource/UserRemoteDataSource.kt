@@ -1,6 +1,5 @@
 package com.example.visara.data.remote.datasource
 
-import android.util.Log
 import com.example.visara.data.remote.common.ApiError
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.api.UserApi
@@ -251,64 +250,6 @@ class UserRemoteDataSource @Inject constructor(
                     val type = object : TypeToken<List<FollowingUserDto>>() {}.type
                     val userDtoList: List<FollowingUserDto> = gson.fromJson(dataJson, type)
                     ApiResult.Success(userDtoList)
-                } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
-                }
-            } catch (e: Exception) {
-                ApiResult.Error(e)
-            }
-        }
-    }
-
-    suspend fun getAllFollowerTEMP(page: Int, size: Long) : ApiResult<List<String>> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val response = userApi.getAllFollower(page, size)
-                val responseBody = response.body?.string()
-
-                if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                    val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                    val dataJson = gson.toJson(jsonObject["data"])
-                    val type = object : TypeToken<List<String>>() {}.type
-                    val usernameList: List<String> = gson.fromJson(dataJson, type)
-                    ApiResult.Success(usernameList)
-                } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
-                }
-            } catch (e: Exception) {
-                ApiResult.Error(e)
-            }
-        }
-    }
-
-    suspend fun getAllFollowingTEMP(page: Int, size: Long): ApiResult<List<String>> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val response = userApi.getAllFollowing(page, size)
-                val responseBody = response.body?.string()
-                Log.i("CHECK_VAR", "response: $response")
-                Log.i("CHECK_VAR", "responseBody: ${responseBody.toString()}")
-
-                if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                    val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                    val dataJson = gson.toJson(jsonObject["data"])
-                    val type = object : TypeToken<List<String>>() {}.type
-                    val usernameList: List<String> = gson.fromJson(dataJson, type)
-                    ApiResult.Success(usernameList)
                 } else {
                     ApiResult.Failure(
                         ApiError(

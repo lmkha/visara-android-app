@@ -1,5 +1,6 @@
 package com.example.visara.data.remote.dto
 
+import com.example.visara.data.model.FollowUserModel
 import com.example.visara.data.model.UserModel
 
 data class UserDto(
@@ -47,13 +48,15 @@ data class FollowingUserDto(
     val fullName: String = "",
     val profilePic: String = "",
 ) {
-    fun toUserModel(): UserModel {
-        return UserModel(
-            username = this.username,
-            id = this.id,
-            fullName = this.fullName,
-            networkAvatarUrl = this.profilePic,
-            localAvatarPath = "",
+    fun toFollowUserModel() : FollowUserModel {
+        return FollowUserModel(
+            user = UserModel(
+                username = this.username,
+                id = this.id,
+                fullName = this.fullName,
+                networkAvatarUrl = this.profilePic,
+            ),
+            isFollowing = true
         )
     }
 }
@@ -65,14 +68,15 @@ data class FollowerUserDto(
     val profilePic: String = "",
     val isFollowing: Boolean = false,
 ) {
-
-    fun toUserModel(): UserModel {
-        return UserModel(
-            username = this.username,
-            id = this.id,
-            fullName = this.fullName,
-            networkAvatarUrl = this.profilePic,
-            localAvatarPath = "",
+    fun toFollowUserModel() : FollowUserModel {
+        return FollowUserModel(
+            user = UserModel(
+                username = this.username,
+                id = this.id,
+                fullName = this.fullName,
+                networkAvatarUrl = this.profilePic,
+            ),
+            isFollowing = this.isFollowing,
         )
     }
 }
