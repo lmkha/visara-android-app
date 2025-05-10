@@ -7,7 +7,7 @@ sealed class Destination(val name: String) {
 
     @Serializable data class Main(val targetDestinationString: String? = null) : Destination("Main") {
         @Serializable object Home : Destination("Main.Home")
-        @Serializable object Following : Destination("Main.Following")
+        @Serializable object FollowingFeed : Destination("Main.FollowingFeed")
         @Serializable object AddNewVideo : Destination("Main.AddNewVideo")
         @Serializable object Inbox : Destination("Main.Inbox")
         @Serializable data class Profile(
@@ -15,7 +15,7 @@ sealed class Destination(val name: String) {
             val shouldNavigateToMyProfile: Boolean = false,
         ) : Destination("Main.Profile")
     }
-
+    @Serializable data class Follow(val startedTabIndex: Int = 0): Destination("Follow")
     @Serializable object Settings: Destination("Settings")
     @Serializable data class Search(
         val type: String = "",

@@ -85,6 +85,7 @@ fun ProfileScreenContainer(
     onBack: () -> Unit,
     follow: () -> Unit,
     unfollow: () -> Unit,
+    onNavigateToFollowScreen: (startedTabIndex: Int) -> Unit,
     onNavigateToSettingsScreen: () -> Unit,
     onNavigateToStudioScreen: () -> Unit,
     onNavigateToQRCodeScreen: () -> Unit,
@@ -272,12 +273,24 @@ fun ProfileScreenContainer(
                         MetricItem(
                             label = "Following",
                             count = uiState.user?.followingCount?.toString() ?: "0",
-                            modifier = Modifier.width(100.dp)
+                            modifier = Modifier
+                                .width(100.dp)
+                                .clickable {
+                                    if (uiState.isMyProfile) {
+                                        onNavigateToFollowScreen(0)
+                                    }
+                                }
                         )
                         MetricItem(
                             label = "Follower",
                             count = uiState.user?.followerCount?.toString() ?: "0",
-                            modifier = Modifier.width(100.dp)
+                            modifier = Modifier
+                                .width(100.dp)
+                                .clickable {
+                                    if (uiState.isMyProfile) {
+                                        onNavigateToFollowScreen(1)
+                                    }
+                                }
                         )
                         MetricItem(
                             label = "Like",

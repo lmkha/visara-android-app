@@ -62,7 +62,8 @@ import androidx.navigation.toRoute
 import com.example.visara.ui.components.UserAvatar
 import com.example.visara.ui.navigation.Destination
 import com.example.visara.ui.screens.add_new_video.AddNewVideoScreen
-import com.example.visara.ui.screens.following.FollowingScreen
+import com.example.visara.ui.screens.follow.FollowScreen
+import com.example.visara.ui.screens.following_feed.FollowingFeedScreen
 import com.example.visara.ui.screens.home.HomeScreen
 import com.example.visara.ui.screens.inbox.InboxScreen
 import com.example.visara.ui.screens.login.LoginScreen
@@ -74,6 +75,7 @@ import com.example.visara.ui.screens.video_detail.VideoDetailScreen
 import com.example.visara.ui.theme.VisaraTheme
 import com.example.visara.viewmodels.AppState
 import com.example.visara.viewmodels.AppViewModel
+import com.example.visara.viewmodels.FollowScreenViewModel
 import com.example.visara.viewmodels.SearchViewModel
 import com.example.visara.viewmodels.VideoDetailViewModel
 import kotlinx.coroutines.launch
@@ -116,6 +118,7 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
                     modifier = Modifier.fillMaxSize(),
                     navController = navController,
                     startDestination = Destination.Main(),
+//                    startDestination = Destination.Follow(),
                 ) {
                     navigation<Destination.Main>(startDestination = Destination.Main.Home) {
                         composable<Destination.Main.Home> {
@@ -131,13 +134,13 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
                                 }
                             )
                         }
-                        composable<Destination.Main.Following> {
-                            FollowingScreen(
+                        composable<Destination.Main.FollowingFeed> {
+                            FollowingFeedScreen(
                                 onChangeTheme = {  },
                                 navigateToTestScreen = { navController.navigate(Destination.Test) },
                                 bottomNavBar = {
                                     BotNavBar(
-                                        activeDestination = Destination.Main.Following,
+                                        activeDestination = Destination.Main.FollowingFeed,
                                         appState = appState,
                                         onNavigate = { botNavBarNavigate(it) }
                                     )
@@ -189,6 +192,7 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
                                 username = profile.username,
                                 isMyProfileRequested = profile.shouldNavigateToMyProfile,
                                 onBack = { navController.popBackStack() },
+                                onNavigateToFollowScreen = { navController.navigate(Destination.Follow(it)) },
                                 onNavigateToLoginScreen = { navController.navigate(Destination.Login) },
                                 onNavigateToSettingsScreen = { navController.navigate(Destination.Settings) },
                                 onNavigateToStudioScreen = {},
@@ -241,6 +245,18 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
                                     launchSingleTop = true
                                 }
                             },
+                        )
+                    }
+                    composable<Destination.Follow> { backStackEntry ->
+                        val route: Destination.Follow = backStackEntry.toRoute()
+                        val viewModel: FollowScreenViewModel = hiltViewModel()
+                        viewModel.setStartedTabIndex(route.startedTabIndex)
+                        viewModel.fetchData()
+
+                        FollowScreen(
+                            viewModel = viewModel,
+                            goBack = { navController.popBackStack() },
+                            navigateToProfileScreen = { navController.navigate(Destination.Main.Profile(username = it))},
                         )
                     }
                 }
@@ -297,7 +313,7 @@ private fun BotNavBar(
 ) {
     val botNavItems = listOf(
         BottomNavigationItemData("Home", Icons.Filled.Home, Destination.Main.Home),
-        BottomNavigationItemData("Following", Icons.Filled.Star, Destination.Main.Following),
+        BottomNavigationItemData("Following", Icons.Filled.Star, Destination.Main.FollowingFeed),
         BottomNavigationItemData("Add", Icons.Filled.AddCircle, Destination.Main.AddNewVideo),
         BottomNavigationItemData("Inbox", Icons.Filled.Email, Destination.Main.Inbox),
         BottomNavigationItemData("Profile", Icons.Filled.AccountCircle, Destination.Main.Profile(shouldNavigateToMyProfile = true)),

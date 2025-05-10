@@ -136,7 +136,7 @@ class UserApi @Inject constructor(
 
     fun getAllFollowing(page: Int, size: Long) : Response {
         val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
-            .addPathSegments("users/following")
+            .addPathSegments("users/followings")
             .addQueryParameter("page", page.toString())
             .addQueryParameter("size", size.toString())
             .build()

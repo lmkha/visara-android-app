@@ -1,10 +1,10 @@
 package com.example.visara.data.repository
 
 import com.example.visara.data.local.datasource.UserLocalDataSource
+import com.example.visara.data.model.FollowUserModel
 import com.example.visara.data.model.UserModel
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.datasource.UserRemoteDataSource
-import com.example.visara.data.remote.dto.toUserModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -101,25 +101,35 @@ class UserRepository @Inject constructor(
         return apiResult is ApiResult.Success
     }
 
-    suspend fun getAllFollower(page: Int = 0, size: Long = 100L) : List<UserModel> {
+    suspend fun getAllFollower(page: Int = 0, size: Long = 100L) : List<FollowUserModel> {
         val apiResult = userRemoteDataSource.getAllFollower(page, size)
         if (apiResult !is ApiResult.Success) return emptyList()
 
-        val userModelList = apiResult.data.map { it.toUserModel() }
+        val userModelList = apiResult.data.map {
+            FollowUserModel(
+                user = it.toUserModel(),
+                isFollowing = it.isFollowing,
+            )
+        }
 
         return userModelList
     }
 
-    suspend fun getAllFollowing(page: Int, size: Long) : List<UserModel> {
+    suspend fun getAllFollowing(page: Int, size: Long) : List<FollowUserModel> {
         val apiResult = userRemoteDataSource.getAllFollowing(page, size)
         if (apiResult !is ApiResult.Success) return emptyList()
 
-        val userModelList = apiResult.data.map { it.toUserModel() }
+        val userModelList = apiResult.data.map {
+            FollowUserModel(
+                user = it.toUserModel(),
+                isFollowing = true,
+            )
+        }
 
         return userModelList
     }
 
-    suspend fun getAllFollowerTEMP(page: Int = 0, size: Long = 100L) : List<UserModel> {
+    suspend fun getAllFollowerTEMP(page: Int = 0, size: Long = 100L) : List<FollowUserModel> {
         val apiResult = userRemoteDataSource.getAllFollowerTEMP(page, size)
         if (apiResult !is ApiResult.Success) return emptyList()
         val usernameList = apiResult.data
@@ -127,7 +137,14 @@ class UserRepository @Inject constructor(
         val userModelList = coroutineScope {
             usernameList.map { username ->
                 async {
-                    getPublicUser(username)
+                    val user = getPublicUser(username)
+                    val isFollowing = checkIsFollowingThisUser(username)
+                    user?.let {
+                        FollowUserModel(
+                            user = user,
+                            isFollowing = isFollowing,
+                        )
+                    }
                 }
             }.mapNotNull { it.await() }
         }
@@ -135,7 +152,7 @@ class UserRepository @Inject constructor(
         return userModelList
     }
 
-    suspend fun getAllFollowingTEMP(page: Int, size: Long) : List<UserModel> {
+    suspend fun getAllFollowingTEMP(page: Int, size: Long) : List<FollowUserModel> {
         val apiResult = userRemoteDataSource.getAllFollowingTEMP(page, size)
         if (apiResult !is ApiResult.Success) return emptyList()
         val usernameList = apiResult.data
@@ -143,7 +160,13 @@ class UserRepository @Inject constructor(
         val userModelList = coroutineScope {
             usernameList.map { username ->
                 async {
-                    getPublicUser(username)
+                    val user = getPublicUser(username)
+                    user?.let {
+                        FollowUserModel(
+                            user = user,
+                            isFollowing = true,
+                        )
+                    }
                 }
             }.mapNotNull { it.await() }
         }

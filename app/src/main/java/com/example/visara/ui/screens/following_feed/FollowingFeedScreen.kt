@@ -1,4 +1,4 @@
-package com.example.visara.ui.screens.following
+package com.example.visara.ui.screens.following_feed
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,7 +14,7 @@ import com.example.visara.ui.theme.AppTheme
 
 // New video of user that you are following
 @Composable
-fun FollowingScreen(
+fun FollowingFeedScreen(
     modifier: Modifier = Modifier,
     onChangeTheme: (theme: AppTheme) -> Unit,
     bottomNavBar: @Composable () -> Unit,

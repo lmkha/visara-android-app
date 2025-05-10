@@ -4,12 +4,13 @@ import android.util.Log
 import com.example.visara.data.remote.common.ApiError
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.api.UserApi
+import com.example.visara.data.remote.dto.FollowerUserDto
+import com.example.visara.data.remote.dto.FollowingUserDto
 import com.example.visara.data.remote.dto.UserDto
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import okhttp3.Response
 import javax.inject.Inject
 
 class UserRemoteDataSource @Inject constructor(
@@ -210,7 +211,7 @@ class UserRemoteDataSource @Inject constructor(
         }
     }
 
-    suspend fun getAllFollower(page: Int, size: Long) : ApiResult<List<UserDto>> {
+    suspend fun getAllFollower(page: Int, size: Long) : ApiResult<List<FollowerUserDto>> {
         return withContext(Dispatchers.IO) {
             try {
                 val response = userApi.getAllFollower(page, size)
@@ -219,8 +220,8 @@ class UserRemoteDataSource @Inject constructor(
                 if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
                     val jsonObject = gson.fromJson(responseBody, Map::class.java)
                     val dataJson = gson.toJson(jsonObject["data"])
-                    val type = object : TypeToken<List<UserDto>>() {}.type
-                    val userDtoList: List<UserDto> = gson.fromJson(dataJson, type)
+                    val type = object : TypeToken<List<FollowerUserDto>>() {}.type
+                    val userDtoList: List<FollowerUserDto> = gson.fromJson(dataJson, type)
                     ApiResult.Success(userDtoList)
                 } else {
                     ApiResult.Failure(
@@ -238,7 +239,7 @@ class UserRemoteDataSource @Inject constructor(
         }
     }
 
-    suspend fun getAllFollowing(page: Int, size: Long): ApiResult<List<UserDto>> {
+    suspend fun getAllFollowing(page: Int, size: Long): ApiResult<List<FollowingUserDto>> {
         return withContext(Dispatchers.IO) {
             try {
                 val response = userApi.getAllFollowing(page, size)
@@ -247,8 +248,8 @@ class UserRemoteDataSource @Inject constructor(
                 if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
                     val jsonObject = gson.fromJson(responseBody, Map::class.java)
                     val dataJson = gson.toJson(jsonObject["data"])
-                    val type = object : TypeToken<List<UserDto>>() {}.type
-                    val userDtoList: List<UserDto> = gson.fromJson(dataJson, type)
+                    val type = object : TypeToken<List<FollowingUserDto>>() {}.type
+                    val userDtoList: List<FollowingUserDto> = gson.fromJson(dataJson, type)
                     ApiResult.Success(userDtoList)
                 } else {
                     ApiResult.Failure(
@@ -299,6 +300,8 @@ class UserRemoteDataSource @Inject constructor(
             try {
                 val response = userApi.getAllFollowing(page, size)
                 val responseBody = response.body?.string()
+                Log.i("CHECK_VAR", "response: $response")
+                Log.i("CHECK_VAR", "responseBody: ${responseBody.toString()}")
 
                 if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
                     val jsonObject = gson.fromJson(responseBody, Map::class.java)

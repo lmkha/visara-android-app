@@ -11,7 +11,7 @@ val navJson: Json = Json {
         polymorphic(Destination::class) {
             subclass(Destination.Main::class, Destination.Main.serializer())
                 subclass(Destination.Main.Home::class, Destination.Main.Home.serializer())
-                subclass(Destination.Main.Following::class, Destination.Main.Following.serializer())
+                subclass(Destination.Main.FollowingFeed::class, Destination.Main.FollowingFeed.serializer())
                 subclass(Destination.Main.AddNewVideo::class, Destination.Main.AddNewVideo.serializer())
                 subclass(Destination.Main.Inbox::class, Destination.Main.Inbox.serializer())
                 subclass(Destination.Main.Profile::class, Destination.Main.Profile.serializer())
