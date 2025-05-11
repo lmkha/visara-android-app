@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -17,7 +18,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.visara.ui.components.video_player.LocalVideoPlayerManager
 import com.example.visara.ui.screens.add_new_video.components.enter_video_info.EnterVideoInfoStep
 import com.example.visara.ui.screens.add_new_video.components.review.ReviewSectionStep
 import com.example.visara.ui.screens.add_new_video.components.select.SelectVideoStep
@@ -40,6 +40,10 @@ fun AddNewVideoScreen(
                 step = 2
             }
         }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose { viewModel.manager.player.stop() }
     }
 
     if (step > 1) {

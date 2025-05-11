@@ -58,8 +58,6 @@ import com.example.visara.R
 import kotlinx.coroutines.delay
 
 interface VideoPlayerManager {
-    fun release()
-    fun pause()
     val player: ExoPlayer
 }
 class DashVideoPlayerManager(context: Context) : VideoPlayerManager {
@@ -86,32 +84,19 @@ class DashVideoPlayerManager(context: Context) : VideoPlayerManager {
             }
         })
     }
-
-    override fun release() {
-        player.release()
-    }
-
-    override fun pause() {
-        player.pause()
-    }
 }
 
 class LocalVideoPlayerManager(context: Context) : VideoPlayerManager {
     override val player: ExoPlayer = ExoPlayer.Builder(context).build()
 
     fun play(uri: Uri, playWhenReady: Boolean = true) {
+        player.stop()
+        player.clearMediaItems()
+
         val mediaItem = MediaItem.fromUri(uri)
         player.setMediaItem(mediaItem)
         player.prepare()
         player.playWhenReady = playWhenReady
-    }
-
-    override fun release() {
-        player.release()
-    }
-
-    override fun pause() {
-        player.pause()
     }
 }
 

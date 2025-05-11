@@ -266,7 +266,7 @@ class VideoDetailViewModel @Inject constructor(
 
     fun close() {
         viewModelScope.launch {
-            videoDetailRepository.dashVideoPlayerManager.pause()
+            videoDetailRepository.dashVideoPlayerManager.player.stop()
             videoDetailRepository.close()
         }
     }
