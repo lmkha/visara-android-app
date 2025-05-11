@@ -97,11 +97,14 @@ class ProfileViewModel @Inject constructor(
     private fun observerCurrentUser() {
         viewModelScope.launch {
             userRepository.currentUser.collect { currentUser->
-                _uiState.update { oldState ->
-                    val isFollowing = if (currentUser == null) false
-                    else oldState.user?.username?.let { userRepository.checkIsFollowingThisUser(it) } == true
-
-                    oldState.copy(isFollowing = isFollowing)
+                if (currentUser?.username == uiState.value.user?.username) {
+                    _uiState.update { it.copy(user = currentUser) }
+                } else {
+                    _uiState.update { oldState ->
+                        val isFollowing = if (currentUser == null) false
+                        else oldState.user?.username?.let { userRepository.checkIsFollowingThisUser(it) } == true
+                        oldState.copy(isFollowing = isFollowing)
+                    }
                 }
             }
         }

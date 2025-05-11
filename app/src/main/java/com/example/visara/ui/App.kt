@@ -82,9 +82,9 @@ import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun App(viewModel: AppViewModel = hiltViewModel()) {
+fun App(appViewModel: AppViewModel = hiltViewModel()) {
 
-    val appState by viewModel.appState.collectAsStateWithLifecycle()
+    val appState by appViewModel.appState.collectAsStateWithLifecycle()
     val videoDetailViewModel: VideoDetailViewModel = hiltViewModel()
 
     VisaraTheme(appTheme = appState.appTheme) {
@@ -101,7 +101,7 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
 
         if (appState.videoDetailState.isFullScreenMode) {
             BackHandler {
-                viewModel.minimizeVideoDetail()
+                appViewModel.minimizeVideoDetail()
             }
         }
 
@@ -118,7 +118,6 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
                     modifier = Modifier.fillMaxSize(),
                     navController = navController,
                     startDestination = Destination.Main(),
-//                    startDestination = Destination.Follow(),
                 ) {
                     navigation<Destination.Main>(startDestination = Destination.Main.Home) {
                         composable<Destination.Main.Home> {
@@ -157,14 +156,14 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
                         ) {
                             val isVideoDetailVisibleBefore = appState.videoDetailState.isVisible
                             scope.launch {
-                                viewModel.pauseVideoDetail()
-                                viewModel.hideVideoDetail()
+                                appViewModel.pauseVideoDetail()
+                                appViewModel.hideVideoDetail()
                             }
 
                             DisposableEffect(Unit) {
                                 onDispose {
                                     if (isVideoDetailVisibleBefore) {
-                                        viewModel.displayVideoDetail()
+                                        appViewModel.displayVideoDetail()
                                     }
                                 }
                             }
@@ -252,6 +251,10 @@ fun App(viewModel: AppViewModel = hiltViewModel()) {
                         val viewModel: FollowScreenViewModel = hiltViewModel()
                         viewModel.setStartedTabIndex(route.startedTabIndex)
                         viewModel.fetchData()
+
+                        DisposableEffect(Unit) {
+                            onDispose { appViewModel.syncCurrentUser() }
+                        }
 
                         FollowScreen(
                             viewModel = viewModel,

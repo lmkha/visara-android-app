@@ -92,6 +92,10 @@ class AppViewModel @Inject constructor(
     fun displayVideoDetail() {
         videoDetailRepository.display()
     }
+
+    fun syncCurrentUser() {
+        viewModelScope.launch { userRepository.syncCurrentUser() }
+    }
 }
 
 data class AppState(

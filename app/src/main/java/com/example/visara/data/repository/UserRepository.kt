@@ -79,13 +79,11 @@ class UserRepository @Inject constructor(
 
     suspend fun followUser(username: String) : Boolean {
         val apiResult = userRemoteDataSource.followUser(username)
-        if (apiResult is ApiResult.Success) { syncCurrentUser() }
         return apiResult is ApiResult.Success
     }
 
     suspend fun unfollowUser(username: String) : Boolean {
         val apiResult = userRemoteDataSource.unfollowUser(username)
-        if (apiResult is ApiResult.Success) { syncCurrentUser() }
         return apiResult is ApiResult.Success
     }
 
