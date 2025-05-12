@@ -2,6 +2,7 @@ package com.example.visara.ui
 
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.fadeIn
@@ -10,9 +11,15 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -31,8 +38,6 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -85,34 +90,42 @@ import kotlinx.coroutines.launch
 fun App(appViewModel: AppViewModel = hiltViewModel()) {
 
     val appState by appViewModel.appState.collectAsStateWithLifecycle()
+
     val videoDetailViewModel: VideoDetailViewModel = hiltViewModel()
+    val scope = rememberCoroutineScope()
+    val navController = rememberNavController()
+    var enableBottomPaddingForVideoDetail by remember { mutableStateOf(true) }
+    fun botNavBarNavigate(dest: Destination) {
+        scope.launch {
+            val popped = navController.popBackStack(route = dest, inclusive = false)
+            if (!popped) navController.navigate(dest)
+        }
+    }
+
+    if (appState.videoDetailState.isFullScreenMode) {
+        BackHandler {
+            appViewModel.minimizeVideoDetail()
+        }
+    }
 
     VisaraTheme(appTheme = appState.appTheme) {
-        val scope = rememberCoroutineScope()
-        val navController = rememberNavController()
-        val snackBarHostState = remember { SnackbarHostState() }
-        var enableBottomPaddingForVideoDetail by remember { mutableStateOf(true) }
-        fun botNavBarNavigate(dest: Destination) {
-            scope.launch {
-                val popped = navController.popBackStack(route = dest, inclusive = false)
-                if (!popped) navController.navigate(dest)
-            }
-        }
-
-        if (appState.videoDetailState.isFullScreenMode) {
-            BackHandler {
-                appViewModel.minimizeVideoDetail()
-            }
-        }
-
         Box(modifier = Modifier.fillMaxSize()) {
             Scaffold(
                 modifier = Modifier.zIndex(0f),
-                snackbarHost = {
-                    SnackbarHost(
-                        hostState = snackBarHostState,
-                    )
-                },
+                bottomBar = {
+                    Column {
+                        AnimatedVisibility(
+                            visible = appState.shouldDisplayIsOnlineStatus,
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding())
+                                    .background(color = if (appState.isOnline) Color.Green else Color.Red)
+                            )
+                        }
+                    }
+                }
             ) {
                 NavHost(
                     modifier = Modifier.fillMaxSize(),
@@ -123,7 +136,13 @@ fun App(appViewModel: AppViewModel = hiltViewModel()) {
                         composable<Destination.Main.Home> {
                             HomeScreen(
                                 navigateToSearchScreen = { navController.navigate(Destination.Search()) },
-                                navigateToProfileScreen = { navController.navigate(Destination.Main.Profile(username = it)) },
+                                navigateToProfileScreen = {
+                                    navController.navigate(
+                                        Destination.Main.Profile(
+                                            username = it
+                                        )
+                                    )
+                                },
                                 bottomNavBar = {
                                     BotNavBar(
                                         activeDestination = Destination.Main.Home,
@@ -135,7 +154,7 @@ fun App(appViewModel: AppViewModel = hiltViewModel()) {
                         }
                         composable<Destination.Main.FollowingFeed> {
                             FollowingFeedScreen(
-                                onChangeTheme = {  },
+                                onChangeTheme = { },
                                 navigateToTestScreen = { navController.navigate(Destination.Test) },
                                 bottomNavBar = {
                                     BotNavBar(
@@ -148,10 +167,16 @@ fun App(appViewModel: AppViewModel = hiltViewModel()) {
                         }
                         composable<Destination.Main.AddNewVideo>(
                             enterTransition = {
-                                scaleIn(transformOrigin = TransformOrigin(0.5f, 1f), initialScale = 0.8f) + fadeIn()
+                                scaleIn(
+                                    transformOrigin = TransformOrigin(0.5f, 1f),
+                                    initialScale = 0.8f
+                                ) + fadeIn()
                             },
                             exitTransition = {
-                                scaleOut(transformOrigin = TransformOrigin(0.5f, 1f), targetScale = 0.8f) + fadeOut()
+                                scaleOut(
+                                    transformOrigin = TransformOrigin(0.5f, 1f),
+                                    targetScale = 0.8f
+                                ) + fadeOut()
                             }
                         ) {
                             val isVideoDetailVisibleBefore = appState.videoDetailState.isVisible
@@ -185,15 +210,25 @@ fun App(appViewModel: AppViewModel = hiltViewModel()) {
                                 },
                             )
                         }
-                        composable<Destination.Main.Profile> { backStackEntry->
+                        composable<Destination.Main.Profile> { backStackEntry ->
                             val profile: Destination.Main.Profile = backStackEntry.toRoute()
                             ProfileScreen(
                                 username = profile.username,
                                 isMyProfileRequested = profile.shouldNavigateToMyProfile,
                                 onBack = { navController.popBackStack() },
-                                onNavigateToFollowScreen = { navController.navigate(Destination.Follow(it)) },
+                                onNavigateToFollowScreen = {
+                                    navController.navigate(
+                                        Destination.Follow(
+                                            it
+                                        )
+                                    )
+                                },
                                 onNavigateToLoginScreen = { navController.navigate(Destination.Login) },
-                                onNavigateToSettingsScreen = { navController.navigate(Destination.Settings) },
+                                onNavigateToSettingsScreen = {
+                                    navController.navigate(
+                                        Destination.Settings
+                                    )
+                                },
                                 onNavigateToStudioScreen = {},
                                 onNavigateToQRCodeScreen = {},
                                 bottomNavBar = {
@@ -213,11 +248,21 @@ fun App(appViewModel: AppViewModel = hiltViewModel()) {
                             searchViewModel.searchVideoByHashtag(search.pattern)
                         }
                         LaunchedEffect(Unit) { enableBottomPaddingForVideoDetail = false }
-                        DisposableEffect(Unit) { onDispose { enableBottomPaddingForVideoDetail = true } }
+                        DisposableEffect(Unit) {
+                            onDispose {
+                                enableBottomPaddingForVideoDetail = true
+                            }
+                        }
                         SearchScreen(
                             viewModel = searchViewModel,
                             goBack = { navController.popBackStack() },
-                            onViewUserProfile = { username -> navController.navigate(Destination.Main.Profile(username = username))},
+                            onViewUserProfile = { username ->
+                                navController.navigate(
+                                    Destination.Main.Profile(
+                                        username = username
+                                    )
+                                )
+                            },
                             modifier = Modifier
                                 .fillMaxSize()
                                 .statusBarsPadding()
@@ -259,14 +304,23 @@ fun App(appViewModel: AppViewModel = hiltViewModel()) {
                         FollowScreen(
                             viewModel = viewModel,
                             goBack = { navController.popBackStack() },
-                            navigateToProfileScreen = { navController.navigate(Destination.Main.Profile(username = it))},
+                            navigateToProfileScreen = {
+                                navController.navigate(
+                                    Destination.Main.Profile(
+                                        username = it
+                                    )
+                                )
+                            },
                         )
                     }
                 }
             }
 
             val isFullScreen = appState.videoDetailState.isFullScreenMode
-            val shape by animateDpAsState(targetValue = if (isFullScreen) 0.dp else 15.dp, label = "shape")
+            val shape by animateDpAsState(
+                targetValue = if (isFullScreen) 0.dp else 15.dp,
+                label = "shape"
+            )
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -321,7 +375,6 @@ private fun BotNavBar(
         BottomNavigationItemData("Inbox", Icons.Filled.Email, Destination.Main.Inbox),
         BottomNavigationItemData("Profile", Icons.Filled.AccountCircle, Destination.Main.Profile(shouldNavigateToMyProfile = true)),
     )
-
     NavigationBar(containerColor = Color.Transparent) {
         botNavItems.forEach { item ->
             NavigationBarItem(

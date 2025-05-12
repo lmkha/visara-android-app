@@ -47,6 +47,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.visara.data.model.FollowUserModel
 import com.example.visara.data.model.UserModel
 import com.example.visara.ui.components.UserAvatar
 import com.example.visara.viewmodels.FollowScreenViewModel
@@ -170,24 +171,37 @@ fun FollowScreen(
         }
 
         // List of users
-        val users = if (selectedTabIndex == 0) {
+        val count = if (selectedTabIndex == 0) {
             if (pattern.trim().isBlank()) {
-                uiState.followings
+                uiState.followings.size
             } else {
-                uiState.filteredFollowings
+                uiState.filteredFollowings.size
             }
         } else if (selectedTabIndex == 1) {
             if (pattern.trim().isBlank()) {
-                uiState.followers
+                uiState.followers.size
             } else {
-                uiState.filteredFollowers
+                uiState.filteredFollowers.size
             }
         } else {
-            emptyList()
+            0
         }
-
-        items(users.size) { index ->
-            val user = users[index]
+        items(count) { index ->
+            val user = if (selectedTabIndex == 0) {
+                if (pattern.trim().isBlank()) {
+                    uiState.followings[index]
+                } else {
+                    uiState.filteredFollowings[index]
+                }
+            } else if (selectedTabIndex == 1) {
+                if (pattern.trim().isBlank()) {
+                    uiState.followers[index]
+                } else {
+                    uiState.filteredFollowers[index]
+                }
+            } else {
+                FollowUserModel(user = UserModel())
+            }
             FollowUserItem(
                 user = user.user,
                 isFollowingInitialValue = user.isFollowing,

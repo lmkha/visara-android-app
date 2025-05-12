@@ -5,10 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.visara.data.model.VideoModel
 import com.example.visara.data.repository.VideoDetailRepository
 import com.example.visara.data.repository.VideoRepository
+import com.example.visara.device.NetworkMonitor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -17,27 +19,46 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val videoRepository: VideoRepository,
     private val videoDetailRepository: VideoDetailRepository,
+    private val networkMonitor: NetworkMonitor,
 ) : ViewModel() {
     private val _uiState: MutableStateFlow<HomeScreenUiState> = MutableStateFlow(HomeScreenUiState())
     val uiState: StateFlow<HomeScreenUiState> = _uiState.asStateFlow()
+    var shouldReFetchWhenOnline: Boolean = false
 
     init {
+        observerNetworkState()
+        refresh()
+    }
+
+    private fun observerNetworkState() {
         viewModelScope.launch {
-            val videoList = videoRepository.getVideoForHomeScreen()
-            if (videoList != null) {
-                _uiState.update { it.copy(videos = videoList, isLoading = false) }
+            networkMonitor.isOnline.collect { isOnline ->
+                if (isOnline && shouldReFetchWhenOnline) {
+                    refresh()
+                    shouldReFetchWhenOnline = false
+                }
             }
         }
     }
 
     fun refresh() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, isRefreshing = true) }
-            val newVideoList = videoRepository.getVideoForHomeScreen()
-            if (newVideoList != null) {
-                _uiState.update { it.copy(videos = newVideoList, isLoading = false, isRefreshing = false) }
+            if (networkMonitor.isOnline.first()) {
+                _uiState.update { it.copy(isLoading = true, isRefreshing = true) }
+                val newVideoList = videoRepository.getVideoForHomeScreen()
+                if (newVideoList != null) {
+                    _uiState.update {
+                        it.copy(
+                            videos = newVideoList,
+                            isLoading = false,
+                            isRefreshing = false
+                        )
+                    }
+                } else {
+                    _uiState.update { it.copy(isLoading = false, isRefreshing = false) }
+                }
             } else {
-                _uiState.update { it.copy(isLoading = false, isRefreshing = false) }
+                shouldReFetchWhenOnline = true
             }
         }
     }

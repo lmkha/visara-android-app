@@ -8,8 +8,10 @@ import com.example.visara.data.repository.AuthRepository
 import com.example.visara.data.repository.UserRepository
 import com.example.visara.data.repository.VideoDetailRepository
 import com.example.visara.data.repository.VideoDetailState
+import com.example.visara.device.NetworkMonitor
 import com.example.visara.ui.theme.AppTheme
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,15 +27,18 @@ class AppViewModel @Inject constructor(
     private val appSettingsRepository: AppSettingsRepository,
     private val userRepository: UserRepository,
     private val videoDetailRepository: VideoDetailRepository,
+    private val networkMonitor: NetworkMonitor,
 ) : ViewModel() {
     private val _appState = MutableStateFlow(AppState())
     val appState: StateFlow<AppState> = _appState.asStateFlow()
+    private var wasOfflineBefore = false
 
     init {
         observerTheme()
         observerAuthenticationState()
         observerCurrentUser()
         observerVideoDetail()
+        observerNetworkState()
     }
 
     private fun observerTheme() {
@@ -43,9 +48,9 @@ class AppViewModel @Inject constructor(
                 val themeName = prefs[themeKey]
                 AppTheme.entries.firstOrNull { it.name == themeName } ?: AppTheme.SYSTEM
             }
-            .collect { theme ->
-                _appState.update { it.copy(appTheme = theme) }
-            }
+                .collect { theme ->
+                    _appState.update { it.copy(appTheme = theme) }
+                }
         }
     }
 
@@ -69,6 +74,25 @@ class AppViewModel @Inject constructor(
         viewModelScope.launch {
             videoDetailRepository.videoDetail.collect { videoDetail ->
                 _appState.update { it.copy(videoDetailState = videoDetail) }
+            }
+        }
+    }
+
+    private fun observerNetworkState() {
+        viewModelScope.launch {
+            networkMonitor.isOnline.collect { isOnline ->
+                if (!isOnline) {
+                    wasOfflineBefore = true
+                    _appState.update { it.copy(isOnline = false, shouldDisplayIsOnlineStatus = true) }
+                } else {
+                    if (wasOfflineBefore) {
+                        _appState.update { it.copy(isOnline = true, shouldDisplayIsOnlineStatus = true) }
+                        delay(5000)
+                        _appState.update { it.copy(shouldDisplayIsOnlineStatus = false) }
+                    } else {
+                        _appState.update { it.copy(isOnline = true, shouldDisplayIsOnlineStatus = false) }
+                    }
+                }
             }
         }
     }
@@ -103,4 +127,6 @@ data class AppState(
     val isAuthenticated: Boolean = false,
     val currentUser: UserModel? = null,
     val videoDetailState: VideoDetailState = VideoDetailState(),
+    val isOnline: Boolean = false,
+    val shouldDisplayIsOnlineStatus: Boolean = false,
 )
