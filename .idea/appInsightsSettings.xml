@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.example.visara" />
+                  <option name="mobileSdkAppId" value="1:281680746888:android:db4cb8551708ddd326c23d" />
+                  <option name="projectId" value="visara-notification" />
+                  <option name="projectNumber" value="281680746888" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

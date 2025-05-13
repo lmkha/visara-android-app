@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "281680746888",
+    "project_id": "visara-notification",
+    "storage_bucket": "visara-notification.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:281680746888:android:db4cb8551708ddd326c23d",
+        "android_client_info": {
+          "package_name": "com.example.visara"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYXjsBveAuW2zBLCKnH1XgPwEF9aipeT4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
