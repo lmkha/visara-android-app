@@ -43,7 +43,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.visara.ui.components.video_player.VisaraVideoPlayer
+import com.example.visara.ui.components.VisaraVideoPlayer
 import com.example.visara.ui.screens.video_detail.components.ActionsSection
 import com.example.visara.ui.screens.video_detail.components.AuthorAccountInfoSection
 import com.example.visara.ui.screens.video_detail.components.ExpandedCommentSection
@@ -60,6 +60,9 @@ fun VideoDetailScreen(
     modifier: Modifier = Modifier,
     viewModel: VideoDetailViewModel,
     isFullScreenMode: Boolean,
+    isLandscapeMode: Boolean,
+    requireLandscapeMode: () -> Unit,
+    requirePortraitMode: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var liked by remember(uiState.isVideoLiked) { mutableStateOf(uiState.isVideoLiked) }
@@ -113,7 +116,12 @@ fun VideoDetailScreen(
         ) {
             VisaraVideoPlayer(
                 player = viewModel.player,
-                modifier = Modifier.fillMaxSize()
+                isLandscapeMode = isLandscapeMode,
+                requireLandscapeMode = requireLandscapeMode,
+                requirePortraitMode = requirePortraitMode,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .aspectRatio(16f / 9f)
             )
             if (!isFullScreenMode) {
                 MinimizedModeControl(
@@ -128,6 +136,7 @@ fun VideoDetailScreen(
         // Info
         Box(
             modifier = Modifier
+                .height(if (isLandscapeMode) 0.dp else Dp.Unspecified)
                 .offset { IntOffset(0, offsetY.value.roundToInt()) }
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))

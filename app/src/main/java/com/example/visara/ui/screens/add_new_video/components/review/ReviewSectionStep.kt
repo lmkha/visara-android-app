@@ -14,8 +14,8 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.example.visara.ui.components.video_player.LocalVideoPlayerManager
-import com.example.visara.ui.components.video_player.VisaraVideoPlayer
+import com.example.visara.ui.components.LocalVideoPlayerManager
+import com.example.visara.ui.components.VisaraVideoPlayer
 
 @Composable
 fun ReviewSectionStep(
@@ -46,6 +46,8 @@ fun ReviewSectionStep(
             VisaraVideoPlayer(
                 player = videoPlayerManager.player,
                 modifier = Modifier.fillMaxWidth(),
+                requireLandscapeMode = {},
+                requirePortraitMode = {},
             )
         }
         Box(modifier = Modifier.fillMaxWidth()) {

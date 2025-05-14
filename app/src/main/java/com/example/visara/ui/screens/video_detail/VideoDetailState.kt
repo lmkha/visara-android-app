@@ -7,7 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.media3.common.Player
 import com.example.visara.data.model.VideoModel
-import com.example.visara.ui.components.video_player.VideoPlayerManager
+import com.example.visara.ui.components.VideoPlayerManager
 
 class VideoDetailState(
     manager: VideoPlayerManager,

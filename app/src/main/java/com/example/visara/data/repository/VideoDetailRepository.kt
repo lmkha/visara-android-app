@@ -3,8 +3,8 @@ package com.example.visara.data.repository
 import android.content.Context
 import androidx.media3.common.Player
 import com.example.visara.data.model.VideoModel
-import com.example.visara.ui.components.video_player.DashVideoPlayerManager
-import com.example.visara.ui.components.video_player.LocalVideoPlayerManager
+import com.example.visara.ui.components.DashVideoPlayerManager
+import com.example.visara.ui.components.LocalVideoPlayerManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

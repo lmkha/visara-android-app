@@ -1,5 +1,6 @@
 package com.example.visara.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.visara.data.model.UserModel
@@ -10,6 +11,8 @@ import com.example.visara.data.repository.VideoDetailRepository
 import com.example.visara.data.repository.VideoDetailState
 import com.example.visara.device.NetworkMonitor
 import com.example.visara.ui.theme.AppTheme
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,6 +42,20 @@ class AppViewModel @Inject constructor(
         observerCurrentUser()
         observerVideoDetail()
         observerNetworkState()
+
+//        val tag = "CHECK_VAR"
+//
+//        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+//            if (!task.isSuccessful) {
+//                Log.w(tag, "Fetching FCM registration failed!", task.exception)
+//                return@OnCompleteListener
+//            }
+//
+//            val token = task.result
+//
+//            Log.d(tag, "FCM token: $token")
+//        })
+        Log.i("CHECK_VAR", "init app view model")
     }
 
     private fun observerTheme() {
@@ -120,6 +137,14 @@ class AppViewModel @Inject constructor(
     fun syncCurrentUser() {
         viewModelScope.launch { userRepository.syncCurrentUser() }
     }
+
+    fun enableLandscapeMode() {
+        _appState.update { it.copy(isLandscapeMode = true) }
+    }
+
+    fun enablePortraitMode() {
+        _appState.update { it.copy(isLandscapeMode = false) }
+    }
 }
 
 data class AppState(
@@ -129,4 +154,5 @@ data class AppState(
     val videoDetailState: VideoDetailState = VideoDetailState(),
     val isOnline: Boolean = false,
     val shouldDisplayIsOnlineStatus: Boolean = false,
+    val isLandscapeMode: Boolean = false,
 )

@@ -87,7 +87,11 @@ import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun App(appViewModel: AppViewModel = hiltViewModel()) {
+fun App(
+    appViewModel: AppViewModel,
+    requireLandscapeMode: () -> Unit,
+    requirePortraitMode: () -> Unit,
+) {
 
     val appState by appViewModel.appState.collectAsStateWithLifecycle()
 
@@ -338,6 +342,9 @@ fun App(appViewModel: AppViewModel = hiltViewModel()) {
                     VideoDetailScreen(
                         viewModel = videoDetailViewModel,
                         isFullScreenMode = isFullScreen,
+                        isLandscapeMode = appState.isLandscapeMode,
+                        requirePortraitMode = requirePortraitMode,
+                        requireLandscapeMode = requireLandscapeMode,
                         modifier = Modifier
                             .then(
                                 if (isFullScreen)
