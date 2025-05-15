@@ -1,6 +1,6 @@
 package com.example.visara.data.model
 
-import com.google.gson.annotations.SerializedName
+import android.net.Uri
 
 data class VideoModel(
     val createdAt: String = "",
@@ -15,6 +15,7 @@ data class VideoModel(
     val description: String = "",
     val hashtags: List<String> = emptyList<String>(),
     val thumbnailUrl: String = "",
+    val localThumbnailUri: Uri? = null,
     val viewsCount: Long = 0L,
     val likesCount: Long = 0L,
     val commentsCount: Long = 0L,

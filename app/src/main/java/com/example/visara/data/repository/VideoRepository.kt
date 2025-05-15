@@ -9,6 +9,10 @@ import com.example.visara.data.model.VideoModel
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.datasource.VideoRemoteDataSource
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
@@ -19,6 +23,9 @@ class VideoRepository @Inject constructor(
     private val videoRemoteDataSource: VideoRemoteDataSource,
     private val appContext: Context,
 ) {
+    private val _uploadingVideo: MutableStateFlow<VideoModel?> = MutableStateFlow(null)
+    val uploadingVideo: StateFlow<VideoModel?> = _uploadingVideo.asStateFlow()
+
     suspend fun getVideoById(videoId: String) : VideoModel? {
         val apiResult = videoRemoteDataSource.getVideoById(videoId)
         if (apiResult is ApiResult.Success) {
@@ -26,6 +33,7 @@ class VideoRepository @Inject constructor(
         }
         return null
     }
+
     suspend fun getVideoForHomeScreen(): List<VideoModel>? {
         return withContext(Dispatchers.IO) {
             val videoListResult = videoRemoteDataSource.getRandomVideos(50)
@@ -51,6 +59,7 @@ class VideoRepository @Inject constructor(
         hashtags: List<String>,
         privacy: Privacy,
         isAllowComment: Boolean,
+        onUploadVideoMetaDataSuccess: () -> Unit = {},
     ) : Boolean {
         if (videoUri == null) return false
 
@@ -63,6 +72,10 @@ class VideoRepository @Inject constructor(
         )
 
         if (uploadVideoMetaDataResult !is ApiResult.Success) return false
+
+        val videoModel = uploadVideoMetaDataResult.data.toVideoModel().copy(localThumbnailUri = thumbnailUri)
+        _uploadingVideo.update { videoModel }
+        onUploadVideoMetaDataSuccess()
 
         val videoId = uploadVideoMetaDataResult.data.id
 

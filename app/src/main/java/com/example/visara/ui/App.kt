@@ -412,57 +412,59 @@ fun App(
                                 navController.navigate(Destination.Main.Profile(username = username))
                             },
                             modifier = Modifier
-                                // Apply offset for dragging position, converted to IntOffset
                                 .offset {
                                     IntOffset(
                                         offsetX.value.roundToInt(),
                                         offsetY.value.roundToInt()
                                     )
                                 }
-                                .pointerInput(Unit) {
-                                    detectDragGestures(
-                                        onDrag = { change, dragAmount ->
-                                            change.consume()
-                                            coroutineScope.launch {
-                                                // Clamp the new X and Y offset so the box does not go outside screen bounds
-                                                val newX = offsetX.value + dragAmount.x
-                                                val newY = offsetY.value + dragAmount.y
+                                // Only allow drag when in minimized mode
+                                .then(
+                                    if (!isFullScreen) Modifier.pointerInput(Unit) {
+                                        detectDragGestures(
+                                            onDrag = { change, dragAmount ->
+                                                change.consume()
+                                                coroutineScope.launch {
+                                                    // Clamp the new X and Y offset so the box does not go outside screen bounds
+                                                    val newX = offsetX.value + dragAmount.x
+                                                    val newY = offsetY.value + dragAmount.y
 
-                                                offsetX.snapTo(newX)
-                                                offsetY.snapTo(newY)
-                                            }
-                                        },
-                                        onDragEnd = {
-                                            val midX = screenWidthPx / 2
-                                            val midY = screenHeightPx / 2
-                                            // Decide target snap position based on whether box center is in left or right half,
-                                            // and top or bottom half of the screen
-                                            val targetX = if (offsetX.value + boxWidthPx / 2 < midX) startPaddingPx else maxOffsetX
-                                            val targetY = if (offsetY.value + boxHeightPx / 2 < midY) 0f else maxOffsetY
-                                            coroutineScope.launch {
-                                                // Animate snapping to nearest corner smoothly
-                                                launch {
-                                                    offsetX.animateTo(
-                                                        targetX,
-                                                        animationSpec = tween(
-                                                            durationMillis = 300,
-                                                            easing = FastOutSlowInEasing
-                                                        )
-                                                    )
+                                                    offsetX.snapTo(newX)
+                                                    offsetY.snapTo(newY)
                                                 }
-                                                launch {
-                                                    offsetY.animateTo(
-                                                        targetY,
-                                                        animationSpec = tween(
-                                                            durationMillis = 300,
-                                                            easing = FastOutSlowInEasing
+                                            },
+                                            onDragEnd = {
+                                                val midX = screenWidthPx / 2
+                                                val midY = screenHeightPx / 2
+                                                // Decide target snap position based on whether box center is in left or right half,
+                                                // and top or bottom half of the screen
+                                                val targetX = if (offsetX.value + boxWidthPx / 2 < midX) startPaddingPx else maxOffsetX
+                                                val targetY = if (offsetY.value + boxHeightPx / 2 < midY) 0f else maxOffsetY
+                                                coroutineScope.launch {
+                                                    // Animate snapping to nearest corner smoothly
+                                                    launch {
+                                                        offsetX.animateTo(
+                                                            targetX,
+                                                            animationSpec = tween(
+                                                                durationMillis = 300,
+                                                                easing = FastOutSlowInEasing
+                                                            )
                                                         )
-                                                    )
+                                                    }
+                                                    launch {
+                                                        offsetY.animateTo(
+                                                            targetY,
+                                                            animationSpec = tween(
+                                                                durationMillis = 300,
+                                                                easing = FastOutSlowInEasing
+                                                            )
+                                                        )
+                                                    }
                                                 }
                                             }
-                                        }
-                                    )
-                                }
+                                        )
+                                    } else Modifier
+                                )
                                 .then(
                                     if (isFullScreen) Modifier
                                         .fillMaxSize()
