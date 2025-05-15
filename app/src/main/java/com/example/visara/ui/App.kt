@@ -215,10 +215,15 @@ fun App(
                             )
                         }
                         composable<Destination.Main.Profile> { backStackEntry ->
-                            val profile: Destination.Main.Profile = backStackEntry.toRoute()
+                            val route: Destination.Main.Profile = backStackEntry.toRoute()
+                            LaunchedEffect(route.shouldNavigateToMyProfile) {
+                                if (route.shouldNavigateToMyProfile) {
+                                    appViewModel.syncCurrentUser()
+                                }
+                            }
                             ProfileScreen(
-                                username = profile.username,
-                                isMyProfileRequested = profile.shouldNavigateToMyProfile,
+                                username = route.username,
+                                isMyProfileRequested = route.shouldNavigateToMyProfile,
                                 onBack = { navController.popBackStack() },
                                 onNavigateToFollowScreen = {
                                     navController.navigate(
@@ -321,10 +326,7 @@ fun App(
             }
 
             val isFullScreen = appState.videoDetailState.isFullScreenMode
-            val shape by animateDpAsState(
-                targetValue = if (isFullScreen) 0.dp else 15.dp,
-                label = "shape"
-            )
+            val shape by animateDpAsState(targetValue = if (isFullScreen) 0.dp else 15.dp, label = "shape")
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -345,6 +347,9 @@ fun App(
                         isLandscapeMode = appState.isLandscapeMode,
                         requirePortraitMode = requirePortraitMode,
                         requireLandscapeMode = requireLandscapeMode,
+                        onNavigateToProfileScreen = { username ->
+                            navController.navigate(Destination.Main.Profile(username = username))
+                        },
                         modifier = Modifier
                             .then(
                                 if (isFullScreen)

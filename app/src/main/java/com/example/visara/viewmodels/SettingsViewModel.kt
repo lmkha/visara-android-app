@@ -12,7 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -34,11 +34,12 @@ class SettingsViewModel @Inject constructor(
 
     private fun observerThemeSettingsState() {
         viewModelScope.launch {
-            val prefs = appSettingsRepository.appSettingsFlow.first()
-            val themeKey = appSettingsRepository.themeKey
-            val themeName = prefs[themeKey]
-            val theme = AppTheme.entries.find { it.name == themeName } ?: AppTheme.SYSTEM
-            _uiState.value = _uiState.value.copy(theme = theme)
+            appSettingsRepository.appSettingsFlow.collectLatest { prefs ->
+                val themeKey = appSettingsRepository.themeKey
+                val themeName = prefs[themeKey]
+                val theme = AppTheme.entries.find { it.name == themeName } ?: AppTheme.SYSTEM
+                _uiState.update { it.copy(theme = theme) }
+            }
         }
     }
 

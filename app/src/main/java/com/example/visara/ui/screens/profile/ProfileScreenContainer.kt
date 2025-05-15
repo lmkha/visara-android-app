@@ -1,5 +1,6 @@
 package com.example.visara.ui.screens.profile
 
+import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -76,6 +77,7 @@ import com.example.visara.viewmodels.ProfileScreenUiState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@SuppressLint("ConfigurationScreenWidthHeight")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun ProfileScreenContainer(

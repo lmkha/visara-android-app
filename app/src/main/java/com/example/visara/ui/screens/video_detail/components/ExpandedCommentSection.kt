@@ -44,19 +44,18 @@ fun ExpandedCommentSection(
     val commentInputHeight = 100.dp
     val commentInputState = rememberCommentInputState()
 
-    Box(
-        modifier = modifier.imePadding()) {
+    Box(modifier = modifier.imePadding()) {
         Box(
             modifier = Modifier
                 .height(headerHeight)
                 .fillMaxWidth()
                 .padding(4.dp)
-            ,
         ) {
             Text(
                 modifier = Modifier.align(Alignment.Center),
                 text = "6.778 comments",
                 fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onBackground,
             )
             IconButton(
                 onClick = onClose,

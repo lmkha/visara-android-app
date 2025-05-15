@@ -112,7 +112,7 @@ fun VisaraVideoPlayer(
     requireLandscapeMode: () -> Unit,
     requirePortraitMode: () -> Unit,
 ) {
-    var showControlsState by remember { mutableStateOf(showControls) }
+    var showControlsState by remember(showControls) { mutableStateOf(showControls) }
     val presentationState = rememberPresentationState(player)
     val scaledModifier = Modifier.resizeWithContentScale(
         contentScale = ContentScale.Fit,
@@ -175,7 +175,6 @@ fun PlayerControls(
     var currentPosition by remember { mutableLongStateOf(player.currentPosition) }
     val duration = player.duration
     val safeDuration = duration.takeIf { it > 0 } ?: 0L
-    var isLandscapeMode by remember(isLandscapeMode) { mutableStateOf(isLandscapeMode) }
 
     // Listen for playback state
     LaunchedEffect(player) {
@@ -279,10 +278,8 @@ fun PlayerControls(
                         onClick = {
                             if (isLandscapeMode) {
                                 requirePortraitMode()
-                                isLandscapeMode = false
                             } else {
                                 requireLandscapeMode()
-                                isLandscapeMode = true
                             }
                         },
                         colors = IconButtonDefaults.iconButtonColors(

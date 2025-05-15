@@ -68,7 +68,8 @@ fun ChildCommentItem(
             }
             Text(
                 text = comment.content,
-                fontWeight = FontWeight.Normal
+                fontWeight = FontWeight.Normal,
+                color = MaterialTheme.colorScheme.onBackground,
             )
 
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -108,6 +109,7 @@ fun ChildCommentItem(
                     )
                     Text(
                         text = likeCount.toString(),
+                        color = MaterialTheme.colorScheme.onBackground,
                     )
                 }
 

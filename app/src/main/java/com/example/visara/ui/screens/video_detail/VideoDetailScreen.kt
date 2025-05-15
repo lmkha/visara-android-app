@@ -63,6 +63,7 @@ fun VideoDetailScreen(
     isLandscapeMode: Boolean,
     requireLandscapeMode: () -> Unit,
     requirePortraitMode: () -> Unit,
+    onNavigateToProfileScreen: (username: String) -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var liked by remember(uiState.isVideoLiked) { mutableStateOf(uiState.isVideoLiked) }
@@ -116,6 +117,7 @@ fun VideoDetailScreen(
         ) {
             VisaraVideoPlayer(
                 player = viewModel.player,
+                showControls = uiState.isFullScreenMode,
                 isLandscapeMode = isLandscapeMode,
                 requireLandscapeMode = requireLandscapeMode,
                 requirePortraitMode = requirePortraitMode,
@@ -176,11 +178,18 @@ fun VideoDetailScreen(
                         viewsCount = uiState.video?.viewsCount ?: 0L,
                     )
                 }
-                // Author account info, subscribe button
+                // Author account info, follow button
                 item {
                     AuthorAccountInfoSection(
                         author = uiState.author,
+                        isFollowing = uiState.isFollowing,
                         currentUser = uiState.currentUser,
+                        onAuthorClick = {
+                            viewModel.enableMinimizedMode()
+                            uiState.author?.username?.let { onNavigateToProfileScreen(it) }
+                        },
+                        onFollowUser = viewModel::followAuthor,
+                        onUnfollowUser = viewModel::unfollowAuthor,
                     )
                 }
                 // Actions: like, share, download, save, report

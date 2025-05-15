@@ -96,6 +96,7 @@ fun ParentCommentItem(
                     Text(
                         text = parentComment.content,
                         fontWeight = FontWeight.Normal,
+                        color = MaterialTheme.colorScheme.onBackground,
                     )
 
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -135,6 +136,7 @@ fun ParentCommentItem(
                             )
                             Text(
                                 text = likeCount.toString(),
+                                color = MaterialTheme.colorScheme.onBackground,
                             )
                         }
 
@@ -192,10 +194,14 @@ fun ParentCommentItem(
                                 if (commentWithReplies.replies.isEmpty()) { fetchChildrenComment() }
                             },
                     ) {
-                        Text("See more ${parentComment.replyCount} replies")
+                        Text(
+                            text = "See more ${parentComment.replyCount} replies",
+                            color = Color.Gray,
+                        )
                         Icon(
                             imageVector = Icons.Default.KeyboardArrowDown,
                             contentDescription = null,
+                            tint = Color.Gray,
                         )
                     }
                 }
@@ -206,10 +212,14 @@ fun ParentCommentItem(
                                 openReplies = false
                             },
                     ) {
-                        Text("Hide")
+                        Text(
+                            text = "Hide",
+                            color = Color.Gray,
+                        )
                         Icon(
                             imageVector = Icons.Default.KeyboardArrowUp,
-                            contentDescription = null
+                            contentDescription = null,
+                            tint = Color.Gray,
                         )
                     }
                 }

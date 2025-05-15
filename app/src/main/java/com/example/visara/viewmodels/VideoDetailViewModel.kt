@@ -13,11 +13,11 @@ import com.example.visara.data.repository.VideoDetailRepository
 import com.example.visara.data.repository.VideoRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -34,48 +34,65 @@ class VideoDetailViewModel @Inject constructor(
     val uiState: StateFlow<VideoDetailScreenUiState> = _uiState.asStateFlow()
     var likeCommentJobMap: MutableMap<String, Job> = mutableMapOf<String, Job>()
     private var changeVideoLikeJob: Job? = null
+    private var followAuthorJob: Job? = null
+    private var unfollowAuthorJob: Job? = null
     val player: ExoPlayer get() = videoDetailRepository.dashVideoPlayerManager.player
 
     init {
         observerAuthenticationState()
         observerVideoDetail()
         observerCurrentUser()
+        observerRecentFollowingUsername()
+        observerRecentUnfollowUsername()
     }
 
     private fun observerVideoDetail() {
         viewModelScope.launch {
             videoDetailRepository.videoDetail.collect { videoDetail ->
                 _uiState.update { oldState->
-                    val isUserAuthenticated = authRepository.isAuthenticated.first()
+                    if (videoDetail.video?.id == oldState.video?.id) {
+                        oldState.copy(
+                            isFullScreenMode = videoDetail.isFullScreenMode,
+                            isPlaying = videoDetail.isPlaying,
+                        )
+                    } else {
+                        val videoId = videoDetail.video?.id
+                        if (videoId != null) {
+                            val videoDeferred = async { videoRepository.getVideoById(videoId) }
+                            val isVideoLikedDeferred =  async { videoRepository.isVideoLiked(videoId) }
+                            val authorDeferred = async { userRepository.getPublicUser(videoDetail.video.username) }
+                            val isFollowingDeferred = async {
+                                userRepository.checkIsFollowingThisUser(videoDetail.video.username)
+                            }
+                            val commentListDeferred = async {
+                                val parentComments = commentRepository.getAllParentCommentsByVideoId(videoId)
+                                parentComments.map { CommentWithReplies(comment = it) }
+                            }
 
-                    val currentUser = userRepository.currentUser.first()
+                            val video = videoDeferred.await()
+                            val isVideoLiked = isVideoLikedDeferred.await()
+                            val author = authorDeferred.await()
+                            val isFollowing = isFollowingDeferred.await()
+                            val commentList = commentListDeferred.await()
 
-                    val video = if (videoDetail.video?.id == oldState.video?.id) oldState.video
-                    else videoDetail.video?.id?.let { videoRepository.getVideoById(it) }
-
-                    val isVideoLiked = if (video?.id == oldState.video?.id) oldState.isVideoLiked
-                    else video?.id?.let { videoRepository.isVideoLiked(it) } == true
-
-                    val author = if (video?.username == oldState.author?.username) oldState.author
-                    else video?.username?.let { userRepository.getPublicUser(it) }
-
-                    val commentList = if (video?.id == null) emptyList()
-                    else if (video.id == oldState.video?.id) oldState.commentList
-                    else {
-                        val parentComments = commentRepository.getAllParentCommentsByVideoId(video.id)
-                        parentComments.map { CommentWithReplies(comment = it)}
+                            oldState.copy(
+                                video = video,
+                                isVideoLiked = isVideoLiked,
+                                commentList = commentList,
+                                author = author,
+                                isFollowing = isFollowing,
+                                isFullScreenMode = videoDetail.isFullScreenMode,
+                                isPlaying = videoDetail.isPlaying,
+                            )
+                        } else {
+                            VideoDetailScreenUiState(
+                                isFullScreenMode = videoDetail.isFullScreenMode,
+                                isPlaying = videoDetail.isPlaying,
+                                isUserAuthenticated = oldState.isUserAuthenticated,
+                                currentUser = oldState.currentUser,
+                            )
+                        }
                     }
-
-                    VideoDetailScreenUiState(
-                        isUserAuthenticated = isUserAuthenticated,
-                        video = video,
-                        isVideoLiked = isVideoLiked,
-                        commentList = commentList,
-                        currentUser = currentUser,
-                        author = author,
-                        isFullScreenMode = videoDetail.isFullScreenMode,
-                        isPlaying = videoDetail.isPlaying,
-                    )
                 }
             }
         }
@@ -93,6 +110,26 @@ class VideoDetailViewModel @Inject constructor(
         viewModelScope.launch {
             userRepository.currentUser.collect { currentUser ->
                 _uiState.update { it.copy(currentUser = currentUser) }
+            }
+        }
+    }
+
+    private fun observerRecentFollowingUsername() {
+        viewModelScope.launch {
+            userRepository.recentFollowingUsername.collect { currentFollowingUsername ->
+                if (currentFollowingUsername != null && currentFollowingUsername == uiState.value.author?.username) {
+                    _uiState.update { it.copy(isFollowing = true) }
+                }
+            }
+        }
+    }
+
+    private fun observerRecentUnfollowUsername() {
+        viewModelScope.launch {
+            userRepository.recentUnfollowUsername.collect { currentUnfollowUsername ->
+                if (currentUnfollowUsername != null && currentUnfollowUsername == uiState.value.author?.username) {
+                    _uiState.update { it.copy(isFollowing = false) }
+                }
             }
         }
     }
@@ -277,6 +314,12 @@ class VideoDetailViewModel @Inject constructor(
         }
     }
 
+    fun enableMinimizedMode() {
+        viewModelScope.launch {
+            videoDetailRepository.enableMinimizedMode()
+        }
+    }
+
     fun changeVideoLike(
         current: Boolean,
         onFailure: () -> Unit,
@@ -297,6 +340,34 @@ class VideoDetailViewModel @Inject constructor(
             changeVideoLikeJob = null
         }
     }
+
+    fun followAuthor(onFailure: () -> Unit) {
+        followAuthorJob?.cancel()
+
+        followAuthorJob = viewModelScope.launch {
+            val authorUsername = uiState.value.author?.username
+            if (authorUsername != null && !uiState.value.isFollowing) {
+                val result = userRepository.followUser(authorUsername)
+                if (!result) onFailure()
+            }
+            else onFailure()
+            followAuthorJob = null
+        }
+    }
+
+    fun unfollowAuthor(onFailure: () -> Unit) {
+        unfollowAuthorJob?.cancel()
+
+        unfollowAuthorJob = viewModelScope.launch {
+            val authorUsername = uiState.value.author?.username
+            if (authorUsername != null && uiState.value.isFollowing) {
+                val result = userRepository.unfollowUser(authorUsername)
+                if (!result) onFailure()
+            }
+            else onFailure()
+            unfollowAuthorJob = null
+        }
+    }
 }
 
 data class VideoDetailScreenUiState(
@@ -308,6 +379,7 @@ data class VideoDetailScreenUiState(
     val isOpenExpandedCommentSection: Boolean = false,
     val currentUser: UserModel? = null,
     val author: UserModel? = null,
+    val isFollowing: Boolean = false,
     val isAddingComment: Boolean = false,
     val isFullScreenMode: Boolean = false,
     val isPlaying: Boolean = false,
