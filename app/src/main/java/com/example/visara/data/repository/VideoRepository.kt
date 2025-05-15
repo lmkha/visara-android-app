@@ -59,7 +59,7 @@ class VideoRepository @Inject constructor(
             description = description,
             hashtags = hashtags,
             isPrivate = privacy != Privacy.ALL,
-            isCommentOff = isAllowComment
+            isCommentOff = !isAllowComment
         )
 
         if (uploadVideoMetaDataResult !is ApiResult.Success) return false

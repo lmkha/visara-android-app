@@ -21,6 +21,7 @@ fun ProfileScreen(
     onNavigateToSettingsScreen: () -> Unit,
     onNavigateToStudioScreen: () -> Unit,
     onNavigateToQRCodeScreen: () -> Unit,
+    onNavigateToAddNewVideoScreen: () -> Unit,
 ) {
     LaunchedEffect(isMyProfileRequested, username) {
         viewModel.setProfile(isMyProfileRequested, username)
@@ -47,6 +48,7 @@ fun ProfileScreen(
                 onNavigateToStudioScreen = onNavigateToStudioScreen,
                 onNavigateToQRCodeScreen = onNavigateToQRCodeScreen,
                 onNavigateToLoginScreen = onNavigateToLoginScreen,
+                onNavigateToAddNewVideoScreen = onNavigateToAddNewVideoScreen,
                 onVideoSelected = { video -> viewModel.selectVideo(video) },
                 follow = viewModel::follow,
                 unfollow = viewModel::unfollow,

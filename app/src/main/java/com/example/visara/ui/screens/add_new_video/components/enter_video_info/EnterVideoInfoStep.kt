@@ -32,10 +32,10 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -99,7 +99,7 @@ fun EnterVideoInfoStep(
 
     Box(modifier = modifier) {
         // Base layer
-        Column(modifier = Modifier.zIndex(0f)) {
+        Column(modifier = Modifier.zIndex(0f).padding(bottom = 8.dp)) {
             // Header
             Box(modifier = Modifier.fillMaxWidth()) {
                 IconButton(
@@ -114,6 +114,7 @@ fun EnterVideoInfoStep(
             }
 
             Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier
                     .padding(horizontal = 8.dp)
                     .weight(1f)
@@ -176,8 +177,8 @@ fun EnterVideoInfoStep(
                     maxLines = 4,
                     minLines = 4,
                     colors = TextFieldDefaults.colors(
-                        unfocusedContainerColor = Color.Black,
-                        unfocusedPlaceholderColor = Color.Black,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.background,
+                        unfocusedPlaceholderColor = MaterialTheme.colorScheme.background,
                         unfocusedIndicatorColor = Color.Transparent,
                         focusedIndicatorColor = Color.Transparent,
                     ),
@@ -190,7 +191,6 @@ fun EnterVideoInfoStep(
                         )
                     ,
                 )
-                Spacer(Modifier.height(8.dp))
 
                 // Description and hashtags
                 Row(
@@ -222,7 +222,6 @@ fun EnterVideoInfoStep(
                         contentDescription = null,
                     )
                 }
-                Spacer(Modifier.height(8.dp))
 
                 // Privacy
                 Row(
@@ -259,7 +258,6 @@ fun EnterVideoInfoStep(
                         contentDescription = null,
                     )
                 }
-                Spacer(Modifier.height(8.dp))
 
                 // Allow comments
                 Row(
@@ -289,7 +287,6 @@ fun EnterVideoInfoStep(
                         onCheckedChange = { isAllowComment = it },
                     )
                 }
-                Spacer(Modifier.height(8.dp))
 
                 // Add to playlist
                 Row(
@@ -376,7 +373,6 @@ fun EnterVideoInfoStep(
                     Text("Post")
                 }
             }
-            HorizontalDivider(Modifier.padding(top = 8.dp))
         }
 
         // Add description and hashtags

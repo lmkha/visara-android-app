@@ -92,6 +92,7 @@ fun ProfileScreenContainer(
     onNavigateToStudioScreen: () -> Unit,
     onNavigateToQRCodeScreen: () -> Unit,
     onNavigateToLoginScreen: () -> Unit,
+    onNavigateToAddNewVideoScreen: () -> Unit,
     onVideoSelected: (video: VideoModel) -> Unit,
 ) {
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
@@ -234,6 +235,7 @@ fun ProfileScreenContainer(
                                             shape = CircleShape
                                         )
                                         .background(color = MaterialTheme.colorScheme.primary)
+                                        .clickable(onClick = onNavigateToAddNewVideoScreen)
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Add,

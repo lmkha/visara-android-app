@@ -4,12 +4,17 @@ import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -21,7 +26,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
@@ -48,13 +53,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -75,6 +83,7 @@ import com.example.visara.ui.screens.login.LoginScreen
 import com.example.visara.ui.screens.profile.ProfileScreen
 import com.example.visara.ui.screens.search.SearchScreen
 import com.example.visara.ui.screens.settings.SettingsScreen
+import com.example.visara.ui.screens.studio.StudioScreen
 import com.example.visara.ui.screens.test.TestScreen
 import com.example.visara.ui.screens.video_detail.VideoDetailScreen
 import com.example.visara.ui.theme.VisaraTheme
@@ -84,8 +93,9 @@ import com.example.visara.viewmodels.FollowScreenViewModel
 import com.example.visara.viewmodels.SearchViewModel
 import com.example.visara.viewmodels.VideoDetailViewModel
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "ConfigurationScreenWidthHeight")
 @Composable
 fun App(
     appViewModel: AppViewModel,
@@ -96,11 +106,11 @@ fun App(
     val appState by appViewModel.appState.collectAsStateWithLifecycle()
 
     val videoDetailViewModel: VideoDetailViewModel = hiltViewModel()
-    val scope = rememberCoroutineScope()
+    val coroutineScope = rememberCoroutineScope()
     val navController = rememberNavController()
     var enableBottomPaddingForVideoDetail by remember { mutableStateOf(true) }
     fun botNavBarNavigate(dest: Destination) {
-        scope.launch {
+        coroutineScope.launch {
             val popped = navController.popBackStack(route = dest, inclusive = false)
             if (!popped) navController.navigate(dest)
         }
@@ -134,6 +144,7 @@ fun App(
                 NavHost(
                     modifier = Modifier.fillMaxSize(),
                     navController = navController,
+//                    startDestination = Destination.Studio,
                     startDestination = Destination.Main(),
                 ) {
                     navigation<Destination.Main>(startDestination = Destination.Main.Home) {
@@ -184,7 +195,7 @@ fun App(
                             }
                         ) {
                             val isVideoDetailVisibleBefore = appState.videoDetailState.isVisible
-                            scope.launch {
+                            coroutineScope.launch {
                                 appViewModel.pauseVideoDetail()
                                 appViewModel.hideVideoDetail()
                             }
@@ -238,6 +249,7 @@ fun App(
                                         Destination.Settings
                                     )
                                 },
+                                onNavigateToAddNewVideoScreen = { navController.navigate(Destination.Main.AddNewVideo) },
                                 onNavigateToStudioScreen = {},
                                 onNavigateToQRCodeScreen = {},
                                 bottomNavBar = {
@@ -322,38 +334,137 @@ fun App(
                             },
                         )
                     }
+                    composable<Destination.Studio> {
+                        StudioScreen()
+                    }
                 }
             }
 
-            val isFullScreen = appState.videoDetailState.isFullScreenMode
-            val shape by animateDpAsState(targetValue = if (isFullScreen) 0.dp else 15.dp, label = "shape")
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .imePadding()
-                    .padding(
-                        bottom = if (isFullScreen) 0.dp
-                        else if (enableBottomPaddingForVideoDetail) 120.dp
-                        else 24.dp,
-                        end = if (isFullScreen) 0.dp else 24.dp
-                    )
-                    .zIndex(if (appState.videoDetailState.isVisible) 10f else -10f),
-                contentAlignment = if (isFullScreen) Alignment.TopStart else Alignment.BottomEnd
-            ) {
-                key(appState.videoDetailState.video?.id) {
-                    VideoDetailScreen(
-                        viewModel = videoDetailViewModel,
-                        isFullScreenMode = isFullScreen,
-                        isLandscapeMode = appState.isLandscapeMode,
-                        requirePortraitMode = requirePortraitMode,
-                        requireLandscapeMode = requireLandscapeMode,
-                        onNavigateToProfileScreen = { username ->
-                            navController.navigate(Destination.Main.Profile(username = username))
-                        },
-                        modifier = Modifier
-                            .then(
-                                if (isFullScreen)
-                                    Modifier
+            // Video detail
+            Box(modifier = Modifier.zIndex(if (appState.videoDetailState.isVisible) 10f else -10f)) {
+                val isFullScreen = appState.videoDetailState.isFullScreenMode
+                val shape by animateDpAsState(
+                    targetValue = if (isFullScreen) 0.dp else 15.dp,
+                    label = "shape"
+                )
+                val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp
+                val screenHeightDp = LocalConfiguration.current.screenHeightDp.dp
+                val density = LocalDensity.current
+
+                // Video size when not in full screen mode
+                val boxWidth = 250.dp
+                val boxHeight = boxWidth * 9f / 16f
+
+                // Convert dimensions from dp to pixels using current screen density
+                val screenWidthPx = with(density) { screenWidthDp.toPx() }
+                val screenHeightPx = with(density) { screenHeightDp.toPx() }
+                val boxWidthPx = with(density) { boxWidth.toPx() }
+                val boxHeightPx = with(density) { boxHeight.toPx() }
+
+                // Bottom and end (right) padding depending on fullscreen state or other flags
+                val bottomPaddingDp = if (isFullScreen) 0.dp else if (enableBottomPaddingForVideoDetail) 180.dp else 24.dp
+                val endPaddingDp = if (isFullScreen) 0.dp else 24.dp
+
+                // Convert padding from dp to pixels
+                val bottomPaddingPx = with(density) { bottomPaddingDp.toPx() }
+                val endPaddingPx = with(density) { endPaddingDp.toPx() }
+                val startPaddingPx = with(density) { 24.dp.toPx() }
+
+                // Maximum allowed offsets for X and Y to keep the video inside the screen boundaries
+                val maxOffsetX = screenWidthPx - boxWidthPx - endPaddingPx
+                val maxOffsetY = screenHeightPx - boxHeightPx - bottomPaddingPx
+
+                val offsetX = remember { Animatable(0f, Float.VectorConverter) }
+                val offsetY = remember { Animatable(0f, Float.VectorConverter) }
+
+                LaunchedEffect(appState.videoDetailState.isFullScreenMode) {
+                    if (!appState.videoDetailState.isFullScreenMode &&
+                        appState.videoDetailState.video?.id != null &&
+                        appState.videoDetailState.isVisible
+                    ) {
+                        offsetX.snapTo(maxOffsetX)
+                        offsetY.snapTo(maxOffsetY)
+                    }
+                    else if (
+                        appState.videoDetailState.isFullScreenMode &&
+                        appState.videoDetailState.video?.id != null &&
+                        appState.videoDetailState.isVisible
+                    ) {
+                        offsetX.snapTo(0f)
+                        offsetY.snapTo(0f)
+                    }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .statusBarsPadding()
+                        .imePadding()
+                ) {
+                    key(appState.videoDetailState.video?.id) {
+                        VideoDetailScreen(
+                            viewModel = videoDetailViewModel,
+                            isFullScreenMode = isFullScreen,
+                            isLandscapeMode = appState.isLandscapeMode,
+                            requirePortraitMode = requirePortraitMode,
+                            requireLandscapeMode = requireLandscapeMode,
+                            onNavigateToProfileScreen = { username ->
+                                navController.navigate(Destination.Main.Profile(username = username))
+                            },
+                            modifier = Modifier
+                                // Apply offset for dragging position, converted to IntOffset
+                                .offset {
+                                    IntOffset(
+                                        offsetX.value.roundToInt(),
+                                        offsetY.value.roundToInt()
+                                    )
+                                }
+                                .pointerInput(Unit) {
+                                    detectDragGestures(
+                                        onDrag = { change, dragAmount ->
+                                            change.consume()
+                                            coroutineScope.launch {
+                                                // Clamp the new X and Y offset so the box does not go outside screen bounds
+                                                val newX = offsetX.value + dragAmount.x
+                                                val newY = offsetY.value + dragAmount.y
+
+                                                offsetX.snapTo(newX)
+                                                offsetY.snapTo(newY)
+                                            }
+                                        },
+                                        onDragEnd = {
+                                            val midX = screenWidthPx / 2
+                                            val midY = screenHeightPx / 2
+                                            // Decide target snap position based on whether box center is in left or right half,
+                                            // and top or bottom half of the screen
+                                            val targetX = if (offsetX.value + boxWidthPx / 2 < midX) startPaddingPx else maxOffsetX
+                                            val targetY = if (offsetY.value + boxHeightPx / 2 < midY) 0f else maxOffsetY
+                                            coroutineScope.launch {
+                                                // Animate snapping to nearest corner smoothly
+                                                launch {
+                                                    offsetX.animateTo(
+                                                        targetX,
+                                                        animationSpec = tween(
+                                                            durationMillis = 300,
+                                                            easing = FastOutSlowInEasing
+                                                        )
+                                                    )
+                                                }
+                                                launch {
+                                                    offsetY.animateTo(
+                                                        targetY,
+                                                        animationSpec = tween(
+                                                            durationMillis = 300,
+                                                            easing = FastOutSlowInEasing
+                                                        )
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    )
+                                }
+                                .then(
+                                    if (isFullScreen) Modifier
                                         .fillMaxSize()
                                         .graphicsLayer {
                                             scaleX = 1f
@@ -361,14 +472,15 @@ fun App(
                                             transformOrigin = TransformOrigin(1f, 1f)
                                         }
                                         .statusBarsPadding()
-                                else
-                                    Modifier
+                                    else Modifier
                                         .width(250.dp)
                                         .aspectRatio(16f / 9f)
                                         .clip(RoundedCornerShape(shape))
-                            )
-                            .animateContentSize()
-                    )
+                                )
+                                .animateContentSize()
+
+                        )
+                    }
                 }
             }
         }
