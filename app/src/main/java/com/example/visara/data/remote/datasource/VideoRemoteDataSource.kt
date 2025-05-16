@@ -148,14 +148,14 @@ class VideoRemoteDataSource @Inject constructor(
         videoId: String,
         videoFile: File,
         progressListener: (percent: Int) -> Unit = { },
-    ) : ApiResult<String> {
+    ) : ApiResult<Unit> {
         return withContext(Dispatchers.IO) {
             try {
                 val response = videoApi.uploadVideoFile(videoId, videoFile, progressListener)
                 val responseBody = response.body?.string()
 
                 if (response.isSuccessful) {
-                    ApiResult.Success("OK")
+                    ApiResult.Success(Unit)
                 } else {
                     ApiResult.Failure(
                         ApiError(

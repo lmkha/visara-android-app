@@ -13,12 +13,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
-import coil3.compose.AsyncImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @Composable
-fun VideoThumbnailFromUri(
+fun VideoThumbnailFromVideoUri(
     modifier: Modifier = Modifier,
     uri: Uri?,
 ) {

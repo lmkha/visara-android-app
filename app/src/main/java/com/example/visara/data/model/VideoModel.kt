@@ -16,6 +16,7 @@ data class VideoModel(
     val hashtags: List<String> = emptyList<String>(),
     val thumbnailUrl: String = "",
     val localThumbnailUri: Uri? = null,
+    val localVideoUri: Uri? = null,
     val viewsCount: Long = 0L,
     val likesCount: Long = 0L,
     val commentsCount: Long = 0L,

@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -32,6 +33,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -55,7 +57,7 @@ import androidx.compose.ui.zIndex
 import com.example.visara.R
 import com.example.visara.ui.theme.LocalVisaraCustomColors
 import coil3.compose.AsyncImage
-import com.example.visara.ui.components.VideoThumbnailFromUri
+import com.example.visara.ui.components.VideoThumbnailFromVideoUri
 
 @Composable
 fun EnterVideoInfoStep(
@@ -86,6 +88,7 @@ fun EnterVideoInfoStep(
     var openAddDescriptionBox by remember { mutableStateOf(false) }
     var openSelectPrivacyBox by remember { mutableStateOf(false) }
     var openAddPlaylistBox by remember { mutableStateOf(false) }
+    var isProcessing by remember { mutableStateOf(false) }
 
     BackHandler(enabled = openSelectPrivacyBox) {
         openSelectPrivacyBox = false
@@ -136,7 +139,7 @@ fun EnterVideoInfoStep(
                                 modifier = Modifier.clip(RoundedCornerShape(8.dp)),
                             )
                         } else {
-                            VideoThumbnailFromUri(
+                            VideoThumbnailFromVideoUri(
                                 uri = videoUri,
                                 modifier = Modifier.clip(RoundedCornerShape(8.dp))
                             )
@@ -360,17 +363,43 @@ fun EnterVideoInfoStep(
                 }
 
                 Button(
-                    onClick = { onSubmit(title, description, hashTags, privacy, isAllowComment, thumbnailUri) },
+                    onClick = {
+                        if (!isProcessing) {
+                            isProcessing = true
+                            onSubmit(
+                                title,
+                                description,
+                                hashTags,
+                                privacy,
+                                isAllowComment,
+                                thumbnailUri
+                            )
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (!isProcessing) MaterialTheme.colorScheme.primary
+                        else Color.LightGray,
+                        contentColor = if (!isProcessing) MaterialTheme.colorScheme.onPrimary
+                        else Color.Black
+                    ),
                     modifier = Modifier
                         .height(50.dp)
                         .weight(1f),
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.publish_24px),
-                        contentDescription = null
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Post")
+                    if (!isProcessing) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.publish_24px),
+                            contentDescription = null
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Post")
+                    } else {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = MaterialTheme.colorScheme.primary,
+                            trackColor = Color.Black,
+                        )
+                    }
                 }
             }
         }

@@ -144,7 +144,6 @@ fun App(
                 NavHost(
                     modifier = Modifier.fillMaxSize(),
                     navController = navController,
-//                    startDestination = Destination.Studio,
                     startDestination = Destination.Main(),
                 ) {
                     navigation<Destination.Main>(startDestination = Destination.Main.Home) {
@@ -169,8 +168,6 @@ fun App(
                         }
                         composable<Destination.Main.FollowingFeed> {
                             FollowingFeedScreen(
-                                onChangeTheme = { },
-                                navigateToTestScreen = { navController.navigate(Destination.Test) },
                                 bottomNavBar = {
                                     BotNavBar(
                                         activeDestination = Destination.Main.FollowingFeed,
@@ -209,6 +206,14 @@ fun App(
                             }
 
                             AddNewVideoScreen(
+                                onNavigateToStudio = {
+//                                    navController.navigate(Destination.Studio)
+                                    navController.navigate(Destination.Studio) {
+                                        popUpTo(Destination.Main.AddNewVideo) {
+                                            inclusive = true
+                                        }
+                                    }
+                                },
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .background(MaterialTheme.colorScheme.background),
@@ -250,7 +255,7 @@ fun App(
                                     )
                                 },
                                 onNavigateToAddNewVideoScreen = { navController.navigate(Destination.Main.AddNewVideo) },
-                                onNavigateToStudioScreen = {},
+                                onNavigateToStudioScreen = { navController.navigate(Destination.Studio) },
                                 onNavigateToQRCodeScreen = {},
                                 bottomNavBar = {
                                     BotNavBar(
@@ -335,7 +340,12 @@ fun App(
                         )
                     }
                     composable<Destination.Studio> {
-                        StudioScreen()
+                        StudioScreen(
+                            onBack = {
+                                val popped = navController.popBackStack(route = Destination.Main(), inclusive = false)
+                                if (!popped) navController.navigate(Destination.Main())
+                            }
+                        )
                     }
                 }
             }
@@ -343,10 +353,7 @@ fun App(
             // Video detail
             Box(modifier = Modifier.zIndex(if (appState.videoDetailState.isVisible) 10f else -10f)) {
                 val isFullScreen = appState.videoDetailState.isFullScreenMode
-                val shape by animateDpAsState(
-                    targetValue = if (isFullScreen) 0.dp else 15.dp,
-                    label = "shape"
-                )
+                val shape by animateDpAsState(targetValue = if (isFullScreen) 0.dp else 15.dp, label = "shape")
                 val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp
                 val screenHeightDp = LocalConfiguration.current.screenHeightDp.dp
                 val density = LocalDensity.current
@@ -425,7 +432,6 @@ fun App(
                                             onDrag = { change, dragAmount ->
                                                 change.consume()
                                                 coroutineScope.launch {
-                                                    // Clamp the new X and Y offset so the box does not go outside screen bounds
                                                     val newX = offsetX.value + dragAmount.x
                                                     val newY = offsetY.value + dragAmount.y
 
@@ -444,20 +450,14 @@ fun App(
                                                     // Animate snapping to nearest corner smoothly
                                                     launch {
                                                         offsetX.animateTo(
-                                                            targetX,
-                                                            animationSpec = tween(
-                                                                durationMillis = 300,
-                                                                easing = FastOutSlowInEasing
-                                                            )
+                                                            targetValue = targetX,
+                                                            animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
                                                         )
                                                     }
                                                     launch {
                                                         offsetY.animateTo(
-                                                            targetY,
-                                                            animationSpec = tween(
-                                                                durationMillis = 300,
-                                                                easing = FastOutSlowInEasing
-                                                            )
+                                                            targetValue = targetY,
+                                                            animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
                                                         )
                                                     }
                                                 }

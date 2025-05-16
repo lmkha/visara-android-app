@@ -28,6 +28,7 @@ import kotlinx.coroutines.launch
 fun AddNewVideoScreen(
     modifier: Modifier = Modifier,
     viewModel: AddNewVideoViewModel = hiltViewModel(),
+    onNavigateToStudio: () -> Unit,
 ) {
     var videoUri by remember { mutableStateOf<Uri?>(null) }
     val scope = rememberCoroutineScope()
@@ -81,7 +82,9 @@ fun AddNewVideoScreen(
                     videoUri = videoUri,
                     onBack = { step -= 1 },
                     onSubmit = { title, description, hashtags, privacy, isAllowComment, thumbnailUri ->
-                        viewModel.postVideo(videoUri, thumbnailUri, title, description, hashtags, privacy.value, isAllowComment)
+                        viewModel.postVideo(videoUri, thumbnailUri, title, description, hashtags, privacy.value, isAllowComment) {
+                            onNavigateToStudio()
+                        }
                     }
                 )
             }

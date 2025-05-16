@@ -1,5 +1,6 @@
 package com.example.visara.ui.screens.profile.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
@@ -26,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.example.visara.data.model.VideoModel
+import com.example.visara.ui.utils.formatDuration
 import com.example.visara.ui.utils.toTimeAgo
 
 @Composable
@@ -51,6 +54,25 @@ fun TabVideoItem(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.clip(RoundedCornerShape(8.dp))
                 )
+
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(
+                            bottom = 8.dp,
+                            end = 8.dp,
+                        )
+                        .width(60.dp)
+                        .clip(RoundedCornerShape(5.dp))
+                        .background(Color.Black)
+                    ,
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = formatDuration(video?.duration ?: 0L),
+                        color = Color.White,
+                    )
+                }
             }
             Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
                 Row(modifier = Modifier.fillMaxWidth()) {

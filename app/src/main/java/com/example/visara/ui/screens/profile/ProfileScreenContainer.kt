@@ -333,7 +333,7 @@ fun ProfileScreenContainer(
                                         color = LocalVisaraCustomColors.current.profileActionButtonContentColor,
                                     )
                                 }
-                                ActionButton(onClick = {}) {
+                                ActionButton(onClick = onNavigateToStudioScreen) {
                                     Icon(
                                         painter = painterResource(R.drawable.studio_24px),
                                         contentDescription = null,

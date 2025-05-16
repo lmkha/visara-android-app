@@ -2,6 +2,7 @@ package com.example.visara.viewmodels
 
 import android.net.Uri
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.visara.common.AppScope
 import com.example.visara.data.model.Privacy
 import com.example.visara.data.repository.VideoDetailRepository
@@ -24,6 +25,7 @@ class AddNewVideoViewModel @Inject constructor(
         hashtags: List<String>,
         privacy: Privacy,
         isAllowComment: Boolean,
+        onUploadVideoMetadataSuccess: () -> Unit,
     ) {
         AppScope.launch {
             videoRepository.postVideo(
@@ -33,8 +35,17 @@ class AddNewVideoViewModel @Inject constructor(
                 description = description,
                 hashtags = hashtags,
                 privacy = privacy,
-                isAllowComment = isAllowComment
+                isAllowComment = isAllowComment,
+                onUploadVideoMetaDataSuccess = {
+                    onNavigateToStudio(onUploadVideoMetadataSuccess)
+                },
             )
+        }
+    }
+
+    private fun onNavigateToStudio(callback: () -> Unit) {
+        viewModelScope.launch {
+            callback()
         }
     }
 }

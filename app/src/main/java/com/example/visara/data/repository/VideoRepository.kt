@@ -23,8 +23,8 @@ class VideoRepository @Inject constructor(
     private val videoRemoteDataSource: VideoRemoteDataSource,
     private val appContext: Context,
 ) {
-    private val _uploadingVideo: MutableStateFlow<VideoModel?> = MutableStateFlow(null)
-    val uploadingVideo: StateFlow<VideoModel?> = _uploadingVideo.asStateFlow()
+    private val _postingVideo: MutableStateFlow<VideoModel?> = MutableStateFlow(null)
+    val postingVideo: StateFlow<VideoModel?> = _postingVideo.asStateFlow()
 
     suspend fun getVideoById(videoId: String) : VideoModel? {
         val apiResult = videoRemoteDataSource.getVideoById(videoId)
@@ -59,10 +59,11 @@ class VideoRepository @Inject constructor(
         hashtags: List<String>,
         privacy: Privacy,
         isAllowComment: Boolean,
-        onUploadVideoMetaDataSuccess: () -> Unit = {},
+        onUploadVideoMetaDataSuccess: () -> Unit,
     ) : Boolean {
         if (videoUri == null) return false
 
+        // Create data for new video
         val uploadVideoMetaDataResult = videoRemoteDataSource.uploadVideoMetaData(
             title = title,
             description = description,
@@ -73,8 +74,13 @@ class VideoRepository @Inject constructor(
 
         if (uploadVideoMetaDataResult !is ApiResult.Success) return false
 
-        val videoModel = uploadVideoMetaDataResult.data.toVideoModel().copy(localThumbnailUri = thumbnailUri)
-        _uploadingVideo.update { videoModel }
+        val videoModel = uploadVideoMetaDataResult.data
+            .toVideoModel()
+            .copy(
+                localVideoUri = videoUri,
+                localThumbnailUri = thumbnailUri,
+            )
+        _postingVideo.update { videoModel }
         onUploadVideoMetaDataSuccess()
 
         val videoId = uploadVideoMetaDataResult.data.id
@@ -93,6 +99,7 @@ class VideoRepository @Inject constructor(
         }
 
         val result = uploadVideoFileResult != null && uploadVideoFileResult is ApiResult.Success
+        if (result) _postingVideo.update { it?.copy(isUploaded = true) }
 
         val thumbnailFile = thumbnailUri?.let { uriToFile(appContext, it) }
         thumbnailFile?.let {
@@ -108,6 +115,19 @@ class VideoRepository @Inject constructor(
         }
 
         return result
+    }
+
+    suspend fun syncPostingVideo() {
+        postingVideo.value?.id?.let { videoId ->
+            getVideoById(videoId)?.let { remoteVideo ->
+                // Uploaded and processed, video is not still in POST progress
+                if (remoteVideo.isProcessed) {
+                    _postingVideo.update { null }
+                } else {
+                    _postingVideo.update { it?.copy(isProcessed = false) }
+                }
+            }
+        }
     }
 
     private fun uriToFile(context: Context, uri: Uri): File? {

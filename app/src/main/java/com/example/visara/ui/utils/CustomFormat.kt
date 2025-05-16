@@ -2,15 +2,15 @@ package com.example.visara.ui.utils
 
 import android.annotation.SuppressLint
 import java.time.Duration
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
 fun String.toTimeAgo(): String {
     if (this.isEmpty()) return ""
     val formatter = DateTimeFormatter.ISO_DATE_TIME
-    val dateTime = LocalDateTime.parse(this, formatter)
+    val dateTime = OffsetDateTime.parse(this, formatter)
 
-    val currentTime = LocalDateTime.now()
+    val currentTime = OffsetDateTime.now()
 
     val duration = Duration.between(dateTime, currentTime)
 
@@ -41,6 +41,7 @@ fun String.toTimeAgo(): String {
         }
     }
 }
+
 
 @SuppressLint("DefaultLocale")
 fun formatViews(views: Long): String {
