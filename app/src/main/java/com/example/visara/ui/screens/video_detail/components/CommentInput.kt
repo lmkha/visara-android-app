@@ -36,7 +36,7 @@ import com.example.visara.ui.components.UserAvatar
 @Composable
 fun CommentInput(
     modifier: Modifier = Modifier,
-    currentUser: UserModel? = null,
+    currentUser: UserModel?,
     state: CommentInputState,
     onSubmit: () -> Unit,
 ) {
@@ -57,11 +57,6 @@ fun CommentInput(
                 modifier = Modifier.size(56.dp)
             )
             TextField(
-                modifier = Modifier
-                    .weight(1f)
-                    .clip(RoundedCornerShape(30.dp))
-                    .focusRequester(state.focusRequester)
-                ,
                 value = state.content,
                 placeholder = {
                     if (!state.repliedUsername.isNullOrEmpty()) {
@@ -106,6 +101,10 @@ fun CommentInput(
                         }
                     }
                 },
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(30.dp))
+                    .focusRequester(state.focusRequester)
             )
         }
     }

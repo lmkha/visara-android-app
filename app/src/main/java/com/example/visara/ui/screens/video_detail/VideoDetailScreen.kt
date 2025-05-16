@@ -43,7 +43,9 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.visara.ui.components.LoginRequestDialog
 import com.example.visara.ui.components.VisaraVideoPlayer
+import com.example.visara.ui.components.rememberLoginRequestDialogState
 import com.example.visara.ui.screens.video_detail.components.ActionsSection
 import com.example.visara.ui.screens.video_detail.components.AuthorAccountInfoSection
 import com.example.visara.ui.screens.video_detail.components.ExpandedCommentSection
@@ -64,6 +66,7 @@ fun VideoDetailScreen(
     requireLandscapeMode: () -> Unit,
     requirePortraitMode: () -> Unit,
     onNavigateToProfileScreen: (username: String) -> Unit,
+    onNavigateToLoginScreen: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var liked by remember(uiState.isVideoLiked) { mutableStateOf(uiState.isVideoLiked) }
@@ -99,6 +102,7 @@ fun VideoDetailScreen(
             }
         }
     }
+    val loginRequestDialogState = rememberLoginRequestDialogState()
 
     if (uiState.isOpenExpandedCommentSection) {
         BackHandler {
@@ -188,8 +192,22 @@ fun VideoDetailScreen(
                             viewModel.enableMinimizedMode()
                             uiState.author?.username?.let { onNavigateToProfileScreen(it) }
                         },
-                        onFollowUser = viewModel::followAuthor,
-                        onUnfollowUser = viewModel::unfollowAuthor,
+                        onFollowUser = { onFailure ->
+                            if (uiState.isUserAuthenticated) {
+                                viewModel.followAuthor(onFailure)
+                            } else {
+                                onFailure()
+                                loginRequestDialogState.show("Please log in to follow this user.")
+                            }
+                        },
+                        onUnfollowUser = { onFailure ->
+                            if (uiState.isUserAuthenticated) {
+                                viewModel.unfollowAuthor(onFailure)
+                            } else {
+                                onFailure()
+                                loginRequestDialogState.show("Please log in and follow this user first.")
+                            }
+                        },
                     )
                 }
                 // Actions: like, share, download, save, report
@@ -206,6 +224,8 @@ fun VideoDetailScreen(
                                     current = !liked, // pass !liked because has been changed above, before call this function
                                     onFailure = { liked = !liked }
                                 )
+                            } else {
+                                loginRequestDialogState.show("You need to log in to like this video!")
                             }
                         }
                     )
@@ -256,6 +276,7 @@ fun VideoDetailScreen(
                                 orientation = Orientation.Vertical,
                             ),
                         commentList = uiState.commentList,
+                        currentUser = uiState.currentUser,
                         onClose = {viewModel.minimizeCommentSection() },
                         onFetchReplies = { parentIndex -> viewModel.fetchChildrenComment(parentIndex) },
                         onLikeComment = {
@@ -271,14 +292,25 @@ fun VideoDetailScreen(
                                     commentId = commentId,
                                     onFailure = onFailure
                                 )
+                            } else {
+                                loginRequestDialogState.show("You need to log in to like this comment!")
                             }
                         },
                         addComment = { content, parentId, parentIndex ->
-                            viewModel.addComment(content, parentId, parentIndex)
+                            if (uiState.isUserAuthenticated) {
+                                viewModel.addComment(content, parentId, parentIndex)
+                            } else {
+                                loginRequestDialogState.show("You need to log in to comment!")
+                            }
                         }
                     )
                 }
             }
         }
+
+        LoginRequestDialog(
+            state = loginRequestDialogState,
+            onLogin = onNavigateToLoginScreen,
+        )
     }
 }

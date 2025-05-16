@@ -17,14 +17,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.visara.data.model.UserModel
 import com.example.visara.ui.theme.LocalVisaraCustomColors
 import com.example.visara.viewmodels.CommentWithReplies
 
 @Composable
 fun ExpandedCommentSection(
     modifier: Modifier = Modifier,
+    currentUser: UserModel?,
     commentList: List<CommentWithReplies>,
     onFetchReplies: (parentIndex: Int) -> Unit,
     onLikeComment: (
@@ -43,6 +46,7 @@ fun ExpandedCommentSection(
     val headerHeight = 50.dp
     val commentInputHeight = 100.dp
     val commentInputState = rememberCommentInputState()
+    val focusManager = LocalFocusManager.current
 
     Box(modifier = modifier.imePadding()) {
         Box(
@@ -95,13 +99,8 @@ fun ExpandedCommentSection(
             }
         }
         CommentInput(
-            modifier = Modifier
-                .height(commentInputHeight)
-                .fillMaxWidth()
-                .background(color = LocalVisaraCustomColors.current.expandedCommentSectionBackground)
-                .align(Alignment.BottomStart)
-            ,
             state = commentInputState,
+            currentUser = currentUser,
             onSubmit = {
                 addComment(
                     commentInputState.content,
@@ -109,8 +108,13 @@ fun ExpandedCommentSection(
                     commentInputState.parentIndex,
                 )
                 commentInputState.reset()
-                commentInputState.focusRequester.freeFocus()
+                focusManager.clearFocus()
             },
+            modifier = Modifier
+                .height(commentInputHeight)
+                .fillMaxWidth()
+                .background(color = LocalVisaraCustomColors.current.expandedCommentSectionBackground)
+                .align(Alignment.BottomStart)
         )
     }
 }

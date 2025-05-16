@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -126,16 +128,33 @@ fun LoginScreen(
             )
 
             Button(
-                onClick = { viewModel.login(username = username, password = password) },
+                onClick = {
+                    if (!uiState.isProcessing) {
+                        viewModel.login(username = username, password = password)
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (!uiState.isProcessing) MaterialTheme.colorScheme.primary
+                    else Color.LightGray
+                ),
                 modifier = Modifier
                     .height(50.dp)
                     .width(350.dp)
             ) {
-                Text(
-                    text = "Login",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
-                )
+                if (!uiState.isProcessing) {
+                    Text(
+                        text = "Login",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                }
+                else {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = MaterialTheme.colorScheme.primary,
+                        trackColor = Color.Black,
+                    )
+                }
             }
         }
 

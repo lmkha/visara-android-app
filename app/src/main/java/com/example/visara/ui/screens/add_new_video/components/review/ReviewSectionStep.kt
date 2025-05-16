@@ -1,8 +1,12 @@
 package com.example.visara.ui.screens.add_new_video.components.review
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
@@ -14,6 +18,8 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import com.example.visara.ui.components.LocalVideoPlayerManager
 import com.example.visara.ui.components.VisaraVideoPlayer
 
@@ -32,32 +38,40 @@ fun ReviewSectionStep(
         onDispose { videoPlayerManager.player.pause() }
     }
 
-    Column(modifier = modifier) {
-        Box(modifier = Modifier.fillMaxWidth()) {
+    Box(modifier = modifier) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp)
+                .align(Alignment.TopCenter)
+        ) {
             IconButton(
                 onClick = onBack,
-                modifier = Modifier.align(Alignment.TopStart),
             ) {
                 Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
             }
+            Box(modifier = Modifier.fillMaxWidth()) {
+                Button(
+                    onClick = onGoNext,
+                    modifier = Modifier.align(Alignment.BottomEnd),
+                ) {
+                    Text("Next")
+                }
+            }
         }
-        Box(modifier = modifier.weight(1f)) {
-//            VisaraVideoPlayer(videoPlayerManager = videoPlayerManager)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(300.dp)
+                .align(Alignment.Center)
+                .background(color = Color.Black)
+        ) {
             VisaraVideoPlayer(
                 player = videoPlayerManager.player,
-                modifier = Modifier.fillMaxWidth(),
                 requireLandscapeMode = {},
                 requirePortraitMode = {},
             )
         }
-        Box(modifier = Modifier.fillMaxWidth()) {
-            Button(
-                onClick = onGoNext,
-                modifier = Modifier.align(Alignment.BottomEnd),
-            ) {
-                Text("Next")
-            }
-        }
     }
 }
-

@@ -72,7 +72,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.example.visara.ui.components.LoginRequestDialog
 import com.example.visara.ui.components.UserAvatar
+import com.example.visara.ui.components.rememberLoginRequestDialogState
 import com.example.visara.ui.navigation.Destination
 import com.example.visara.ui.screens.add_new_video.AddNewVideoScreen
 import com.example.visara.ui.screens.follow.FollowScreen
@@ -109,10 +111,15 @@ fun App(
     val coroutineScope = rememberCoroutineScope()
     val navController = rememberNavController()
     var enableBottomPaddingForVideoDetail by remember { mutableStateOf(true) }
+    val loginRequestDialogState = rememberLoginRequestDialogState()
     fun botNavBarNavigate(dest: Destination) {
         coroutineScope.launch {
-            val popped = navController.popBackStack(route = dest, inclusive = false)
-            if (!popped) navController.navigate(dest)
+            if (dest.route == Destination.Main.AddNewVideo.route && !appState.isAuthenticated) {
+                loginRequestDialogState.show("Please log in to post a new video.")
+            } else {
+                val popped = navController.popBackStack(route = dest, inclusive = false)
+                if (!popped) navController.navigate(dest)
+            }
         }
     }
 
@@ -418,6 +425,10 @@ fun App(
                             onNavigateToProfileScreen = { username ->
                                 navController.navigate(Destination.Main.Profile(username = username))
                             },
+                            onNavigateToLoginScreen = {
+                                appViewModel.minimizeVideoDetail()
+                                navController.navigate(Destination.Login)
+                            },
                             modifier = Modifier
                                 .offset {
                                     IntOffset(
@@ -480,11 +491,15 @@ fun App(
                                         .clip(RoundedCornerShape(shape))
                                 )
                                 .animateContentSize()
-
                         )
                     }
                 }
             }
+
+            LoginRequestDialog(
+                state = loginRequestDialogState,
+                onLogin = { navController.navigate(Destination.Login) },
+            )
         }
     }
 }
