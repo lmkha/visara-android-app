@@ -80,7 +80,11 @@ import com.example.visara.ui.screens.add_new_video.AddNewVideoScreen
 import com.example.visara.ui.screens.follow.FollowScreen
 import com.example.visara.ui.screens.following_feed.FollowingFeedScreen
 import com.example.visara.ui.screens.home.HomeScreen
-import com.example.visara.ui.screens.inbox.InboxScreen
+import com.example.visara.ui.screens.inbox.activity.ActivityInboxScreen
+import com.example.visara.ui.screens.inbox.chat.ChatInboxScreen
+import com.example.visara.ui.screens.inbox.list.InboxListScreen
+import com.example.visara.ui.screens.inbox.new_followers.NewFollowersInboxScreen
+import com.example.visara.ui.screens.inbox.system_notification.SystemNotificationInboxScreen
 import com.example.visara.ui.screens.login.LoginScreen
 import com.example.visara.ui.screens.profile.ProfileScreen
 import com.example.visara.ui.screens.search.SearchScreen
@@ -97,8 +101,11 @@ import com.example.visara.viewmodels.VideoDetailViewModel
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "ConfigurationScreenWidthHeight")
 @Composable
+@SuppressLint(
+    "UnusedMaterial3ScaffoldPaddingParameter",
+    "ConfigurationScreenWidthHeight",
+)
 fun App(
     appViewModel: AppViewModel,
     requireLandscapeMode: () -> Unit,
@@ -151,7 +158,7 @@ fun App(
                 NavHost(
                     modifier = Modifier.fillMaxSize(),
                     navController = navController,
-                    startDestination = Destination.Main(),
+                    startDestination = Destination.Main,
                 ) {
                     navigation<Destination.Main>(startDestination = Destination.Main.Home) {
                         composable<Destination.Main.Home> {
@@ -184,20 +191,17 @@ fun App(
                                 },
                             )
                         }
-                        composable<Destination.Main.AddNewVideo>(
-                            enterTransition = {
-                                scaleIn(
-                                    transformOrigin = TransformOrigin(0.5f, 1f),
-                                    initialScale = 0.8f
-                                ) + fadeIn()
-                            },
-                            exitTransition = {
-                                scaleOut(
-                                    transformOrigin = TransformOrigin(0.5f, 1f),
-                                    targetScale = 0.8f
-                                ) + fadeOut()
-                            }
-                        ) {
+                        composable<Destination.Main.AddNewVideo>(enterTransition = {
+                            scaleIn(
+                                transformOrigin = TransformOrigin(0.5f, 1f),
+                                initialScale = 0.8f
+                            ) + fadeIn()
+                        }, exitTransition = {
+                            scaleOut(
+                                transformOrigin = TransformOrigin(0.5f, 1f),
+                                targetScale = 0.8f
+                            ) + fadeOut()
+                        }) {
                             val isVideoDetailVisibleBefore = appState.videoDetailState.isVisible
                             coroutineScope.launch {
                                 appViewModel.pauseVideoDetail()
@@ -214,7 +218,6 @@ fun App(
 
                             AddNewVideoScreen(
                                 onNavigateToStudio = {
-//                                    navController.navigate(Destination.Studio)
                                     navController.navigate(Destination.Studio) {
                                         popUpTo(Destination.Main.AddNewVideo) {
                                             inclusive = true
@@ -226,16 +229,37 @@ fun App(
                                     .background(MaterialTheme.colorScheme.background),
                             )
                         }
-                        composable<Destination.Main.Inbox> {
-                            InboxScreen(
-                                bottomNavBar = {
-                                    BotNavBar(
-                                        activeDestination = Destination.Main.Inbox,
-                                        appState = appState,
-                                        onNavigate = { botNavBarNavigate(it) }
-                                    )
-                                },
-                            )
+                        navigation<Destination.Main.Inbox>(startDestination = Destination.Main.Inbox.InboxList) {
+                            composable<Destination.Main.Inbox.InboxList> {
+                                InboxListScreen(
+                                    onOpenChatInbox = { navController.navigate(Destination.Main.Inbox.ChatInbox) },
+                                    onOpenActivityInbox = { navController.navigate(Destination.Main.Inbox.ActivityInbox) },
+                                    onOpenNewFollowersInbox = { navController.navigate(Destination.Main.Inbox.NewFollowersInbox) },
+                                    onOpenSystemNotificationInbox = { navController.navigate(Destination.Main.Inbox.SystemNotificationInbox) },
+                                    bottomNavBar = {
+                                        BotNavBar(
+                                            activeDestination = Destination.Main.Inbox,
+                                            appState = appState,
+                                            onNavigate = { botNavBarNavigate(it) }
+                                        )
+                                    },
+                                )
+                            }
+                            composable<Destination.Main.Inbox.ChatInbox> {
+                                ChatInboxScreen(
+                                    inboxId = "",
+                                    modifier = Modifier.fillMaxSize(),
+                                )
+                            }
+                            composable<Destination.Main.Inbox.NewFollowersInbox> {
+                                NewFollowersInboxScreen()
+                            }
+                            composable<Destination.Main.Inbox.ActivityInbox> {
+                                ActivityInboxScreen()
+                            }
+                            composable<Destination.Main.Inbox.SystemNotificationInbox> {
+                                SystemNotificationInboxScreen()
+                            }
                         }
                         composable<Destination.Main.Profile> { backStackEntry ->
                             val route: Destination.Main.Profile = backStackEntry.toRoute()
@@ -303,6 +327,19 @@ fun App(
                         )
                     }
                     composable<Destination.Login> {
+                        val isVideoDetailVisibleBefore = appState.videoDetailState.isVisible
+                        coroutineScope.launch {
+                            appViewModel.pauseVideoDetail()
+                            appViewModel.hideVideoDetail()
+                        }
+
+                        DisposableEffect(Unit) {
+                            onDispose {
+                                if (isVideoDetailVisibleBefore) {
+                                    appViewModel.displayVideoDetail()
+                                }
+                            }
+                        }
                         LoginScreen(
                             onAuthenticated = { navController.popBackStack() }
                         )
@@ -349,8 +386,8 @@ fun App(
                     composable<Destination.Studio> {
                         StudioScreen(
                             onBack = {
-                                val popped = navController.popBackStack(route = Destination.Main(), inclusive = false)
-                                if (!popped) navController.navigate(Destination.Main())
+                                val popped = navController.popBackStack(route = Destination.Main, inclusive = false)
+                                if (!popped) navController.navigate(Destination.Main)
                             }
                         )
                     }
@@ -503,6 +540,7 @@ fun App(
         }
     }
 }
+
 @Composable
 private fun BotNavBar(
     activeDestination: Destination,

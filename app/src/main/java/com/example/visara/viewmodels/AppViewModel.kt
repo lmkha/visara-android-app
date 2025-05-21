@@ -43,18 +43,18 @@ class AppViewModel @Inject constructor(
         observerVideoDetail()
         observerNetworkState()
 
-//        val tag = "CHECK_VAR"
-//
-//        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
-//            if (!task.isSuccessful) {
-//                Log.w(tag, "Fetching FCM registration failed!", task.exception)
-//                return@OnCompleteListener
-//            }
-//
-//            val token = task.result
-//
-//            Log.d(tag, "FCM token: $token")
-//        })
+        val tag = "CHECK_VAR"
+
+        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w(tag, "Fetching FCM registration failed!", task.exception)
+                return@OnCompleteListener
+            }
+
+            val token = task.result
+
+            Log.d(tag, "FCM token: $token")
+        })
         Log.i("CHECK_VAR", "init app view model")
     }
 

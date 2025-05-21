@@ -1,6 +1,7 @@
 package com.example.visara.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
@@ -30,7 +31,10 @@ fun UserAvatar(
         Icon(
             imageVector = Icons.Default.AccountCircle,
             contentDescription = null,
-            modifier = modifier,
+            tint = Color.White,
+            modifier = modifier
+                .clip(CircleShape)
+                .background(color = Color.Black)
         )
     }
 }
