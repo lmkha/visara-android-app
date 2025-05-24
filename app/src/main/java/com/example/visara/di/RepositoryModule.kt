@@ -10,12 +10,14 @@ import com.example.visara.data.remote.datasource.VideoRemoteDataSource
 import com.example.visara.data.repository.AppSettingsRepository
 import com.example.visara.data.repository.AuthRepository
 import com.example.visara.data.repository.CommentRepository
+import com.example.visara.data.repository.InboxRepository
 import com.example.visara.data.repository.SearchRepository
 import com.example.visara.data.repository.UserRepository
 import com.example.visara.data.repository.VideoDetailRepository
 import com.example.visara.data.repository.VideoRepository
 import dagger.Module
 import dagger.Provides
+import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
@@ -85,4 +87,16 @@ object RepositoryModule {
     ) : SearchRepository {
         return SearchRepository(videoRepository, userRepository)
     }
+
+    @Provides
+    @Singleton
+    fun provideInboxRepository(): InboxRepository {
+        return InboxRepository()
+    }
+}
+
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+interface InboxRepositoryEntryPoint {
+    fun inboxRepository(): InboxRepository
 }

@@ -160,7 +160,10 @@ fun App(
                     navController = navController,
                     startDestination = Destination.Main,
                 ) {
-                    navigation<Destination.Main>(startDestination = Destination.Main.Home) {
+                    navigation<Destination.Main>(
+//                        startDestination = Destination.Main.Home,
+                        startDestination = Destination.Main.Inbox,
+                    ) {
                         composable<Destination.Main.Home> {
                             HomeScreen(
                                 navigateToSearchScreen = { navController.navigate(Destination.Search()) },
@@ -247,7 +250,7 @@ fun App(
                             }
                             composable<Destination.Main.Inbox.ChatInbox> {
                                 ChatInboxScreen(
-                                    inboxId = "",
+                                    onBack = { navController.popBackStack() },
                                     modifier = Modifier.fillMaxSize(),
                                 )
                             }
