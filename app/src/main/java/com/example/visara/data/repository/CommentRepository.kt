@@ -4,7 +4,9 @@ import com.example.visara.data.model.CommentModel
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.datasource.CommentRemoteDataSource
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class CommentRepository @Inject constructor(
     private val commentRemoteDataSource: CommentRemoteDataSource,
     private val authRepository: AuthRepository,

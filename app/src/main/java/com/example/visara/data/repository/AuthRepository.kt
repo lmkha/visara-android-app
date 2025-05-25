@@ -9,11 +9,14 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class AuthRepository @Inject constructor(
     private val authRemoteDataSource: AuthRemoteDataSource,
     private val authLocalDataSource: AuthLocalDataSource,
     private val userRepository: UserRepository,
+    private val appSettingsRepository: AppSettingsRepository,
 ) {
     private val _isAuthenticated: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val isAuthenticated: StateFlow<Boolean> = _isAuthenticated.asStateFlow()
@@ -52,5 +55,9 @@ class AuthRepository @Inject constructor(
     fun refreshAuthenticationState() {
         val hasToken = !authLocalDataSource.getAccessToken().isNullOrEmpty()
         _isAuthenticated.value = hasToken
+    }
+
+    fun updateFcmToken(token: String) {
+        // TODO: Get oldToken, send both oldToken and newToken to server, update token to datastore
     }
 }

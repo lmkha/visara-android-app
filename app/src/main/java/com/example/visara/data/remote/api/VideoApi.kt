@@ -17,7 +17,9 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import java.io.File
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class VideoApi @Inject constructor(
     @AuthorizedOkHttpClient private val authorizedOkHttpClient: OkHttpClient,
     @UnauthenticatedOkhttpClient private val unauthorizedOkHttpClient: OkHttpClient,

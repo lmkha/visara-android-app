@@ -7,7 +7,9 @@ import com.example.visara.data.model.UserModel
 import com.example.visara.data.model.toEntity
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class UserLocalDataSource @Inject constructor(
     private val userDao: UserDao,
     private val userSessionManager: UserSessionManager,

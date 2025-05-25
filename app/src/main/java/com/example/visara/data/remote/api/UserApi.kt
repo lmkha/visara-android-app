@@ -11,7 +11,9 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class UserApi @Inject constructor(
     @AuthorizedOkHttpClient private val authorizedOkHttpClient: OkHttpClient,
     @UnauthenticatedOkhttpClient private val unauthorizedOkHttpClient: OkHttpClient,

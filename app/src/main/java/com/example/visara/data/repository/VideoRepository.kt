@@ -8,6 +8,7 @@ import com.example.visara.data.model.Privacy
 import com.example.visara.data.model.VideoModel
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.datasource.VideoRemoteDataSource
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,11 +19,16 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class VideoRepository @Inject constructor(
     private val videoRemoteDataSource: VideoRemoteDataSource,
-    private val appContext: Context,
+    @ApplicationContext private val appContext: Context,
 ) {
+    init {
+        Log.i("CHECK_PEN", "VideoRepository init")
+    }
     private val _postingVideo: MutableStateFlow<VideoModel?> = MutableStateFlow(null)
     val postingVideo: StateFlow<VideoModel?> = _postingVideo.asStateFlow()
 

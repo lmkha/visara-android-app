@@ -11,7 +11,9 @@ import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class UserRemoteDataSource @Inject constructor(
     private val userApi: UserApi,
     private val gson: Gson,

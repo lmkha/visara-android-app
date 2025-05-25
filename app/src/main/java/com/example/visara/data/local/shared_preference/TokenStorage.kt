@@ -7,7 +7,9 @@ import androidx.core.content.edit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import javax.inject.Singleton
 
+@Singleton
 class TokenStorage @Inject constructor(
     private val encryptedSharedPreference: SharedPreferences,
     private val userSessionManager: UserSessionManager,

@@ -3,7 +3,9 @@ package com.example.visara.data.local.shared_preference
 import android.content.SharedPreferences
 import javax.inject.Inject
 import androidx.core.content.edit
+import javax.inject.Singleton
 
+@Singleton
 class UserSessionManager @Inject constructor(private val sharedPrefs: SharedPreferences) {
     companion object {
         private const val CURRENT_USER_KEY = "CURRENT_USERNAME"

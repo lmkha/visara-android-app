@@ -4,8 +4,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
-import com.example.visara.data.local.shared_preference.TokenStorage
-import com.example.visara.data.local.shared_preference.UserSessionManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -29,16 +27,5 @@ object SharedPrefModule {
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
         )
         return encryptedSharedPreference
-    }
-
-    @Provides
-    @Singleton
-    fun provideUserSessionManager(sharedPrefs: SharedPreferences): UserSessionManager {
-        return UserSessionManager(sharedPrefs)
-    }
-    @Provides
-    @Singleton
-    fun providerTokenStorage(encryptedSharedPreference: SharedPreferences, userSessionManager: UserSessionManager) : TokenStorage {
-        return TokenStorage(encryptedSharedPreference, userSessionManager)
     }
 }

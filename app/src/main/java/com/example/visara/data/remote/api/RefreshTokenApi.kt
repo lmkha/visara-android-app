@@ -11,7 +11,9 @@ import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class RefreshTokenApi @Inject constructor(
     @UnauthenticatedOkhttpClient private val unauthorizedOkHttpClient: OkHttpClient,
     private val gson: Gson,

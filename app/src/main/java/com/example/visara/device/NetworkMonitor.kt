@@ -4,13 +4,16 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
+import javax.inject.Singleton
 
-class NetworkMonitor @Inject constructor(appContext: Context) {
+@Singleton
+class NetworkMonitor @Inject constructor(@ApplicationContext appContext: Context) {
     private val _isOnLine: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val isOnline: StateFlow<Boolean> = _isOnLine.asStateFlow()
 

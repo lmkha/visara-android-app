@@ -3,7 +3,9 @@ package com.example.visara.data.repository
 import com.example.visara.data.model.UserModel
 import com.example.visara.data.model.VideoModel
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class SearchRepository @Inject constructor(
     private val videoRepository: VideoRepository,
     private val userRepository: UserRepository,

@@ -9,7 +9,9 @@ import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class AuthRemoteDataSource @Inject constructor(
     private val authApi: AuthApi,
     private val gson: Gson,

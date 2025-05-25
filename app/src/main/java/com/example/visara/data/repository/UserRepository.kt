@@ -13,7 +13,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class UserRepository @Inject constructor(
     private val userRemoteDataSource: UserRemoteDataSource,
     private val userLocalDataSource: UserLocalDataSource,

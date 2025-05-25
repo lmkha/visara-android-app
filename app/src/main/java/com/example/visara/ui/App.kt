@@ -161,8 +161,8 @@ fun App(
                     startDestination = Destination.Main,
                 ) {
                     navigation<Destination.Main>(
-//                        startDestination = Destination.Main.Home,
-                        startDestination = Destination.Main.Inbox,
+                        startDestination = Destination.Main.Home,
+//                        startDestination = Destination.Main.Inbox,
                     ) {
                         composable<Destination.Main.Home> {
                             HomeScreen(

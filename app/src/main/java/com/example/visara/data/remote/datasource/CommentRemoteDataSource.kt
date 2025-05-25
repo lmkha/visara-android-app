@@ -10,7 +10,9 @@ import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class CommentRemoteDataSource @Inject constructor(
     private val commentApi: CommentApi,
     private val gson: Gson,

@@ -5,14 +5,17 @@ import androidx.media3.common.Player
 import com.example.visara.data.model.VideoModel
 import com.example.visara.ui.components.DashVideoPlayerManager
 import com.example.visara.ui.components.LocalVideoPlayerManager
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class VideoDetailRepository @Inject constructor(
-    appContext: Context,
+    @ApplicationContext appContext: Context,
     private val videoRepository: VideoRepository,
 ) {
     val dashVideoPlayerManager: DashVideoPlayerManager = DashVideoPlayerManager(appContext)

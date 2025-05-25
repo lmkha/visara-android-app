@@ -11,7 +11,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class VideoRemoteDataSource @Inject constructor(
     private val videoApi: VideoApi,
     private val gson: Gson,

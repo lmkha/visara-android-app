@@ -12,6 +12,7 @@ junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 kotlinxSerializationJson = "1.7.3"
+lifecycleProcess = "2.9.0"
 lifecycleRuntimeKtx = "2.9.0"
 activityCompose = "1.10.0"
 composeBom = "2025.05.00"
@@ -26,6 +27,7 @@ androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = 
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastorePreferences" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+androidx-lifecycle-process = { module = "androidx.lifecycle:lifecycle-process", version.ref = "lifecycleProcess" }
 androidx-media3-cast = { module = "androidx.media3:media3-cast", version.ref = "media3Exoplayer" }
 androidx-media3-common = { module = "androidx.media3:media3-common", version.ref = "media3Exoplayer" }
 androidx-media3-common-ktx = { module = "androidx.media3:media3-common-ktx", version.ref = "media3Exoplayer" }
