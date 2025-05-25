@@ -23,18 +23,17 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import java.net.HttpURLConnection
 import java.net.URL
-import kotlin.concurrent.thread
 import androidx.core.graphics.createBitmap
+import com.example.visara.data.repository.InboxRepository
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class PushNotificationService : FirebaseMessagingService() {
-    /*
-    private val inboxRepository : InboxRepository by lazy {
-        EntryPointAccessors.fromApplication(
-            applicationContext,
-            InboxRepositoryEntryPoint::class.java
-        ).inboxRepository()
-    }
-     */
+@AndroidEntryPoint
+class FCMService : FirebaseMessagingService() {
+    @Inject lateinit var inboxRepository: InboxRepository
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
@@ -42,19 +41,8 @@ class PushNotificationService : FirebaseMessagingService() {
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
-        val tag = "CHECK_VAR"
-        // (developer): Handle FCM messages here.
-        // Not getting messages here? See why this may be: https://goo.gl/39bRNJ
-        Log.d(tag, "From: ${remoteMessage.from}")
-
-        // Check if message contains a data payload.
         if (remoteMessage.data.isNotEmpty()) {
-            Log.d(tag, "Message data payload: ${remoteMessage.data}")
-        }
-
-        // Check if message contains a notification payload.
-        remoteMessage.notification?.let {
-            Log.d(tag, "Message Notification Body: ${it.body}")
+            Log.d("CHECK_VAR", "Message data payload: ${remoteMessage.data}")
         }
 
         val data = remoteMessage.data
@@ -63,12 +51,12 @@ class PushNotificationService : FirebaseMessagingService() {
         val avatarUrl = data["avatar"] ?: ""
 
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        val channelId = "your_channel_id"
+        val channelId = "chat_message_channel"
 
-        val channel = NotificationChannel(channelId, "Chat Notifications", NotificationManager.IMPORTANCE_HIGH)
+        val channel = NotificationChannel(channelId, "Chat notification", NotificationManager.IMPORTANCE_HIGH)
         notificationManager.createNotificationChannel(channel)
 
-        thread {
+        CoroutineScope(Dispatchers.IO).launch {
             // Create person
             val bitmap = getBitmapFromURL(avatarUrl)
             val icon = bitmap?.let { IconCompat.createWithBitmap(it) }
@@ -78,12 +66,12 @@ class PushNotificationService : FirebaseMessagingService() {
                 .build()
 
             // Create shortcut
-            val intent = Intent(this, MainActivity::class.java).apply {
+            val intent = Intent(applicationContext, MainActivity::class.java).apply {
                 action = Intent.ACTION_VIEW
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             }
 
-            val shortcut = ShortcutInfoCompat.Builder(this, username)
+            val shortcut = ShortcutInfoCompat.Builder(applicationContext, username)
                 .setLongLived(true)
                 .setIntent(intent)
                 .setShortLabel(username)
@@ -91,7 +79,7 @@ class PushNotificationService : FirebaseMessagingService() {
                 .setIcon(icon)
                 .build()
 
-            ShortcutManagerCompat.pushDynamicShortcut(this, shortcut)
+            ShortcutManagerCompat.pushDynamicShortcut(applicationContext, shortcut)
 
             // Create MessagingStyle
             val messagingStyle = NotificationCompat.MessagingStyle(person)
@@ -103,18 +91,20 @@ class PushNotificationService : FirebaseMessagingService() {
             messagingStyle.addMessage(notificationMessage)
 
             // Create notification
-            val notification = NotificationCompat.Builder(this, channelId)
+            val notification = NotificationCompat.Builder(applicationContext, channelId)
                 .setStyle(messagingStyle)
                 .setShortcutId(username)
                 .setSmallIcon(R.drawable.app_logo)
                 .setAutoCancel(true)
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .build()
 
             // Notify
             notificationManager.notify(123, notification)
         }
     }
+
     private fun getBitmapFromURL(src: String): Bitmap? {
         fun Bitmap.toCircleBitmap(): Bitmap {
             val size = minOf(width, height)

@@ -17,7 +17,6 @@ import com.example.visara.data.repository.VideoDetailRepository
 import com.example.visara.data.repository.VideoRepository
 import dagger.Module
 import dagger.Provides
-import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
@@ -93,10 +92,4 @@ object RepositoryModule {
     fun provideInboxRepository(): InboxRepository {
         return InboxRepository()
     }
-}
-
-@EntryPoint
-@InstallIn(SingletonComponent::class)
-interface InboxRepositoryEntryPoint {
-    fun inboxRepository(): InboxRepository
 }

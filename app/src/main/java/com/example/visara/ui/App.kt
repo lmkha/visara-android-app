@@ -248,7 +248,9 @@ fun App(
                                     },
                                 )
                             }
-                            composable<Destination.Main.Inbox.ChatInbox> {
+                            composable<Destination.Main.Inbox.ChatInbox>(
+                                deepLinks = emptyList()
+                            ) {
                                 ChatInboxScreen(
                                     onBack = { navController.popBackStack() },
                                     modifier = Modifier.fillMaxSize(),
