@@ -9,7 +9,7 @@ import com.example.visara.data.repository.AuthRepository
 import com.example.visara.data.repository.UserRepository
 import com.example.visara.data.repository.VideoDetailRepository
 import com.example.visara.data.repository.VideoDetailState
-import com.example.visara.device.NetworkMonitor
+import com.example.visara.common.NetworkMonitor
 import com.example.visara.ui.theme.AppTheme
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging

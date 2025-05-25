@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.visara.data.model.VideoModel
 import com.example.visara.data.repository.VideoDetailRepository
 import com.example.visara.data.repository.VideoRepository
-import com.example.visara.device.NetworkMonitor
+import com.example.visara.common.NetworkMonitor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

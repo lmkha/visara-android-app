@@ -1,4 +1,4 @@
-package com.example.visara.device
+package com.example.visara.common
 
 import android.content.Context
 import android.net.ConnectivityManager
