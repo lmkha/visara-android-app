@@ -88,9 +88,6 @@ dependencies {
     implementation(libs.androidx.media3.exoplayer.smoothstreaming)
     // For RTSP playback support with ExoPlayer
     implementation(libs.androidx.media3.exoplayer.rtsp)
-    // For MIDI playback support with ExoPlayer (see additional dependency requirements in
-    // https://github.com/androidx/media/blob/release/libraries/decoder_midi/README.md)
-    implementation(libs.androidx.media3.exoplayer.midi)
     // For ad insertion using the Interactive Media Ads SDK with ExoPlayer
     implementation(libs.androidx.media3.exoplayer.ima)
     // For loading data using the Cronet network stack

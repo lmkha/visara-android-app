@@ -5,12 +5,11 @@ import android.app.NotificationManager
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.Person
 import androidx.core.content.pm.ShortcutInfoCompat
@@ -39,7 +38,6 @@ class FCMService : FirebaseMessagingService() {
         super.onNewToken(token)
     }
 
-    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         if (remoteMessage.data.isNotEmpty()) {
             Log.d("CHECK_VAR", "Message data payload: ${remoteMessage.data}")
@@ -94,6 +92,8 @@ class FCMService : FirebaseMessagingService() {
             val notification = NotificationCompat.Builder(applicationContext, channelId)
                 .setStyle(messagingStyle)
                 .setShortcutId(username)
+                .setColor(Color.RED)
+                .setColorized(true)
                 .setSmallIcon(R.drawable.app_logo)
                 .setAutoCancel(true)
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
