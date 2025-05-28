@@ -61,12 +61,25 @@ class NotificationHelper @Inject constructor(
 
         // Create MessagingStyle
         val messagingStyle = NotificationCompat.MessagingStyle(person)
+
+        // Add message
         val notificationMessage = NotificationCompat.MessagingStyle.Message(
             content,
             System.currentTimeMillis(),
             person
         )
         messagingStyle.addMessage(notificationMessage)
+
+        val publicVersion = NotificationCompat.Builder(appContext, NotificationChannelInfo.Message.id)
+            .setContentTitle("New message")
+            .setContentText("you got 3 new messages")
+            .setColor(Color.RED)
+            .setColorized(true)
+            .setSmallIcon(R.drawable.app_logo)
+            .setAutoCancel(true)
+            .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .build()
 
         // Create notification
         val notification = NotificationCompat.Builder(appContext, NotificationChannelInfo.Message.id)
@@ -78,6 +91,8 @@ class NotificationHelper @Inject constructor(
             .setAutoCancel(true)
             .setCategory(NotificationCompat.CATEGORY_MESSAGE)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+            .setPublicVersion(publicVersion)
             .build()
 
         return notification

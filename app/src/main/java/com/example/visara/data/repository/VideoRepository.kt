@@ -26,9 +26,6 @@ class VideoRepository @Inject constructor(
     private val videoRemoteDataSource: VideoRemoteDataSource,
     @ApplicationContext private val appContext: Context,
 ) {
-    init {
-        Log.i("CHECK_PEN", "VideoRepository init")
-    }
     private val _postingVideo: MutableStateFlow<VideoModel?> = MutableStateFlow(null)
     val postingVideo: StateFlow<VideoModel?> = _postingVideo.asStateFlow()
 

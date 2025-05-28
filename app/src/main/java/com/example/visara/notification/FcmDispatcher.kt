@@ -2,7 +2,6 @@ package com.example.visara.notification
 
 import android.app.NotificationManager
 import android.content.Context
-import android.util.Log
 import android.widget.Toast
 import com.example.visara.common.AppLifecycleObserver
 import com.google.firebase.messaging.RemoteMessage
@@ -23,15 +22,18 @@ class FcmDispatcher @Inject constructor(
 ) {
     fun dispatch(remoteMessage: RemoteMessage) {
         if (remoteMessage.data.isNotEmpty()) {
-            Log.d("CHECK_VAR", "Message data payload: ${remoteMessage.data}")
-        }
-        CoroutineScope(Dispatchers.IO).launch {
-            val notification = notificationHelper.createMessageNotification(remoteMessage)
-            if (!appLifecycleObserver.isAppInForeground) {
-                notificationManager.notify(123, notification)
-            } else {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(appContext, "You have a new message", Toast.LENGTH_LONG).show()
+            CoroutineScope(Dispatchers.IO).launch {
+                val notification = notificationHelper.createMessageNotification(remoteMessage)
+                if (!appLifecycleObserver.isAppInForeground) {
+                    notificationManager.notify(123, notification)
+                } else {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(
+                            appContext,
+                            "You have a new message",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
                 }
             }
         }

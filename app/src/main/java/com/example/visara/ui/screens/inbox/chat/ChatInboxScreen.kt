@@ -1,7 +1,10 @@
 package com.example.visara.ui.screens.inbox.chat
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -13,10 +16,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -40,23 +43,35 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.visara.data.model.MessageModel
 import com.example.visara.ui.components.UserAvatar
+import com.example.visara.ui.screens.inbox.chat.components.GoToEndButton
+import com.example.visara.ui.screens.inbox.chat.components.MessageItem
+import com.example.visara.ui.screens.inbox.chat.components.MoreActionPanel
+import com.example.visara.ui.screens.inbox.chat.components.ReactionsPanel
 import com.example.visara.viewmodels.ChatInboxViewModel
+import com.example.visara.viewmodels.MessageItem
+import com.example.visara.viewmodels.MessageListItemType
+import com.example.visara.viewmodels.TimeItem
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -67,9 +82,22 @@ fun ChatInboxScreen(
     onBack: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var isUiRendered by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
     var inputValue by remember { mutableStateOf("") }
     val lazyListState = rememberLazyListState()
+    val reactionPanelHeight = 50.dp
     val inputHeight = 70.dp
+    val itemVerticalPadding = 8.dp
+    val showGoToEndButton by remember {
+        derivedStateOf {
+            if (lazyListState.layoutInfo.visibleItemsInfo.isEmpty()) return@derivedStateOf false
+            val lastVisibleItemIndex = lazyListState.layoutInfo.visibleItemsInfo.last().index
+            lastVisibleItemIndex < lazyListState.layoutInfo.totalItemsCount - 1
+        }
+    }
+    var reactionVisibleItemIndex by remember { mutableStateOf<Int?>(null) }
+    var reactionVisibleItemIntOffset by remember { mutableStateOf<Int?>(null) }
 
     LaunchedEffect(uiState.messages.size) {
         if (uiState.messages.isNotEmpty()) {
@@ -78,8 +106,15 @@ fun ChatInboxScreen(
             if (!uiState.firstTime) {
                 lazyListState.animateScrollToItem(index = lastIndex)
             } else {
-                lazyListState.requestScrollToItem(index = lastIndex)
+                lazyListState.scrollToItem(index = lastIndex)
+                isUiRendered = true
             }
+        }
+    }
+
+    LaunchedEffect(lazyListState.isScrollInProgress) {
+        if (lazyListState.isScrollInProgress && reactionVisibleItemIndex != null) {
+            reactionVisibleItemIndex = null
         }
     }
 
@@ -142,146 +177,190 @@ fun ChatInboxScreen(
         },
         modifier = modifier,
     ) {
-        if (!uiState.isLoading) {
-            BoxWithConstraints(
+        BoxWithConstraints(
+            modifier = Modifier
+                .fillMaxSize()
+                .navigationBarsPadding()
+        ) {
+            val listHeight = this.maxHeight - inputHeight
+            LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .navigationBarsPadding()
+                    .imePadding()
             ) {
-                val listHeight = this.maxHeight - inputHeight
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .imePadding()
-                ) {
-                    item {
+                item {
+                    Box {
                         LazyColumn(
                             state = lazyListState,
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(itemVerticalPadding),
                             modifier = Modifier
                                 .height(listHeight)
                                 .fillMaxWidth()
-                        ) {
-                            items(uiState.messages.size) { index ->
-                                val shouldShowAvatar =
-                                    !(uiState.messages[index].isMine || uiState.messages.getOrNull(
-                                        index + 1
-                                    )?.isMine == false)
-                                Message(
-                                    message = uiState.messages[index],
-                                    shouldShowAvatar = shouldShowAvatar,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 4.dp)
-                                )
-                            }
-                        }
-                    }
-                    item {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .height(inputHeight)
-                                .fillMaxWidth()
-                                .background(color = MaterialTheme.colorScheme.background)
-                                .padding(vertical = 8.dp)
-                        ) {
-                            TextField(
-                                value = inputValue,
-                                placeholder = {
-                                    Text(
-                                        text = "Send message",
-                                        color = Color.Black,
+                                .pointerInput(Unit) {
+                                    detectTapGestures(
+                                        onTap = { reactionVisibleItemIndex = null }
                                     )
-                                },
-                                trailingIcon = {
-                                    IconButton(
-                                        onClick = {}
+                                }
+                        ) {
+                            items(
+                                count = uiState.messages.size,
+                                contentType = { uiState.messages[it].type },
+                            ) { index ->
+                                if (uiState.messages[index].type == MessageListItemType.MESSAGE) {
+                                    val messageItem = uiState.messages[index] as MessageItem
+                                    val nextItem = uiState.messages.getOrNull(index + 1)
+                                    val shouldShowAvatar = !(messageItem.data.isMine ||
+                                            (nextItem is MessageItem && nextItem.data.isMine == false))
+
+                                    MessageItem(
+                                        message = messageItem.data,
+                                        shouldShowAvatar = shouldShowAvatar,
+                                        onShowReactionsPanel = {
+                                            if (!messageItem.data.isMine) {
+                                                val itemInfo =
+                                                    lazyListState.layoutInfo.visibleItemsInfo
+                                                        .find { it.index == index }
+                                                if (itemInfo != null) {
+                                                    Log.i(
+                                                        "CHECK_VAR",
+                                                        "offset: ${itemInfo.offset}"
+                                                    )
+                                                    reactionVisibleItemIntOffset = itemInfo.offset
+                                                }
+                                                reactionVisibleItemIndex = index
+                                            }
+                                        },
+                                        onDismissReactionsPanel = {
+                                            reactionVisibleItemIndex = null
+                                        },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 4.dp)
+                                    )
+                                } else {
+                                    val timeItem = uiState.messages[index] as TimeItem
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+                                        modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Face,
-                                            contentDescription = null,
+                                        Text(
+                                            text = timeItem.data,
+                                            color = Color.Gray,
                                         )
                                     }
-                                },
-                                onValueChange = { inputValue = it },
-                                colors = TextFieldDefaults.colors(
-                                    unfocusedIndicatorColor = Color.Transparent,
-                                    focusedIndicatorColor = Color.Transparent,
-                                ),
-                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
-                                keyboardActions = KeyboardActions(
-                                    onSend = {
-                                        viewModel.sendMessage(inputValue)
-                                        inputValue = ""
-                                    }
-                                ),
-                                modifier = Modifier
-                                    .fillMaxHeight()
-                                    .weight(1f)
-                                    .padding(horizontal = 8.dp)
-                                    .clip(RoundedCornerShape(25.dp))
-                            )
-                            IconButton(
-                                onClick = {},
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.ThumbUp,
-                                    contentDescription = null,
-                                )
+                                }
                             }
+                        }
+
+                        // Reactions panel
+                        ReactionsPanel(
+                            visible = reactionVisibleItemIndex != null,
+                            modifier = Modifier
+                                .offset {
+                                    IntOffset(
+                                        x = 30.dp.roundToPx(),
+                                        y = (reactionVisibleItemIntOffset ?: 0) - (reactionPanelHeight + itemVerticalPadding).roundToPx()
+                                    )
+                                }
+                                .height(reactionPanelHeight)
+                                .width(320.dp)
+                                .clickable { }
+                        )
+
+                        // Go to end of chat button
+                        GoToEndButton(
+                            visible = showGoToEndButton,
+                            onClick = {
+                                coroutineScope.launch {
+                                    lazyListState.animateScrollToItem(index = uiState.messages.lastIndex)
+                                }
+                            },
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(bottom = 8.dp)
+                                .alpha(0.8f)
+                        )
+                    }
+                }
+                item {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .height(inputHeight)
+                            .fillMaxWidth()
+                            .background(color = MaterialTheme.colorScheme.background)
+                            .padding(vertical = 8.dp)
+                    ) {
+                        TextField(
+                            value = inputValue,
+                            placeholder = {
+                                Text(
+                                    text = "Send message",
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                )
+                            },
+                            trailingIcon = {
+                                IconButton(
+                                    onClick = {}
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Face,
+                                        contentDescription = null,
+                                    )
+                                }
+                            },
+                            onValueChange = { inputValue = it },
+                            colors = TextFieldDefaults.colors(
+                                unfocusedIndicatorColor = Color.Transparent,
+                                focusedIndicatorColor = Color.Transparent,
+                            ),
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                            keyboardActions = KeyboardActions(
+                                onSend = {
+                                    viewModel.sendMessage(inputValue)
+                                    inputValue = ""
+                                }
+                            ),
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .weight(1f)
+                                .padding(horizontal = 8.dp)
+                                .clip(RoundedCornerShape(25.dp))
+                        )
+                        IconButton(
+                            onClick = {},
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ThumbUp,
+                                contentDescription = null,
+                            )
                         }
                     }
                 }
             }
-        } else {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxSize(),
-            ) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(48.dp),
-                    color = MaterialTheme.colorScheme.primary,
-                    trackColor = Color.Gray,
-                )
-            }
-        }
-    }
-}
 
-@Composable
-fun Message(
-    modifier: Modifier = Modifier,
-    message: MessageModel,
-    shouldShowAvatar: Boolean,
-) {
-    BoxWithConstraints(modifier = modifier) {
-        val width = this.maxWidth
-        Box(
-            contentAlignment = if (message.isMine) Alignment.CenterEnd else Alignment.CenterStart,
-            modifier = Modifier
-                .width((width.value * 0.8).dp)
-                .align(if (message.isMine) Alignment.CenterEnd else Alignment.CenterStart)
-        ) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Box(modifier = Modifier.size(30.dp)) {
-                    if (!message.isMine && shouldShowAvatar) {
-                        UserAvatar(modifier = Modifier.fillMaxSize())
-                    }
-                }
+            // More action panel
+            MoreActionPanel(
+                visible = reactionVisibleItemIndex != null,
+                onReply = {},
+                onCopy = {},
+                onDelete = {},
+                onForward = {},
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
+
+            // Circular progress while fetching data and uiRendering
+            if (uiState.isLoading || !isUiRendered) {
                 Box(
+                    contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .wrapContentWidth()
-                        .clip(RoundedCornerShape(15.dp))
-                        .background(color = if (message.isMine) Color.Blue else Color.LightGray)
+                        .fillMaxSize()
+                        .background(color = MaterialTheme.colorScheme.background)
                 ) {
-                    Text(
-                        text = message.content,
-                        color = if (message.isMine) Color.White else Color.Black,
-                        modifier = Modifier.padding(
-                            vertical = 4.dp,
-                            horizontal = 8.dp,
-                        ),
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(48.dp),
+                        color = MaterialTheme.colorScheme.primary,
+                        trackColor = Color.Gray,
                     )
                 }
             }
