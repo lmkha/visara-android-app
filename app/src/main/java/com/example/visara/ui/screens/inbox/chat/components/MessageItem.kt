@@ -27,6 +27,7 @@ import com.example.visara.ui.components.UserAvatar
 fun MessageItem(
     modifier: Modifier = Modifier,
     message: MessageModel,
+    isMyMessage: Boolean,
     shouldShowAvatar: Boolean,
     onShowReactionsPanel: () -> Unit,
     onDismissReactionsPanel: () -> Unit,
@@ -37,10 +38,10 @@ fun MessageItem(
     BoxWithConstraints(modifier = modifier) {
         val width = (this.maxWidth.value * 0.8).dp
         Box(
-            contentAlignment = if (message.isMine) Alignment.CenterEnd else Alignment.CenterStart,
+            contentAlignment = if (isMyMessage) Alignment.CenterEnd else Alignment.CenterStart,
             modifier = Modifier
                 .width(width)
-                .align(if (message.isMine) Alignment.CenterEnd else Alignment.CenterStart)
+                .align(if (isMyMessage) Alignment.CenterEnd else Alignment.CenterStart)
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onLongPress = { onShowReactionsPanel() },
@@ -50,7 +51,7 @@ fun MessageItem(
         ) {
             Row(horizontalArrangement = Arrangement.spacedBy(horizontalPadding)) {
                 Box(modifier = Modifier.size(avatarSize)) {
-                    if (!message.isMine && shouldShowAvatar) {
+                    if (!isMyMessage && shouldShowAvatar) {
                         UserAvatar(modifier = Modifier.fillMaxSize())
                     }
                 }
@@ -58,11 +59,11 @@ fun MessageItem(
                     modifier = Modifier
                         .wrapContentWidth()
                         .clip(RoundedCornerShape(15.dp))
-                        .background(color = if (message.isMine) Color.Blue else Color.LightGray)
+                        .background(color = if (isMyMessage) Color.Blue else Color.LightGray)
                 ) {
                     Text(
                         text = message.content,
-                        color = if (message.isMine) Color.White else Color.Black,
+                        color = if (isMyMessage) Color.White else Color.Black,
                         modifier = Modifier.padding(
                             vertical = 4.dp,
                             horizontal = 8.dp,

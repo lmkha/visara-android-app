@@ -1,6 +1,7 @@
 package com.example.visara.ui.components
 
 import android.content.Context
+import android.content.res.Configuration
 import android.net.Uri
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedVisibility
@@ -44,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -108,7 +110,6 @@ fun VisaraVideoPlayer(
     modifier: Modifier = Modifier,
     player: ExoPlayer,
     showControls: Boolean = true,
-    isLandscapeMode: Boolean = false,
     requireLandscapeMode: () -> Unit,
     requirePortraitMode: () -> Unit,
 ) {
@@ -148,7 +149,6 @@ fun VisaraVideoPlayer(
         ) {
             PlayerControls(
                 player = player,
-                isLandscapeMode = isLandscapeMode,
                 requireLandscapeMode = requireLandscapeMode,
                 requirePortraitMode = requirePortraitMode,
                 modifier = Modifier.fillMaxSize(),
@@ -167,7 +167,6 @@ fun VisaraVideoPlayer(
 fun PlayerControls(
     modifier: Modifier = Modifier,
     player: ExoPlayer,
-    isLandscapeMode: Boolean = false,
     requireLandscapeMode: () -> Unit,
     requirePortraitMode: () -> Unit,
 ) {
@@ -175,6 +174,8 @@ fun PlayerControls(
     var currentPosition by remember { mutableLongStateOf(player.currentPosition) }
     val duration = player.duration
     val safeDuration = duration.takeIf { it > 0 } ?: 0L
+    val orientation = LocalConfiguration.current.orientation
+    val isLandscapeMode = orientation == Configuration.ORIENTATION_LANDSCAPE
 
     // Listen for playback state
     LaunchedEffect(player) {

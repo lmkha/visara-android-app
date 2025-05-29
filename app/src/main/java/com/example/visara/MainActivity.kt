@@ -9,6 +9,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -17,6 +19,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.visara.ui.App
 import com.example.visara.viewmodels.AppViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import android.content.res.Configuration
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -26,23 +29,31 @@ class MainActivity : ComponentActivity() {
         askNotificationPermission()
 
         enableEdgeToEdge()
-
         val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
         windowInsetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
 
         setContent {
+            val orientation = LocalConfiguration.current.orientation
+            LaunchedEffect(orientation) {
+                when(orientation) {
+                    Configuration.ORIENTATION_LANDSCAPE -> {
+                        windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
+                    }
+                    else -> {
+                        windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
+                    }
+                }
+            }
+
             val appViewModel: AppViewModel = hiltViewModel()
+
             App(
                 appViewModel = appViewModel,
                 requireLandscapeMode = {
-                    windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
                     requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
-                    appViewModel.enableLandscapeMode()
                 },
                 requirePortraitMode = {
-                    windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
                     requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-                    appViewModel.enablePortraitMode()
                 },
             )
         }

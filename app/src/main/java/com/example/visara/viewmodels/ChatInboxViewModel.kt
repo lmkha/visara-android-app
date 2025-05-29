@@ -1,67 +1,71 @@
 package com.example.visara.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.visara.data.model.MessageModel
+import com.example.visara.data.repository.InboxRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ChatInboxViewModel @Inject constructor(
-
+    private val inboxRepository: InboxRepository,
 ) : ViewModel() {
     private val _uiState: MutableStateFlow<ChatInboxScreenUiState> = MutableStateFlow(ChatInboxScreenUiState())
     val uiState: StateFlow<ChatInboxScreenUiState> = _uiState.asStateFlow()
 
     init {
+        observerNewMessage()
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             delay(500)
             _uiState.update {
                 val messages = listOf<IMessageListItem>(
-                    MessageItem(data = MessageModel("Kịp không v tr")),
-                    MessageItem(data = MessageModel("Đã đông mà tg còn ít nữa vz")),
-                    MessageItem(data = MessageModel("Lên chưa á Thương")),
-                    MessageItem(data = MessageModel("A5 - 301 nha m")),
-                    MessageItem(data = MessageModel("Ok", false)),
-                    MessageItem(data = MessageModel("Tới r", false)),
-                    MessageItem(data = MessageModel("T mới sửa lại cái API random, với thêm API following videos rồi nha", false)),
-                    MessageItem(data = MessageModel("Okok để t pull về")),
-                    MessageItem(data = MessageModel("Tuần này làm kịp thêm cái chat với thông báo kịp ko ta")),
-                    MessageItem(data = MessageModel("Hông biết nữa, thông báo chắc t sửa kịp, chat vẫn đang mế:v", false)),
-                    MessageItem(data = MessageModel("Um v m cứ nghiên cứu thêm phần đó đi ha")),
-                    MessageItem(data = MessageModel("Cuối tuần này chắc t vào lại sg để nộp báo cáo thực tập")),
-                    MessageItem(data = MessageModel("Ok ok", false)),
-                    MessageItem(data = MessageModel("Nếu có chỗ nào cần trao đổi trực tiếp cho tiện thì t7 cn tuần này m ha")),
-                    MessageItem(data = MessageModel("Oke bên FCM chắc t cũng cần trao đổi thêm bên m, chứ t ko biết test sao:v", false)),
-                    MessageItem(data = MessageModel("Um phần đó test thì bữa giờ t test qua máy ảo các thứ")),
-                    MessageItem(data = MessageModel("mà để t nghiên cứu thêm có gì mai t báo lại m ha")),
-                    MessageItem(data = MessageModel("Oke", false)),
-                    MessageItem(data = MessageModel("t mới tạo riêng 1 project front end nhận được thông báo FCM nha")),
-                    MessageItem(data = MessageModel("Khi nào m rảnh hú t vô meet có gì t trao đổi cách để m test cái nhận thông báo nha")),
-                    MessageItem(data = MessageModel("Ủa sao hổng tạo nhánh th", false)),
-                    MessageItem(data = MessageModel("T tạo project mới luôn cho nó nhẹ á mà kkk")),
-                    MessageItem(data = MessageModel("Tối nay cafe hong", false)),
-                    MessageItem(data = MessageModel("Gặp nhau cho dễ trao đổi", false)),
-                    MessageItem(data = MessageModel("T còn ở quê m ơi")),
+                    MessageItem(data = MessageModel(content = "Kịp không v tr", senderUsername = "lmkha")),
+                    MessageItem(data = MessageModel(content = "Đã đông mà tg còn ít nữa vz", senderUsername = "lmkha")),
+                    MessageItem(data = MessageModel(content = "Lên chưa á Thương", senderUsername = "lmkha")),
+                    MessageItem(data = MessageModel(content = "A5 - 301 nha m", senderUsername = "lmkha")),
+                    MessageItem(data = MessageModel(content = "Ok", senderUsername = "quythuong")),
+                    MessageItem(data = MessageModel(content = "Tới r", senderUsername = "quythuong")),
+                    MessageItem(data = MessageModel(content = "T mới sửa lại cái API random, với thêm API following videos rồi nha", senderUsername = "quythuong")),
+                    MessageItem(data = MessageModel(content = "Okok để t pull về", senderUsername = "lmkha")),
+                    MessageItem(data = MessageModel(content = "Tuần này làm kịp thêm cái chat với thông báo kịp ko ta", senderUsername = "lmkha")),
+                    MessageItem(data = MessageModel(content = "Hông biết nữa, thông báo chắc t sửa kịp, chat vẫn đang mế:v", senderUsername = "quythuong")),
+                    MessageItem(data = MessageModel(content = "Um v m cứ nghiên cứu thêm phần đó đi ha", senderUsername = "lmkha")),
+                    MessageItem(data = MessageModel(content = "Cuối tuần này chắc t vào lại sg để nộp báo cáo thực tập", senderUsername = "lmkha")),
+                    MessageItem(data = MessageModel(content = "Ok ok", senderUsername = "quythuong")),
+                    MessageItem(data = MessageModel(content = "Nếu có chỗ nào cần trao đổi trực tiếp cho tiện thì t7 cn tuần này m ha", senderUsername = "lmkha")),
+                    MessageItem(data = MessageModel(content = "Oke bên FCM chắc t cũng cần trao đổi thêm bên m, chứ t ko biết test sao:v", senderUsername = "quythuong")),
+                    MessageItem(data = MessageModel(content = "Um phần đó test thì bữa giờ t test qua máy ảo các thứ", senderUsername = "lmkha")),
+                    MessageItem(data = MessageModel(content = "mà để t nghiên cứu thêm có gì mai t báo lại m ha", senderUsername = "lmkha")),
+                    MessageItem(data = MessageModel(content = "Oke", senderUsername = "quythuong")),
+                    MessageItem(data = MessageModel(content = "t mới tạo riêng 1 project front end nhận được thông báo FCM nha", senderUsername = "lmkha")),
+                    MessageItem(data = MessageModel(content = "Khi nào m rảnh hú t vô meet có gì t trao đổi cách để m test cái nhận thông báo nha", senderUsername = "lmkha")),
+                    MessageItem(data = MessageModel(content = "Ủa sao hổng tạo nhánh th", senderUsername = "quythuong")),
+                    MessageItem(data = MessageModel(content = "T tạo project mới luôn cho nó nhẹ á mà kkk", senderUsername = "lmkha")),
+                    MessageItem(data = MessageModel(content = "Tối nay cafe hong", senderUsername = "quythuong")),
+                    MessageItem(data = MessageModel(content = "Gặp nhau cho dễ trao đổi", senderUsername = "quythuong")),
+                    MessageItem(data = MessageModel(content = "T còn ở quê m ơi", senderUsername = "lmkha")),
                     TimeItem(data = "27/05/2025"),
-                    MessageItem(data = MessageModel("sáng t6 t vào lại á")),
-                    MessageItem(data = MessageModel("À à dẫy chắc thôi", false)),
-                    MessageItem(data = MessageModel("Để t cập nhật postman rồi nhờ m test", false)),
-                    MessageItem(data = MessageModel("Chiều t6 hay ngày t7 m rảnh hong")),
-                    MessageItem(data = MessageModel("Ngày t7 rảnh", false)),
-                    MessageItem(data = MessageModel("Hoặc tối t6 cũng đcc", false)),
+                    MessageItem(data = MessageModel(content = "sáng t6 t vào lại á", senderUsername = "lmkha")),
+                    MessageItem(data = MessageModel(content = "À à dẫy chắc thôi", senderUsername = "quythuong")),
+                    MessageItem(data = MessageModel(content = "Để t cập nhật postman rồi nhờ m test", senderUsername = "quythuong")),
+                    MessageItem(data = MessageModel(content = "Chiều t6 hay ngày t7 m rảnh hong", senderUsername = "lmkha")),
+                    MessageItem(data = MessageModel(content = "Ngày t7 rảnh", senderUsername = "quythuong")),
+                    MessageItem(data = MessageModel(content = "Hoặc tối t6 cũng đcc", senderUsername = "quythuong")),
                     TimeItem(data = "27/05/2025"),
-                    MessageItem(data = MessageModel("T6 t vào r nên 2 ngày đó đc á")),
-                    MessageItem(data = MessageModel("M thấy bữa nào oke nhắn t ha")),
-                    MessageItem(data = MessageModel("Maf có chỗ nào cần gấp ko tối nay meet trc cũng đc m")),
-                    MessageItem(data = MessageModel("Oke để t xem thử", false)),
+                    MessageItem(data = MessageModel(content = "T6 t vào r nên 2 ngày đó đc á", senderUsername = "lmkha")),
+                    MessageItem(data = MessageModel(content = "M thấy bữa nào oke nhắn t ha", senderUsername = "lmkha")),
+                    MessageItem(data = MessageModel(content = "Maf có chỗ nào cần gấp ko tối nay meet trc cũng đc m", senderUsername = "lmkha")),
+                    MessageItem(data = MessageModel(content = "Oke để t xem thử", senderUsername = "quythuong")),
                 )
                 it.copy(
                     isLoading = false,
@@ -71,20 +75,54 @@ class ChatInboxViewModel @Inject constructor(
         }
     }
 
+    private fun observerNewMessage() {
+        viewModelScope.launch {
+            inboxRepository.newMessage.collectLatest {
+                Log.i("CHECK_VAR", "collect in viewmodel, new message: $it")
+            }
+        }
+    }
+
+    fun setPartnerUsername(username: String) {
+        viewModelScope.launch {
+            inboxRepository.setActiveChatPartner(username)
+            _uiState.update { it.copy(partnerUsername = username) }
+        }
+    }
+
+    fun clearPartnerUsername() {
+        viewModelScope.launch {
+            inboxRepository.clearActiveChatPartner()
+        }
+    }
+
     fun sendMessage(content: String) {
         viewModelScope.launch {
             _uiState.update { oldState ->
-                val newMessage = MessageItem(data = MessageModel(content = content))
+                val newMessage = MessageItem(
+                    data = MessageModel(
+                        content = content,
+                        senderUsername = "lmkha",
+                    )
+                )
                 val newMessages = oldState.messages + listOf(newMessage)
                 oldState.copy(messages = newMessages, firstTime = false)
             }
         }
+    }
+
+    fun isSentByCurrentUser(messageItem: IMessageListItem?) : Boolean {
+        if (messageItem == null) return false
+        if (messageItem.type != MessageListItemType.MESSAGE) return false
+        val message = messageItem as MessageItem
+        return message.data.senderUsername == "lmkha"
     }
 }
 
 data class ChatInboxScreenUiState(
     val isLoading: Boolean = false,
     val firstTime: Boolean = true,
+    val partnerUsername: String = "",
     val messages: List<IMessageListItem> = emptyList(),
 )
 

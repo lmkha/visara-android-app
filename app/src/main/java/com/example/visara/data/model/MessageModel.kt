@@ -2,9 +2,14 @@ package com.example.visara.data.model
 
 data class MessageModel(
     val content: String = "",
-    val isMine: Boolean = true,
-    val receivedTime: String = "",
     val senderUsername: String = "",
-    val receiverUsername: String = "",
-    val hadSeen: Boolean = false,
+    val receiverUsername: String? = null,
+    val groupId: String? = null,
+    val receivedTime: String = "",
+    val userReactions: List<UserReaction> = emptyList(),
+)
+
+data class UserReaction(
+    val username: String = "",
+    val reaction: ReactionModel = ReactionModel(),
 )

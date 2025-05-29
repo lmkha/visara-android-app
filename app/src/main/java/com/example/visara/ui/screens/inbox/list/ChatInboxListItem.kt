@@ -18,6 +18,7 @@ import com.example.visara.ui.components.UserAvatar
 @Composable
 fun ChatInboxListItem(
     modifier: Modifier = Modifier,
+    username: String,
 ) {
     Row(
         modifier = modifier,
@@ -31,7 +32,7 @@ fun ChatInboxListItem(
         )
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "Username",
+                text = username,
                 fontWeight = FontWeight.Bold,
             )
             Row(

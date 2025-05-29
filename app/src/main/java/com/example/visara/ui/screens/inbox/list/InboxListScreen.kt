@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -25,6 +26,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,18 +34,25 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.visara.R
+import com.example.visara.viewmodels.InboxListViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InboxListScreen(
    modifier: Modifier = Modifier,
+   viewModel: InboxListViewModel = hiltViewModel(),
    bottomNavBar: @Composable () -> Unit,
    onOpenActivityInbox: () -> Unit,
    onOpenNewFollowersInbox: () -> Unit,
    onOpenSystemNotificationInbox: () -> Unit,
-   onOpenChatInbox: () -> Unit,
+   onOpenChatInbox: (username: String) -> Unit,
 ) {
+
+   val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
    Scaffold(
       modifier = modifier.fillMaxSize(),
       topBar = {
@@ -149,14 +158,15 @@ fun InboxListScreen(
             )
          }
          // Chats Item
-         items(5) {
+         items(uiState.chats) {
             ChatInboxListItem(
+               username = it,
                modifier = Modifier
                   .fillMaxWidth()
                   .height(70.dp)
                   .padding(horizontal = 8.dp)
                   .clip(RoundedCornerShape(30.dp))
-                  .clickable { onOpenChatInbox() }
+                  .clickable { onOpenChatInbox(it) }
             )
          }
       }

@@ -89,7 +89,6 @@ fun VideoDetailScreen(
                 VisaraVideoPlayer(
                     player = viewModel.player,
                     showControls = uiState.isFullScreenMode,
-                    isLandscapeMode = isLandscapeMode,
                     requireLandscapeMode = requireLandscapeMode,
                     requirePortraitMode = requirePortraitMode,
                     modifier = Modifier

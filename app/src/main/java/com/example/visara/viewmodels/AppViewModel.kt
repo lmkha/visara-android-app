@@ -137,14 +137,6 @@ class AppViewModel @Inject constructor(
     fun syncCurrentUser() {
         viewModelScope.launch { userRepository.syncCurrentUser() }
     }
-
-    fun enableLandscapeMode() {
-        _appState.update { it.copy(isLandscapeMode = true) }
-    }
-
-    fun enablePortraitMode() {
-        _appState.update { it.copy(isLandscapeMode = false) }
-    }
 }
 
 data class AppState(

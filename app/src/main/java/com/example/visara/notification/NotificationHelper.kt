@@ -18,7 +18,7 @@ import androidx.core.graphics.drawable.IconCompat
 import coil3.Bitmap
 import com.example.visara.MainActivity
 import com.example.visara.R
-import com.google.firebase.messaging.RemoteMessage
+import com.example.visara.data.model.fcm.FcmNewMessageModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.net.HttpURLConnection
 import java.net.URL
@@ -29,17 +29,12 @@ import javax.inject.Singleton
 class NotificationHelper @Inject constructor(
     @ApplicationContext private val appContext: Context,
 ) {
-    fun createMessageNotification(remoteMessage: RemoteMessage) : Notification {
-        val data = remoteMessage.data
-        val content = data["content"] ?: "No content"
-        val username = data["username"] ?: "Unknown"
-        val avatarUrl = data["avatar"] ?: ""
-
+    fun createMessageNotification(messageDto: FcmNewMessageModel) : Notification {
         // Create person
-        val bitmap = getBitmapFromURL(avatarUrl)
+        val bitmap = getBitmapFromURL(messageDto.senderAvatar)
         val icon = bitmap?.let { IconCompat.createWithBitmap(it) }
         val person = Person.Builder()
-            .setName(username)
+            .setName(messageDto.senderUsername)
             .setIcon(icon)
             .build()
 
@@ -49,10 +44,10 @@ class NotificationHelper @Inject constructor(
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
 
-        val shortcut = ShortcutInfoCompat.Builder(appContext, username)
+        val shortcut = ShortcutInfoCompat.Builder(appContext, messageDto.senderUsername)
             .setLongLived(true)
             .setIntent(intent)
-            .setShortLabel(username)
+            .setShortLabel(messageDto.senderUsername)
             .setPerson(person)
             .setIcon(icon)
             .build()
@@ -64,7 +59,7 @@ class NotificationHelper @Inject constructor(
 
         // Add message
         val notificationMessage = NotificationCompat.MessagingStyle.Message(
-            content,
+            messageDto.content,
             System.currentTimeMillis(),
             person
         )
@@ -84,7 +79,7 @@ class NotificationHelper @Inject constructor(
         // Create notification
         val notification = NotificationCompat.Builder(appContext, NotificationChannelInfo.Message.id)
             .setStyle(messagingStyle)
-            .setShortcutId(username)
+            .setShortcutId(messageDto.senderUsername)
             .setColor(Color.RED)
             .setColorized(true)
             .setSmallIcon(R.drawable.app_logo)

@@ -95,6 +95,7 @@ import com.example.visara.ui.screens.video_detail.VideoDetailScreen
 import com.example.visara.ui.theme.VisaraTheme
 import com.example.visara.viewmodels.AppState
 import com.example.visara.viewmodels.AppViewModel
+import com.example.visara.viewmodels.ChatInboxViewModel
 import com.example.visara.viewmodels.FollowScreenViewModel
 import com.example.visara.viewmodels.SearchViewModel
 import com.example.visara.viewmodels.VideoDetailViewModel
@@ -235,7 +236,9 @@ fun App(
                         navigation<Destination.Main.Inbox>(startDestination = Destination.Main.Inbox.InboxList) {
                             composable<Destination.Main.Inbox.InboxList> {
                                 InboxListScreen(
-                                    onOpenChatInbox = { navController.navigate(Destination.Main.Inbox.ChatInbox) },
+                                    onOpenChatInbox = { username->
+                                        navController.navigate(Destination.Main.Inbox.ChatInbox(username = username))
+                                    },
                                     onOpenActivityInbox = { navController.navigate(Destination.Main.Inbox.ActivityInbox) },
                                     onOpenNewFollowersInbox = { navController.navigate(Destination.Main.Inbox.NewFollowersInbox) },
                                     onOpenSystemNotificationInbox = { navController.navigate(Destination.Main.Inbox.SystemNotificationInbox) },
@@ -250,8 +253,17 @@ fun App(
                             }
                             composable<Destination.Main.Inbox.ChatInbox>(
                                 deepLinks = emptyList()
-                            ) {
+                            ) { backStackEntry ->
+                                val route: Destination.Main.Inbox.ChatInbox = backStackEntry.toRoute()
+                                val chatInboxScreenViewModel: ChatInboxViewModel = hiltViewModel()
+                                chatInboxScreenViewModel.setPartnerUsername(route.username)
+
+                                DisposableEffect(Unit) {
+                                    onDispose { chatInboxScreenViewModel.clearPartnerUsername() }
+                                }
+
                                 ChatInboxScreen(
+                                    viewModel = chatInboxScreenViewModel,
                                     onBack = { navController.popBackStack() },
                                     modifier = Modifier.fillMaxSize(),
                                 )

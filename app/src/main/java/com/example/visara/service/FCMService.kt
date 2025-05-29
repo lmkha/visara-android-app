@@ -2,7 +2,6 @@ package com.example.visara.service
 
 import android.util.Log
 import com.example.visara.data.repository.AuthRepository
-import com.example.visara.notification.FcmDispatcher
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import dagger.hilt.android.AndroidEntryPoint

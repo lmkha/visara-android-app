@@ -14,7 +14,7 @@ sealed class Destination(val name: String) {
             @Serializable object NewFollowersInbox : Destination("Main.Inbox.NewFollowers")
             @Serializable object ActivityInbox : Destination("Main.Inbox.Activity")
             @Serializable object SystemNotificationInbox : Destination("Main.Inbox.SystemNotification")
-            @Serializable object ChatInbox : Destination("Main.Inbox.Chat")
+            @Serializable data class ChatInbox(val username: String) : Destination("Main.Inbox.Chat")
         }
         @Serializable data class Profile(
             val username: String? = null,

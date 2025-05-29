@@ -10,11 +10,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -60,7 +63,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.visara.ui.components.UserAvatar
 import com.example.visara.ui.screens.inbox.chat.components.GoToEndButton
@@ -78,7 +80,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun ChatInboxScreen(
     modifier: Modifier = Modifier,
-    viewModel: ChatInboxViewModel = hiltViewModel(),
+    viewModel: ChatInboxViewModel,
     onBack: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -148,7 +150,7 @@ fun ChatInboxScreen(
                         }
                         Column {
                             Text(
-                                text = "Minh Kha",
+                                text = uiState.partnerUsername,
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Medium,
                             )
@@ -177,15 +179,15 @@ fun ChatInboxScreen(
         },
         modifier = modifier,
     ) {
-        BoxWithConstraints(
-            modifier = Modifier
-                .fillMaxSize()
-                .navigationBarsPadding()
-        ) {
-            val listHeight = this.maxHeight - inputHeight
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            val navigationBarPadding = WindowInsets.navigationBars
+                .asPaddingValues()
+                .calculateBottomPadding()
+            val listHeight = this.maxHeight - inputHeight - navigationBarPadding
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
+                    .navigationBarsPadding()
                     .imePadding()
             ) {
                 item {
@@ -208,18 +210,18 @@ fun ChatInboxScreen(
                             ) { index ->
                                 if (uiState.messages[index].type == MessageListItemType.MESSAGE) {
                                     val messageItem = uiState.messages[index] as MessageItem
-                                    val nextItem = uiState.messages.getOrNull(index + 1)
-                                    val shouldShowAvatar = !(messageItem.data.isMine ||
-                                            (nextItem is MessageItem && nextItem.data.isMine == false))
+                                    val isCurrentMessageFromCurrentUser = viewModel.isSentByCurrentUser(uiState.messages[index])
+                                    val isNextMessageFromCurrentUser = viewModel.isSentByCurrentUser(uiState.messages.getOrNull(index + 1))
+                                    val shouldShowAvatar = !(isCurrentMessageFromCurrentUser || isNextMessageFromCurrentUser)
 
                                     MessageItem(
                                         message = messageItem.data,
+                                        isMyMessage = isCurrentMessageFromCurrentUser,
                                         shouldShowAvatar = shouldShowAvatar,
                                         onShowReactionsPanel = {
-                                            if (!messageItem.data.isMine) {
+                                            if (uiState.messages[index].type == MessageListItemType.MESSAGE && !isCurrentMessageFromCurrentUser) {
                                                 val itemInfo =
-                                                    lazyListState.layoutInfo.visibleItemsInfo
-                                                        .find { it.index == index }
+                                                    lazyListState.layoutInfo.visibleItemsInfo.find { it.index == index }
                                                 if (itemInfo != null) {
                                                     Log.i(
                                                         "CHECK_VAR",
@@ -346,7 +348,7 @@ fun ChatInboxScreen(
                 onCopy = {},
                 onDelete = {},
                 onForward = {},
-                modifier = Modifier.align(Alignment.BottomCenter)
+                modifier = Modifier.align(Alignment.BottomCenter).imePadding()
             )
 
             // Circular progress while fetching data and uiRendering
