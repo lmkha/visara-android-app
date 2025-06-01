@@ -19,20 +19,20 @@ data class UserEntity(
     val isVerified: Boolean,
     val followerCount: Long,
     val followingCount: Long,
-)
-
-fun UserEntity.toModel(): UserModel = UserModel(
-    id = id,
-    username = username,
-    fullName = fullName,
-    email = email,
-    phone = phone,
-    networkAvatarUrl = networkAvatarUrl,
-    localAvatarPath = localAvatarPath,
-    bio = bio,
-    isPrivate = isPrivate,
-    dob = dob,
-    isVerified = isVerified,
-    followerCount = followerCount,
-    followingCount = followingCount,
-)
+) {
+    fun toUserModel(): UserModel = UserModel(
+        id = id,
+        username = username,
+        fullName = fullName,
+        email = email,
+        phone = phone,
+        networkAvatarUrl = networkAvatarUrl,
+        localAvatarPath = localAvatarPath,
+        bio = bio,
+        isPrivate = isPrivate,
+        dob = dob,
+        isVerified = isVerified,
+        followerCount = followerCount,
+        followingCount = followingCount,
+    )
+}

@@ -20,13 +20,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
-import com.example.visara.data.model.MessageModel
+import com.example.visara.data.model.chat.ChatMessageModel
 import com.example.visara.ui.components.UserAvatar
 
 @Composable
 fun MessageItem(
     modifier: Modifier = Modifier,
-    message: MessageModel,
+    message: ChatMessageModel,
     isMyMessage: Boolean,
     shouldShowAvatar: Boolean,
     onShowReactionsPanel: () -> Unit,

@@ -1,4 +1,4 @@
-package com.example.visara.service.dto
+package com.example.visara.service.fcm.dto
 
 import com.example.visara.data.model.fcm.FcmNewMessageModel
 

@@ -37,14 +37,14 @@ fun AddNewVideoScreen(
         videoUri = uri
         uri?.let {
             scope.launch {
-                viewModel.manager.play(it)
+                viewModel.manager?.playUri(it)
                 step = 2
             }
         }
     }
 
     DisposableEffect(Unit) {
-        onDispose { viewModel.manager.player.stop() }
+        onDispose { viewModel.manager?.mediaController?.stop() }
     }
 
     if (step > 1) {
@@ -68,9 +68,9 @@ fun AddNewVideoScreen(
                 )
             }
             2 -> {
-                if (videoUri != null) {
+                if (videoUri != null && viewModel.manager != null) {
                     ReviewSectionStep(
-                        videoPlayerManager = viewModel.manager,
+                        videoPlayerManager = viewModel.manager!!,
                         modifier = modifier,
                         onBack = { step -= 1 },
                         onGoNext = { step += 1 },

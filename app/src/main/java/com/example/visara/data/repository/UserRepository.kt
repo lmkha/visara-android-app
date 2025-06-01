@@ -1,5 +1,6 @@
 package com.example.visara.data.repository
 
+import android.util.Log
 import com.example.visara.data.local.datasource.UserLocalDataSource
 import com.example.visara.data.model.FollowUserModel
 import com.example.visara.data.model.UserModel
@@ -21,13 +22,10 @@ class UserRepository @Inject constructor(
     private val userLocalDataSource: UserLocalDataSource,
 ) {
     private val _currentUser: MutableStateFlow<UserModel?> = MutableStateFlow(null)
-    private val _recentFollowingUsername: MutableStateFlow<String?> = MutableStateFlow(null)
-    private val _recentUnfollowUsername: MutableStateFlow<String?> = MutableStateFlow(null)
     val currentUser: StateFlow<UserModel?> = _currentUser.asStateFlow()
-    val recentFollowingUsername: StateFlow<String?> = _recentFollowingUsername.asStateFlow()
-    val recentUnfollowUsername: StateFlow<String?> = _recentUnfollowUsername.asStateFlow()
 
     init {
+        Log.i("CHECK_VAR", "init user repository")
         CoroutineScope(Dispatchers.IO).launch {
             refreshCurrentUser()
         }
@@ -86,20 +84,13 @@ class UserRepository @Inject constructor(
     suspend fun followUser(username: String) : Boolean {
         val apiResult = userRemoteDataSource.followUser(username)
         val result = apiResult is ApiResult.Success
-        if (result) _recentFollowingUsername.update { username }
         return result
     }
 
     suspend fun unfollowUser(username: String) : Boolean {
         val apiResult = userRemoteDataSource.unfollowUser(username)
         val result = apiResult is ApiResult.Success
-        if (result) _recentUnfollowUsername.update { username }
         return result
-    }
-
-    suspend fun checkIsMyFollower(username: String) : Boolean {
-        val apiResult = userRemoteDataSource.checkUserIsMyFollower(username)
-        return apiResult is ApiResult.Success
     }
 
     suspend fun checkIsFollowingThisUser(username: String) : Boolean {

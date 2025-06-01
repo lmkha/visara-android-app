@@ -4,7 +4,7 @@ import android.app.NotificationManager
 import com.example.visara.common.AppLifecycleObserver
 import com.example.visara.data.model.fcm.FcmNewMessageModel
 import com.example.visara.notification.NotificationHelper
-import com.example.visara.service.dto.FcmNewMessageDto
+import com.example.visara.service.fcm.dto.FcmNewMessageDto
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow

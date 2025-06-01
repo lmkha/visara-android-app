@@ -79,30 +79,32 @@ fun VideoDetailScreen(
         val remainingHeight = screenHeight - playerHeight
         Column(modifier = Modifier.fillMaxSize()) {
             // Video
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(playerHeight)
-                    .aspectRatio(16f / 9f),
-            ) {
-                VisaraVideoPlayer(
-                    player = viewModel.player,
-                    showControls = uiState.isFullScreenMode,
-                    requireLandscapeMode = requireLandscapeMode,
-                    requirePortraitMode = requirePortraitMode,
+            if (viewModel.player != null) {
+                Box(
+                    contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .fillMaxSize()
-                        .aspectRatio(16f / 9f)
-                )
-                if (!isFullScreenMode) {
-                    MinimizedModeControl(
-                        isPlaying = uiState.isPlaying,
-                        onPlay = viewModel::play,
-                        onPause = viewModel::pause,
-                        onClose = viewModel::close,
-                        onEnableFullScreenMode = viewModel::enableFullScreenMode,
+                        .fillMaxWidth()
+                        .height(playerHeight)
+                        .aspectRatio(16f / 9f),
+                ) {
+                    VisaraVideoPlayer(
+                        player = viewModel.player!!,
+                        showControls = uiState.isFullScreenMode,
+                        requireLandscapeMode = requireLandscapeMode,
+                        requirePortraitMode = requirePortraitMode,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .aspectRatio(16f / 9f)
                     )
+                    if (!isFullScreenMode) {
+                        MinimizedModeControl(
+                            isPlaying = uiState.isPlaying,
+                            onPlay = viewModel::play,
+                            onPause = viewModel::pause,
+                            onClose = viewModel::close,
+                            onEnableFullScreenMode = viewModel::enableFullScreenMode,
+                        )
+                    }
                 }
             }
             // Info

@@ -1,4 +1,4 @@
-package com.example.visara.service
+package com.example.visara.service.fcm
 
 import android.util.Log
 import com.example.visara.data.repository.AuthRepository
@@ -9,8 +9,10 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class FCMService : FirebaseMessagingService() {
-    @Inject lateinit var authRepository: AuthRepository
-    @Inject lateinit var fcmDispatcher: FcmDispatcher
+    @Inject
+    lateinit var authRepository: AuthRepository
+    @Inject
+    lateinit var fcmDispatcher: FcmDispatcher
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)

@@ -40,7 +40,7 @@ fun ActivityInboxListItem(
                 .fillMaxHeight()
                 .aspectRatio(1f)
                 .clip(CircleShape)
-                .background(color = Color.Red.copy(alpha = 0.5f))
+                .background(color = Color.Red)
         ) {
             Icon(
                 imageVector = Icons.Default.Notifications,

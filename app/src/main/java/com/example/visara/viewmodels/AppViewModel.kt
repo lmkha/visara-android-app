@@ -3,6 +3,7 @@ package com.example.visara.viewmodels
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.session.MediaController
 import com.example.visara.data.model.UserModel
 import com.example.visara.data.repository.AppSettingsRepository
 import com.example.visara.data.repository.AuthRepository
@@ -122,8 +123,12 @@ class AppViewModel @Inject constructor(
 
     fun pauseVideoDetail() {
         viewModelScope.launch {
-            videoDetailRepository.dashVideoPlayerManager.player.pause()
+            videoDetailRepository.videoPlayerManager?.mediaController?.pause()
         }
+    }
+
+    fun setPlayer(player: MediaController) {
+        videoDetailRepository.setPlayer(player)
     }
 
     fun hideVideoDetail() {

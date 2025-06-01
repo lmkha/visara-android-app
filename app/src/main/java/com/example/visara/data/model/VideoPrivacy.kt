@@ -1,6 +1,6 @@
 package com.example.visara.data.model
 
-enum class Privacy {
+enum class VideoPrivacy {
     ALL,
     FOLLOWER,
     ONLY_ME,

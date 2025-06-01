@@ -1,6 +1,7 @@
 package com.example.visara
 
 import android.Manifest
+import android.content.ComponentName
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.os.Build
@@ -20,6 +21,10 @@ import com.example.visara.ui.App
 import com.example.visara.viewmodels.AppViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import android.content.res.Configuration
+import androidx.media3.session.MediaController
+import androidx.media3.session.SessionToken
+import com.example.visara.service.play_back.PlaybackService
+import com.google.common.util.concurrent.MoreExecutors
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -28,11 +33,19 @@ class MainActivity : ComponentActivity() {
 
         askNotificationPermission()
 
+        val sessionToken = SessionToken(this, ComponentName(this, PlaybackService::class.java))
+        val controllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
+
         enableEdgeToEdge()
         val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
         windowInsetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
 
         setContent {
+            val appViewModel: AppViewModel = hiltViewModel()
+            controllerFuture.addListener({
+                appViewModel.setPlayer(controllerFuture.get())
+            }, MoreExecutors.directExecutor())
+
             val orientation = LocalConfiguration.current.orientation
             LaunchedEffect(orientation) {
                 when(orientation) {
@@ -44,8 +57,6 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
-
-            val appViewModel: AppViewModel = hiltViewModel()
 
             App(
                 appViewModel = appViewModel,

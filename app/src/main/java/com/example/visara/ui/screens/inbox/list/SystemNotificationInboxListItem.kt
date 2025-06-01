@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -41,7 +42,7 @@ fun SystemNotificationInboxListItem(
                 .fillMaxHeight()
                 .aspectRatio(1f)
                 .clip(CircleShape)
-                .background(color = Color.Gray.copy(alpha = 0.5f))
+                .background(color = Color.DarkGray)
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.system_notification),

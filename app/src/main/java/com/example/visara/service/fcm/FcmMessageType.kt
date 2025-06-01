@@ -1,4 +1,4 @@
-package com.example.visara.service
+package com.example.visara.service.fcm
 
 enum class FcmMessageType {
     VIDEO_UPLOAD_PROCESSED,  // Notification when a video you uploaded has been processed by the server

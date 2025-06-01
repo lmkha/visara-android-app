@@ -84,6 +84,7 @@ import com.example.visara.ui.screens.inbox.activity.ActivityInboxScreen
 import com.example.visara.ui.screens.inbox.chat.ChatInboxScreen
 import com.example.visara.ui.screens.inbox.list.InboxListScreen
 import com.example.visara.ui.screens.inbox.new_followers.NewFollowersInboxScreen
+import com.example.visara.ui.screens.inbox.studio.StudioInboxScreen
 import com.example.visara.ui.screens.inbox.system_notification.SystemNotificationInboxScreen
 import com.example.visara.ui.screens.login.LoginScreen
 import com.example.visara.ui.screens.profile.ProfileScreen
@@ -206,11 +207,10 @@ fun App(
                                 targetScale = 0.8f
                             ) + fadeOut()
                         }) {
+                            /*
                             val isVideoDetailVisibleBefore = appState.videoDetailState.isVisible
-                            coroutineScope.launch {
-                                appViewModel.pauseVideoDetail()
-                                appViewModel.hideVideoDetail()
-                            }
+                            appViewModel.pauseVideoDetail()
+                            appViewModel.hideVideoDetail()
 
                             DisposableEffect(Unit) {
                                 onDispose {
@@ -219,7 +219,7 @@ fun App(
                                     }
                                 }
                             }
-
+                             */
                             AddNewVideoScreen(
                                 onNavigateToStudio = {
                                     navController.navigate(Destination.Studio) {
@@ -242,6 +242,7 @@ fun App(
                                     onOpenActivityInbox = { navController.navigate(Destination.Main.Inbox.ActivityInbox) },
                                     onOpenNewFollowersInbox = { navController.navigate(Destination.Main.Inbox.NewFollowersInbox) },
                                     onOpenSystemNotificationInbox = { navController.navigate(Destination.Main.Inbox.SystemNotificationInbox) },
+                                    openStudioInbox = { navController.navigate(Destination.Main.Inbox.Studio) },
                                     bottomNavBar = {
                                         BotNavBar(
                                             activeDestination = Destination.Main.Inbox,
@@ -273,6 +274,9 @@ fun App(
                             }
                             composable<Destination.Main.Inbox.ActivityInbox> {
                                 ActivityInboxScreen()
+                            }
+                            composable<Destination.Main.Inbox.Studio> {
+                                StudioInboxScreen()
                             }
                             composable<Destination.Main.Inbox.SystemNotificationInbox> {
                                 SystemNotificationInboxScreen()

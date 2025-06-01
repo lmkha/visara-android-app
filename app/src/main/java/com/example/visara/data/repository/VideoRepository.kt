@@ -4,7 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import android.webkit.MimeTypeMap
-import com.example.visara.data.model.Privacy
+import com.example.visara.data.model.VideoPrivacy
 import com.example.visara.data.model.VideoModel
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.datasource.VideoRemoteDataSource
@@ -60,7 +60,7 @@ class VideoRepository @Inject constructor(
         title: String,
         description: String,
         hashtags: List<String>,
-        privacy: Privacy,
+        privacy: VideoPrivacy,
         isAllowComment: Boolean,
         onUploadVideoMetaDataSuccess: () -> Unit,
     ) : Boolean {
@@ -71,7 +71,7 @@ class VideoRepository @Inject constructor(
             title = title,
             description = description,
             hashtags = hashtags,
-            isPrivate = privacy != Privacy.ALL,
+            isPrivate = privacy != VideoPrivacy.ALL,
             isCommentOff = !isAllowComment
         )
 

@@ -30,8 +30,6 @@ class ProfileViewModel @Inject constructor(
     init {
         observerAuthenticationState()
         observerCurrentUser()
-        observerRecentFollowingUsername()
-        observerRecentUnfollowUsername()
     }
 
     fun setProfile(isMyProfileRequested: Boolean, username: String?) {
@@ -107,26 +105,6 @@ class ProfileViewModel @Inject constructor(
                         else oldState.user?.username?.let { userRepository.checkIsFollowingThisUser(it) } == true
                         oldState.copy(isFollowing = isFollowing)
                     }
-                }
-            }
-        }
-    }
-
-    private fun observerRecentFollowingUsername() {
-        viewModelScope.launch {
-            userRepository.recentFollowingUsername.collect { currentFollowingUsername ->
-                if (currentFollowingUsername == uiState.value.user?.username) {
-                    _uiState.update { it.copy(isFollowing = true) }
-                }
-            }
-        }
-    }
-
-    private fun observerRecentUnfollowUsername() {
-        viewModelScope.launch {
-            userRepository.recentUnfollowUsername.collect { currentUnfollowUsername ->
-                if (currentUnfollowUsername == uiState.value.user?.username) {
-                    _uiState.update { it.copy(isFollowing = false) }
                 }
             }
         }

@@ -47,6 +47,7 @@ fun InboxListScreen(
    bottomNavBar: @Composable () -> Unit,
    onOpenActivityInbox: () -> Unit,
    onOpenNewFollowersInbox: () -> Unit,
+   openStudioInbox: () -> Unit,
    onOpenSystemNotificationInbox: () -> Unit,
    onOpenChatInbox: (username: String) -> Unit,
 ) {
@@ -127,6 +128,7 @@ fun InboxListScreen(
          verticalArrangement = Arrangement.spacedBy(8.dp),
          modifier = Modifier.padding(innerPadding)
       ) {
+         // New Followers
          item {
             NewFollowerInboxListItem(
                modifier = Modifier
@@ -137,6 +139,7 @@ fun InboxListScreen(
                   .clickable { onOpenNewFollowersInbox() }
             )
          }
+         // Activity
          item {
             ActivityInboxListItem(
                modifier = Modifier
@@ -147,6 +150,18 @@ fun InboxListScreen(
                   .clickable { onOpenActivityInbox() }
             )
          }
+         // Studio
+         item {
+            StudioInboxListItem(
+               modifier = Modifier
+                  .fillMaxWidth()
+                  .height(70.dp)
+                  .padding(horizontal = 8.dp)
+                  .clip(RoundedCornerShape(30.dp))
+                  .clickable { openStudioInbox() }
+            )
+         }
+         // System notification
          item {
             SystemNotificationInboxListItem(
                modifier = Modifier

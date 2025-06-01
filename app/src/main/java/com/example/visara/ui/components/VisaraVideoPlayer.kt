@@ -1,6 +1,5 @@
 package com.example.visara.ui.components
 
-import android.content.Context
 import android.content.res.Configuration
 import android.net.Uri
 import androidx.annotation.OptIn
@@ -50,57 +49,52 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.MimeTypes
-import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.session.MediaController
 import androidx.media3.ui.compose.PlayerSurface
 import androidx.media3.ui.compose.SURFACE_TYPE_SURFACE_VIEW
 import androidx.media3.ui.compose.modifiers.resizeWithContentScale
 import androidx.media3.ui.compose.state.rememberPresentationState
 import com.example.visara.R
 import kotlinx.coroutines.delay
+import androidx.core.net.toUri
+import com.example.visara.data.model.VideoModel
 
-interface VideoPlayerManager {
-    val player: ExoPlayer
-}
-class DashVideoPlayerManager(context: Context) : VideoPlayerManager {
-    override val player: ExoPlayer = ExoPlayer.Builder(context).build()
-
-    fun play(url: String, playWhenReady: Boolean = true) {
-        player.stop()
-        player.clearMediaItems()
+class VideoPlayerManager(val mediaController: MediaController) {
+    fun playDash(url: String, videoModel: VideoModel, playWhenReady: Boolean = true) {
+        mediaController.stop()
+        mediaController.clearMediaItems()
 
         val mediaItem = MediaItem.Builder()
             .setUri(url)
             .setMimeType(MimeTypes.APPLICATION_MPD)
+            .setMediaMetadata(
+                MediaMetadata.Builder()
+                    .setArtist(videoModel.username)
+                    .setTitle(videoModel.title)
+                    .setArtworkUri(videoModel.thumbnailUrl.toUri())
+                    .build()
+            )
             .build()
 
-        player.setMediaItem(mediaItem)
-        player.prepare()
-
-        player.addListener(object : Player.Listener {
-            override fun onPlaybackStateChanged(state: Int) {
-                if (state == Player.STATE_READY) {
-                    player.playWhenReady = playWhenReady
-                    player.removeListener(this)
-                }
-            }
-        })
+        mediaController.setMediaItem(mediaItem)
+        mediaController.playWhenReady = playWhenReady
+        mediaController.prepare()
     }
-}
 
-class LocalVideoPlayerManager(context: Context) : VideoPlayerManager {
-    override val player: ExoPlayer = ExoPlayer.Builder(context).build()
+    fun playUri(uri: Uri, playWhenReady: Boolean = true) {
+        mediaController.stop()
+        mediaController.clearMediaItems()
 
-    fun play(uri: Uri, playWhenReady: Boolean = true) {
-        player.stop()
-        player.clearMediaItems()
+        val mediaItem = MediaItem.Builder()
+            .setUri(uri)
+            .build()
 
-        val mediaItem = MediaItem.fromUri(uri)
-        player.setMediaItem(mediaItem)
-        player.prepare()
-        player.playWhenReady = playWhenReady
+        mediaController.setMediaItem(mediaItem)
+        mediaController.playWhenReady = playWhenReady
+        mediaController.prepare()
     }
 }
 
@@ -108,7 +102,7 @@ class LocalVideoPlayerManager(context: Context) : VideoPlayerManager {
 @Composable
 fun VisaraVideoPlayer(
     modifier: Modifier = Modifier,
-    player: ExoPlayer,
+    player: MediaController,
     showControls: Boolean = true,
     requireLandscapeMode: () -> Unit,
     requirePortraitMode: () -> Unit,
@@ -166,7 +160,7 @@ fun VisaraVideoPlayer(
 @Composable
 fun PlayerControls(
     modifier: Modifier = Modifier,
-    player: ExoPlayer,
+    player: MediaController,
     requireLandscapeMode: () -> Unit,
     requirePortraitMode: () -> Unit,
 ) {

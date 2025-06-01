@@ -41,7 +41,7 @@ fun NewFollowerInboxListItem(
                 .fillMaxHeight()
                 .aspectRatio(1f)
                 .clip(CircleShape)
-                .background(color = Color.Blue.copy(alpha = 0.5f))
+                .background(color = Color.Blue)
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.group_24px),

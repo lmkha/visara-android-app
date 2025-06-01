@@ -15,27 +15,23 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.visara.ui.components.LocalVideoPlayerManager
+import com.example.visara.ui.components.VideoPlayerManager
 import com.example.visara.ui.components.VisaraVideoPlayer
 
 @Composable
 fun ReviewSectionStep(
     modifier: Modifier = Modifier,
-    videoPlayerManager: LocalVideoPlayerManager,
+    videoPlayerManager: VideoPlayerManager,
     onBack: () -> Unit,
     onGoNext: () -> Unit,
 ) {
-    LaunchedEffect(Unit) {
-        videoPlayerManager.player.play()
-    }
-
     DisposableEffect(Unit) {
-        onDispose { videoPlayerManager.player.pause() }
+        onDispose { videoPlayerManager.mediaController.pause() }
     }
 
     Box(modifier = modifier) {
@@ -46,11 +42,22 @@ fun ReviewSectionStep(
                 .padding(horizontal = 4.dp)
                 .align(Alignment.TopCenter)
         ) {
-            IconButton(
-                onClick = onBack,
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                IconButton(
+                    onClick = onBack,
+                ) {
+                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                }
+
+                Text(
+                    text = "Review video",
+                    fontWeight = FontWeight.Medium,
+                )
             }
+
             Box(modifier = Modifier.fillMaxWidth()) {
                 Button(
                     onClick = onGoNext,
@@ -68,7 +75,7 @@ fun ReviewSectionStep(
                 .background(color = Color.Black)
         ) {
             VisaraVideoPlayer(
-                player = videoPlayerManager.player,
+                player = videoPlayerManager.mediaController,
                 requireLandscapeMode = {},
                 requirePortraitMode = {},
             )

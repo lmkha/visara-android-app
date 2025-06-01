@@ -2,7 +2,6 @@ package com.example.visara.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.media3.exoplayer.ExoPlayer
 import com.example.visara.data.model.CommentModel
 import com.example.visara.data.model.UserModel
 import com.example.visara.data.model.VideoModel
@@ -36,14 +35,12 @@ class VideoDetailViewModel @Inject constructor(
     private var changeVideoLikeJob: Job? = null
     private var followAuthorJob: Job? = null
     private var unfollowAuthorJob: Job? = null
-    val player: ExoPlayer get() = videoDetailRepository.dashVideoPlayerManager.player
+    val player get() = videoDetailRepository.videoPlayerManager?.mediaController
 
     init {
         observerAuthenticationState()
         observerVideoDetail()
         observerCurrentUser()
-        observerRecentFollowingUsername()
-        observerRecentUnfollowUsername()
     }
 
     private fun observerVideoDetail() {
@@ -100,8 +97,8 @@ class VideoDetailViewModel @Inject constructor(
 
     private fun observerAuthenticationState() {
         viewModelScope.launch {
-            authRepository.isAuthenticated.collect { isLogged->
-                _uiState.update { it.copy(isUserAuthenticated = isLogged) }
+            authRepository.isAuthenticated.collect { isAuthenticated->
+                _uiState.update { it.copy(isUserAuthenticated = isAuthenticated) }
             }
         }
     }
@@ -110,26 +107,6 @@ class VideoDetailViewModel @Inject constructor(
         viewModelScope.launch {
             userRepository.currentUser.collect { currentUser ->
                 _uiState.update { it.copy(currentUser = currentUser) }
-            }
-        }
-    }
-
-    private fun observerRecentFollowingUsername() {
-        viewModelScope.launch {
-            userRepository.recentFollowingUsername.collect { currentFollowingUsername ->
-                if (currentFollowingUsername != null && currentFollowingUsername == uiState.value.author?.username) {
-                    _uiState.update { it.copy(isFollowing = true) }
-                }
-            }
-        }
-    }
-
-    private fun observerRecentUnfollowUsername() {
-        viewModelScope.launch {
-            userRepository.recentUnfollowUsername.collect { currentUnfollowUsername ->
-                if (currentUnfollowUsername != null && currentUnfollowUsername == uiState.value.author?.username) {
-                    _uiState.update { it.copy(isFollowing = false) }
-                }
             }
         }
     }
@@ -291,19 +268,19 @@ class VideoDetailViewModel @Inject constructor(
 
     fun play() {
         viewModelScope.launch {
-            videoDetailRepository.dashVideoPlayerManager.player.play()
+            videoDetailRepository.videoPlayerManager?.mediaController?.play()
         }
     }
 
     fun pause() {
         viewModelScope.launch {
-            videoDetailRepository.dashVideoPlayerManager.player.pause()
+            videoDetailRepository.videoPlayerManager?.mediaController?.pause()
         }
     }
 
     fun close() {
         viewModelScope.launch {
-            videoDetailRepository.dashVideoPlayerManager.player.stop()
+            videoDetailRepository.videoPlayerManager?.mediaController?.stop()
             videoDetailRepository.close()
         }
     }
@@ -348,6 +325,11 @@ class VideoDetailViewModel @Inject constructor(
             val authorUsername = uiState.value.author?.username
             if (authorUsername != null && !uiState.value.isFollowing) {
                 val result = userRepository.followUser(authorUsername)
+                if (result) {
+                    _uiState.update { it.copy(isFollowing = true) }
+                } else {
+                    onFailure()
+                }
                 if (!result) onFailure()
             }
             else onFailure()
@@ -362,7 +344,11 @@ class VideoDetailViewModel @Inject constructor(
             val authorUsername = uiState.value.author?.username
             if (authorUsername != null && uiState.value.isFollowing) {
                 val result = userRepository.unfollowUser(authorUsername)
-                if (!result) onFailure()
+                if (result) {
+                    _uiState.update { it.copy(isFollowing = false) }
+                } else {
+                    onFailure()
+                }
             }
             else onFailure()
             unfollowAuthorJob = null
