@@ -31,11 +31,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.example.visara.R
+import com.example.visara.data.model.PlaylistModel
 
 @Composable
 fun TabPlaylistItem(
     modifier: Modifier = Modifier,
-    title: String,
+    playlist: PlaylistModel,
 ) {
     Box(
         modifier = modifier
@@ -43,8 +44,6 @@ fun TabPlaylistItem(
             .fillMaxWidth()
     ) {
         val cloudinaryImageUrl1 = "http://res.cloudinary.com/drnufn5sf/image/upload/v1743006316/videoplatform/thumbnail/67e42a68bb79412ece6f6399.jpg"
-//        val cloudinaryImageUrl2 = "http://res.cloudinary.com/drnufn5sf/image/upload/v1743007784/videoplatform/thumbnail/67e42e7fbb79412ece6f639b.jpg"
-        val title = "Nhạc Remix Căng Cực Cuốn Bay TikTok 2025"
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.fillMaxSize(),
@@ -104,7 +103,7 @@ fun TabPlaylistItem(
                                 tint = Color.White,
                             )
                             Text(
-                                text = "56",
+                                text = playlist.videoIds.size.toString(),
                                 color = Color.White,
                             )
                         }
@@ -114,7 +113,7 @@ fun TabPlaylistItem(
             Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = title,
+                        text = playlist.name,
                         maxLines = 3,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f)
@@ -151,4 +150,3 @@ fun TabPlaylistItem(
         }
     }
 }
-

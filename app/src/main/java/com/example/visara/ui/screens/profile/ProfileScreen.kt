@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.visara.data.model.VideoModel
 import com.example.visara.viewmodels.ProfileViewModel
 
 @Composable
@@ -22,6 +23,7 @@ fun ProfileScreen(
     onNavigateToStudioScreen: () -> Unit,
     onNavigateToQRCodeScreen: () -> Unit,
     onNavigateToAddNewVideoScreen: () -> Unit,
+    onNavigateToEditVideoScreen: (video: VideoModel) -> Unit,
 ) {
     LaunchedEffect(isMyProfileRequested, username) {
         viewModel.setProfile(isMyProfileRequested, username)
@@ -41,6 +43,7 @@ fun ProfileScreen(
             ProfileScreenContainer(
                 modifier = modifier,
                 uiState = uiState,
+                uiEvent = viewModel.eventFlow,
                 bottomNavBar = bottomNavBar,
                 onBack = onBack,
                 onNavigateToFollowScreen = onNavigateToFollowScreen,
@@ -49,9 +52,12 @@ fun ProfileScreen(
                 onNavigateToQRCodeScreen = onNavigateToQRCodeScreen,
                 onNavigateToLoginScreen = onNavigateToLoginScreen,
                 onNavigateToAddNewVideoScreen = onNavigateToAddNewVideoScreen,
-                onVideoSelected = { video -> viewModel.selectVideo(video) },
+                onNavigateToEditVideoScreen = onNavigateToEditVideoScreen,
+                onVideoSelected = viewModel::selectVideo,
                 follow = viewModel::follow,
                 unfollow = viewModel::unfollow,
+                onAddNewPlaylist = viewModel::addNewPlaylist,
+                onAddVideoToPlaylists = viewModel::addVideoToPlaylists,
             )
         }
     }

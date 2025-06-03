@@ -72,11 +72,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.example.visara.data.model.VideoModel
 import com.example.visara.ui.components.LoginRequestDialog
 import com.example.visara.ui.components.UserAvatar
 import com.example.visara.ui.components.rememberLoginRequestDialogState
 import com.example.visara.ui.navigation.Destination
 import com.example.visara.ui.screens.add_new_video.AddNewVideoScreen
+import com.example.visara.ui.screens.edit_video.EditVideoScreen
 import com.example.visara.ui.screens.follow.FollowScreen
 import com.example.visara.ui.screens.following_feed.FollowingFeedScreen
 import com.example.visara.ui.screens.home.HomeScreen
@@ -100,6 +102,7 @@ import com.example.visara.viewmodels.ChatInboxViewModel
 import com.example.visara.viewmodels.FollowScreenViewModel
 import com.example.visara.viewmodels.SearchViewModel
 import com.example.visara.viewmodels.VideoDetailViewModel
+import com.google.gson.Gson
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -162,10 +165,7 @@ fun App(
                     navController = navController,
                     startDestination = Destination.Main,
                 ) {
-                    navigation<Destination.Main>(
-                        startDestination = Destination.Main.Home,
-//                        startDestination = Destination.Main.Inbox,
-                    ) {
+                    navigation<Destination.Main>(startDestination = Destination.Main.Home) {
                         composable<Destination.Main.Home> {
                             HomeScreen(
                                 navigateToSearchScreen = { navController.navigate(Destination.Search()) },
@@ -309,6 +309,12 @@ fun App(
                                 onNavigateToAddNewVideoScreen = { navController.navigate(Destination.Main.AddNewVideo) },
                                 onNavigateToStudioScreen = { navController.navigate(Destination.Studio) },
                                 onNavigateToQRCodeScreen = {},
+                                onNavigateToEditVideoScreen = { video ->
+                                    coroutineScope.launch {
+                                        val videoJson = Gson().toJson(video)
+                                        navController.navigate(Destination.EditVideo(videoJson = videoJson))
+                                    }
+                                },
                                 bottomNavBar = {
                                     BotNavBar(
                                         activeDestination = Destination.Main.Profile(),
@@ -410,6 +416,13 @@ fun App(
                                 val popped = navController.popBackStack(route = Destination.Main, inclusive = false)
                                 if (!popped) navController.navigate(Destination.Main)
                             }
+                        )
+                    }
+                    composable<Destination.EditVideo> { backStackEntry ->
+                        val route: Destination.EditVideo = backStackEntry.toRoute()
+                        val video = Gson().fromJson(route.videoJson, VideoModel::class.java)
+                        EditVideoScreen(
+                            video = video
                         )
                     }
                 }

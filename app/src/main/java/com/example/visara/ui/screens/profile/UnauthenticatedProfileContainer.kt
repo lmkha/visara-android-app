@@ -111,21 +111,25 @@ fun UnauthenticatedProfileContainer(
             }
         }
 
-        BottomSheet(
-            type = SheetType.SETTINGS,
-            isAuthenticated = false,
-            displayBottomSheet = displayBottomSheet,
-            onClose = { displayBottomSheet = false },
-            onItemSelected = { item ->
-                displayBottomSheet = false
-                coroutineScope.launch {
-                    delay(350)
-                    when (item) {
-                        SheetResult.SETTINGS -> { onNavigateToSettingsScreen() }
-                        else -> {}
+        if (displayBottomSheet) {
+            BottomSheet(
+                type = SheetType.SETTINGS,
+                isAuthenticated = false,
+                onClose = { displayBottomSheet = false },
+                onItemSelected = { item ->
+                    displayBottomSheet = false
+                    coroutineScope.launch {
+                        delay(350)
+                        when (item) {
+                            SheetResult.SETTINGS -> {
+                                onNavigateToSettingsScreen()
+                            }
+
+                            else -> {}
+                        }
                     }
                 }
-            }
-        )
+            )
+        }
     }
 }

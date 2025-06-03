@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
@@ -35,7 +36,9 @@ import com.example.visara.ui.utils.toTimeAgo
 fun TabVideoItem(
     modifier: Modifier = Modifier,
     video: VideoModel? = null,
+    showMoreActionButton: Boolean = false,
     onVideoSelected: () -> Unit,
+    onMoreAction: () -> Unit,
 ) {
     Box(
         modifier = modifier
@@ -82,18 +85,20 @@ fun TabVideoItem(
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f)
                     )
-                    Box(
-                        modifier = Modifier
-                            .clickable {
 
-                            }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.MoreVert,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.padding(4.dp).align(Alignment.TopEnd)
-                        )
+                    if (showMoreActionButton) {
+                        Box(
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .clickable { onMoreAction() }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.MoreVert,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.padding(4.dp).align(Alignment.TopEnd)
+                            )
+                        }
                     }
                 }
                 Text(

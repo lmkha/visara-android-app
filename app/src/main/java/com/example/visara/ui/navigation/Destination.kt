@@ -31,5 +31,6 @@ sealed class Destination(val name: String) {
     @Serializable object Login : Destination("Login")
 //    @Serializable object SignUp : Destination("SignUp")
     @Serializable object Studio : Destination("Studio")
+    @Serializable data class EditVideo(val videoJson: String) : Destination("EditVideo")
     @Serializable object Test : Destination("Test")
 }

@@ -1,6 +1,9 @@
 package com.example.visara.ui.screens.home
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -77,13 +80,16 @@ fun HomeScreen(
     val lazyColumnState = rememberLazyListState()
     val scrollBehavior: TopAppBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scope = rememberCoroutineScope()
+    /*
     val shouldLoadMore by remember {
         derivedStateOf {
             lazyColumnState.layoutInfo.visibleItemsInfo.lastOrNull()?.index == lazyColumnState.layoutInfo.totalItemsCount - 1
         }
     }
+     */
     val showButton by remember {
         derivedStateOf {
+            lazyColumnState.firstVisibleItemScrollOffset > 0 ||
             lazyColumnState.firstVisibleItemIndex > 0
         }
     }
@@ -170,6 +176,8 @@ fun HomeScreen(
 
             AnimatedVisibility(
                 visible = showButton,
+                enter = scaleIn(animationSpec = tween(durationMillis = 300)),
+                exit = scaleOut(animationSpec = tween(durationMillis = 200)),
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(bottom = 8.dp)
