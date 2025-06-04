@@ -76,7 +76,11 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation("androidx.hilt:hilt-work:1.2.0")
     kapt(libs.hilt.android.compiler)
+    kapt("androidx.hilt:hilt-compiler:1.2.0")
+    implementation("androidx.startup:startup-runtime:1.2.0")
+    implementation("androidx.work:work-runtime-ktx:2.10.1")
 
     // For media playback using ExoPlayer
     implementation(libs.androidx.media3.exoplayer)

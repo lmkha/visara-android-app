@@ -54,19 +54,13 @@ class VideoRepository @Inject constructor(
         return "http://10.0.2.2:8080/${videoId}/output.mpd"
     }
 
-    suspend fun postVideo(
-        videoUri: Uri?,
-        thumbnailUri: Uri?,
+    suspend fun uploadVideoMetaData(
         title: String,
         description: String,
         hashtags: List<String>,
         privacy: VideoPrivacy,
         isAllowComment: Boolean,
-        onUploadVideoMetaDataSuccess: () -> Unit,
-    ) : Boolean {
-        if (videoUri == null) return false
-
-        // Create data for new video
+    ) : VideoModel? {
         val uploadVideoMetaDataResult = videoRemoteDataSource.uploadVideoMetaData(
             title = title,
             description = description,
@@ -75,35 +69,32 @@ class VideoRepository @Inject constructor(
             isCommentOff = !isAllowComment
         )
 
-        if (uploadVideoMetaDataResult !is ApiResult.Success) return false
+        if (uploadVideoMetaDataResult !is ApiResult.Success) return null
+        return uploadVideoMetaDataResult.data.toVideoModel()
+    }
 
-        val videoModel = uploadVideoMetaDataResult.data
-            .toVideoModel()
-            .copy(
-                localVideoUri = videoUri,
-                localThumbnailUri = thumbnailUri,
-            )
-        _postingVideo.update { videoModel }
-        onUploadVideoMetaDataSuccess()
-
-        val videoId = uploadVideoMetaDataResult.data.id
-
+    suspend fun uploadVideo(
+        videoMetaData: VideoModel,
+        videoUri: Uri,
+        thumbnailUri: Uri?,
+        onProgressChange: (progress: Int) -> Unit,
+    ) : Boolean {
+        _postingVideo.update { videoMetaData }
+        val videoId = videoMetaData.id
         val videoFile = uriToFile(context = appContext, uri = videoUri)
         val uploadVideoFileResult = videoFile?.let {
             try {
                 videoRemoteDataSource.uploadVideoFile(
                     videoId = videoId,
                     videoFile = videoFile,
-                    progressListener = { progress-> Log.i("CHECK_VAR", "upload video progress: $progress %") }
+                    progressListener = onProgressChange,
                 )
             } finally {
                 videoFile.delete()
             }
         }
-
         val result = uploadVideoFileResult != null && uploadVideoFileResult is ApiResult.Success
         if (result) _postingVideo.update { it?.copy(isUploaded = true) }
-
         val thumbnailFile = thumbnailUri?.let { uriToFile(appContext, it) }
         thumbnailFile?.let {
             try {

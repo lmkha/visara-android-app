@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -21,6 +22,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.visara.ui.screens.add_new_video.components.enter_video_info.EnterVideoInfoStep
 import com.example.visara.ui.screens.add_new_video.components.review.ReviewSectionStep
 import com.example.visara.ui.screens.add_new_video.components.select.SelectVideoStep
+import com.example.visara.viewmodels.AddNewVideoScreenEvent
 import com.example.visara.viewmodels.AddNewVideoViewModel
 import kotlinx.coroutines.launch
 
@@ -39,6 +41,17 @@ fun AddNewVideoScreen(
             scope.launch {
                 viewModel.manager?.playUri(it)
                 step = 2
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.eventFlow.collect { event ->
+            when (event) {
+                is AddNewVideoScreenEvent.UploadNewVideoMetaDataSuccess -> {
+                    onNavigateToStudio()
+                }
+                else -> {}
             }
         }
     }
@@ -82,9 +95,7 @@ fun AddNewVideoScreen(
                     videoUri = videoUri,
                     onBack = { step -= 1 },
                     onSubmit = { title, description, hashtags, privacy, isAllowComment, thumbnailUri ->
-                        viewModel.postVideo(videoUri, thumbnailUri, title, description, hashtags, privacy.value, isAllowComment) {
-                            onNavigateToStudio()
-                        }
+                        viewModel.postVideo(videoUri, thumbnailUri, title, description, hashtags, privacy.value, isAllowComment)
                     }
                 )
             }

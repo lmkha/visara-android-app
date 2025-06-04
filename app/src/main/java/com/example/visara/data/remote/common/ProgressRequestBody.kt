@@ -38,11 +38,12 @@ class ProgressRequestBody(
 
                 val currentPercent = (totalBytesRead * 100 / totalLength).toInt()
                 val currentTime = System.currentTimeMillis()
+                val percentDelta = currentPercent - lastReportedPercent
 
                 // Only report if:
-                // - Percent changed, or
-                // - At least 200ms passed since last report
-                if (currentPercent != lastReportedPercent || currentTime - lastReportTime >= 200) {
+                // - Percent changed at least 5%, or
+                // - At least 300ms passed since last report
+                if (percentDelta >= 5 || currentTime - lastReportTime >= 300) {
                     lastReportedPercent = currentPercent
                     lastReportTime = currentTime
                     progressListener(currentPercent.coerceIn(0, 100))

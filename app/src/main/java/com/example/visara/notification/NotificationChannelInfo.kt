@@ -15,9 +15,17 @@ sealed class NotificationChannelInfo(
         importance = NotificationManager.IMPORTANCE_HIGH
     )
 
+    object UploadingNewVideo : NotificationChannelInfo(
+        id = "uploading_new_video_channel",
+        name = "Upload video",
+        description = "Uploading video",
+        importance = NotificationManager.IMPORTANCE_LOW,
+    )
+
     companion object {
         val all = listOf<NotificationChannelInfo>(
             Message,
+            UploadingNewVideo,
         )
     }
 }
