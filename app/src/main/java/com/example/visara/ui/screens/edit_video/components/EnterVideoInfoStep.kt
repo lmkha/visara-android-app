@@ -1,10 +1,10 @@
-package com.example.visara.ui.screens.edit_video
+package com.example.visara.ui.screens.edit_video.components
 
 import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
@@ -16,14 +16,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -43,7 +43,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,64 +54,41 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.AsyncImage
-import com.example.visara.ui.screens.edit_video.components.AddDescriptionBox
-import com.example.visara.ui.screens.edit_video.components.AddVideoToPlaylistsBox
-import com.example.visara.ui.screens.edit_video.components.PrivacySelectBox
-import com.example.visara.ui.screens.edit_video.components.PrivacyState
+import com.example.visara.R
 import com.example.visara.ui.theme.LocalVisaraCustomColors
-import com.example.visara.viewmodels.EditVideoScreenEvent
-import com.example.visara.viewmodels.EditVideoViewModel
+import coil3.compose.AsyncImage
+import com.example.visara.ui.components.VideoThumbnailFromVideoUri
 
 @Composable
-fun EditVideoScreen(
+fun EnterVideoInfoStep(
     modifier: Modifier = Modifier,
-    viewModel: EditVideoViewModel,
+    videoUri: Uri? = null,
     onBack: () -> Unit,
+    onSubmit: (
+        title: String,
+        description: String,
+        hashtags: List<String>,
+        privacy: PrivacyState,
+        isAllowComment: Boolean,
+        thumbnailUri: Uri?,
+    ) -> Unit,
 ) {
-
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
     var thumbnailUri by remember { mutableStateOf<Uri?>(null) }
-    val pickMedia = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri->
+    val pickMedia = rememberLauncherForActivityResult(PickVisualMedia()) { uri->
         uri?.let { thumbnailUri = uri }
     }
 
-    var title by remember(uiState.video?.title) {
-        mutableStateOf(uiState.video?.title ?: "")
-    }
-    var description by remember(uiState.video?.description) {
-        mutableStateOf(uiState.video?.description ?: "")
-    }
-    var hashTags by remember(uiState.video?.hashtags) {
-        mutableStateOf<List<String>>(uiState.video?.hashtags ?: emptyList())
-    }
-    var privacy by remember(uiState.video?.isPrivate) {
-        mutableStateOf(if (uiState.video?.isPrivate == true) PrivacyState.ONLY_ME else PrivacyState.ALL)
-    }
-    var isAllowComment by remember(uiState.video?.isCommentOff) {
-        mutableStateOf(uiState.video?.isCommentOff == false)
-    }
+    var title by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+    var hashTags by remember { mutableStateOf<List<String>>(emptyList()) }
+    var privacy by remember { mutableStateOf(PrivacyState.ALL) }
+    var isAllowComment by remember { mutableStateOf(true) }
     var selectedPlaylists by remember { mutableStateOf<List<String>>(emptyList()) }
 
     var openAddDescriptionBox by remember { mutableStateOf(false) }
     var openSelectPrivacyBox by remember { mutableStateOf(false) }
     var openAddPlaylistBox by remember { mutableStateOf(false) }
     var isProcessing by remember { mutableStateOf(false) }
-
-    LaunchedEffect(Unit) {
-        viewModel.eventFlow.collect { event ->
-            when (event) {
-                is EditVideoScreenEvent.UpdateVideoSuccess -> {
-                    onBack()
-                }
-                is EditVideoScreenEvent.UpdateVideoFailure -> {
-                    isProcessing = false
-                }
-            }
-        }
-    }
 
     BackHandler(enabled = openSelectPrivacyBox) {
         openSelectPrivacyBox = false
@@ -124,11 +100,7 @@ fun EditVideoScreen(
         openAddDescriptionBox = false
     }
 
-    Box(
-        modifier = modifier
-            .statusBarsPadding()
-            .navigationBarsPadding()
-    ) {
+    Box(modifier = modifier) {
         // Base layer
         Column(modifier = Modifier.zIndex(0f).padding(bottom = 8.dp)) {
             // Header
@@ -167,15 +139,14 @@ fun EditVideoScreen(
                                 modifier = Modifier.clip(RoundedCornerShape(8.dp)),
                             )
                         } else {
-                            AsyncImage(
-                                model = uiState.video?.thumbnailUrl,
-                                contentDescription = null,
-                                modifier = Modifier.clip(RoundedCornerShape(8.dp)),
+                            VideoThumbnailFromVideoUri(
+                                uri = videoUri,
+                                modifier = Modifier.clip(RoundedCornerShape(8.dp))
                             )
                         }
                     }
                     IconButton(
-                        onClick = { pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+                        onClick = { pickMedia.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly)) },
                         colors = IconButtonDefaults.iconButtonColors(
                             contentColor = Color.White,
                             containerColor = Color.Black,
@@ -374,7 +345,7 @@ fun EditVideoScreen(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Button(
-                    onClick = onBack,
+                    onClick = {},
                     modifier = Modifier
                         .height(50.dp)
                         .weight(1f),
@@ -383,21 +354,27 @@ fun EditVideoScreen(
                         contentColor = Color.Black,
                     ),
                 ) {
-                    Text("Cancel")
+                    Icon(
+                        painter = painterResource(id = R.drawable.page_header_24px),
+                        contentDescription = null
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Draft")
                 }
 
                 Button(
-                    enabled = !isProcessing,
                     onClick = {
-                        isProcessing = true
-                        viewModel.updateVideo(
-                            title = title,
-                            thumbnailUri = thumbnailUri,
-                            description = description,
-                            isAllowComment = isAllowComment,
-                            privacy = privacy.value,
-                            hashtags = hashTags,
-                        )
+                        if (!isProcessing) {
+                            isProcessing = true
+                            onSubmit(
+                                title,
+                                description,
+                                hashTags,
+                                privacy,
+                                isAllowComment,
+                                thumbnailUri
+                            )
+                        }
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (!isProcessing) MaterialTheme.colorScheme.primary
@@ -410,7 +387,12 @@ fun EditVideoScreen(
                         .weight(1f),
                 ) {
                     if (!isProcessing) {
-                        Text("Save")
+                        Icon(
+                            painter = painterResource(id = R.drawable.publish_24px),
+                            contentDescription = null
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Post")
                     } else {
                         CircularProgressIndicator(
                             modifier = Modifier.size(24.dp),

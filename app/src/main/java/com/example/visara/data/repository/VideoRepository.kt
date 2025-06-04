@@ -120,6 +120,44 @@ class VideoRepository @Inject constructor(
         return result
     }
 
+    suspend fun updateVideo(
+        videoId: String,
+        title: String,
+        thumbnailUri: Uri?,
+        description: String,
+        hashtags: List<String>,
+        privacy: VideoPrivacy,
+        isAllowComment: Boolean,
+    ) : Boolean {
+        // Create data for new video
+        val updateVideoResult = videoRemoteDataSource.updateVideo(
+            videoId = videoId,
+            title = title,
+            description = description,
+            hashtags = hashtags,
+            isPrivate = privacy != VideoPrivacy.ALL,
+            isCommentOff = !isAllowComment
+        )
+
+        val result = updateVideoResult is ApiResult.Success
+        if (!result) return false
+
+        val thumbnailFile = thumbnailUri?.let { uriToFile(appContext, it) }
+        thumbnailFile?.let {
+            try {
+                videoRemoteDataSource.uploadThumbnailFile(
+                    videoId = videoId,
+                    thumbnailFile = thumbnailFile,
+                    progressListener = { progress-> Log.i("CHECK_VAR", "upload thumbnail progress: $progress %") }
+                )
+            } finally {
+                thumbnailFile.delete()
+            }
+        }
+
+        return true
+    }
+
     suspend fun syncPostingVideo() {
         postingVideo.value?.id?.let { videoId ->
             getVideoById(videoId)?.let { remoteVideo ->

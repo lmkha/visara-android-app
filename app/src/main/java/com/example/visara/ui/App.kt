@@ -99,6 +99,7 @@ import com.example.visara.ui.theme.VisaraTheme
 import com.example.visara.viewmodels.AppState
 import com.example.visara.viewmodels.AppViewModel
 import com.example.visara.viewmodels.ChatInboxViewModel
+import com.example.visara.viewmodels.EditVideoViewModel
 import com.example.visara.viewmodels.FollowScreenViewModel
 import com.example.visara.viewmodels.SearchViewModel
 import com.example.visara.viewmodels.VideoDetailViewModel
@@ -421,8 +422,12 @@ fun App(
                     composable<Destination.EditVideo> { backStackEntry ->
                         val route: Destination.EditVideo = backStackEntry.toRoute()
                         val video = Gson().fromJson(route.videoJson, VideoModel::class.java)
+                        val viewModel: EditVideoViewModel = hiltViewModel()
+                        viewModel.setVideo(video)
                         EditVideoScreen(
-                            video = video
+                            viewModel = viewModel,
+                            onBack = { navController.popBackStack() },
+                            modifier = Modifier.fillMaxSize()
                         )
                     }
                 }

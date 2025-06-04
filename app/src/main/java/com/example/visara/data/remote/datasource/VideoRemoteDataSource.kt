@@ -104,6 +104,47 @@ class VideoRemoteDataSource @Inject constructor(
         }
     }
 
+    suspend fun updateVideo(
+        videoId: String,
+        title: String,
+        description: String,
+        hashtags: List<String>,
+        isPrivate: Boolean,
+        isCommentOff: Boolean,
+    ) : ApiResult<VideoDto> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = videoApi.updateVideo(
+                    videoId = videoId,
+                    title = title,
+                    description = description,
+                    hashtags = hashtags,
+                    isCommentOff = isCommentOff,
+                    isPrivate = isPrivate
+                )
+                val responseBody = response.body?.string()
+
+                if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
+                    val jsonObject = gson.fromJson(responseBody, Map::class.java)
+                    val dataJson = gson.toJson(jsonObject["data"])
+                    val videoDto: VideoDto = gson.fromJson(dataJson, VideoDto::class.java)
+
+                    ApiResult.Success(videoDto)
+
+                } else ApiResult.Failure(
+                    ApiError(
+                        code = response.code,
+                        errorCode = response.code.toString(),
+                        message = response.message,
+                        rawBody = responseBody
+                    )
+                )
+            } catch (e: Exception) {
+                ApiResult.Error(e)
+            }
+        }
+    }
+
     suspend fun uploadThumbnailFile(
         videoId: String,
         thumbnailFile: File,

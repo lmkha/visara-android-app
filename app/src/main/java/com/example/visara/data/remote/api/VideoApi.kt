@@ -216,4 +216,29 @@ class VideoApi @Inject constructor(
 
         return unauthorizedOkHttpClient.newCall(request).execute()
     }
+
+    fun updateVideo(videoId: String, title: String, description: String, hashtags: List<String>, isCommentOff: Boolean, isPrivate: Boolean): Response {
+        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+            .addPathSegment("videos")
+            .build()
+
+        val payload = mapOf<String, Any>(
+            "id" to videoId,
+            "title" to title,
+            "description" to description,
+            "tags" to hashtags,
+            "isCommentOff" to isCommentOff,
+            "isPrivate" to isPrivate
+        )
+
+        val requestBody = gson.toJson(payload)
+            .toRequestBody("application/json".toMediaTypeOrNull())
+
+        val request: Request = Request.Builder()
+            .url(url)
+            .put(requestBody)
+            .build()
+
+        return authorizedOkHttpClient.newCall(request).execute()
+    }
 }
