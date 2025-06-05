@@ -2,7 +2,6 @@ package com.example.visara.viewmodels
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.OneTimeWorkRequestBuilder
@@ -65,7 +64,6 @@ class AddNewVideoViewModel @Inject constructor(
                 thumbnailUri = thumbnailUri.toString(),
             )
             val jsonParams = gson.toJson(params)
-            Log.d("CHECK_VAR", "view model, jsonParams: $jsonParams")
             val inputData = workDataOf(UploadVideoWorker.KEY to jsonParams)
             val request = OneTimeWorkRequestBuilder<UploadVideoWorker>()
                 .setInputData(inputData)

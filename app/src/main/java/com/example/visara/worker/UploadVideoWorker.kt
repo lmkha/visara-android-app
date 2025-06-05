@@ -2,6 +2,7 @@ package com.example.visara.worker
 
 import android.app.NotificationManager
 import android.content.Context
+import android.util.Log
 import androidx.core.net.toUri
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
@@ -29,7 +30,13 @@ class UploadVideoWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         val jsonParams = inputData.getString(KEY) ?: return Result.failure()
-        val params = gson.fromJson(jsonParams, UploadVideoWorkerParams::class.java)
+        val params = try {
+            gson.fromJson(jsonParams, UploadVideoWorkerParams::class.java) ?: return Result.failure()
+        } catch (e : Exception) {
+            Log.e("UploadVideoWorker", "Error deserializing JSON: ${e.message}")
+            return Result.failure()
+        }
+
         val result = with(params) {
             val uploadResult = videoRepository.uploadVideo(
                 videoMetaData = videoMetaData,
