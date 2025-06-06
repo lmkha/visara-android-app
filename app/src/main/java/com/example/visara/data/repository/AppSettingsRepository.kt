@@ -16,7 +16,10 @@ class AppSettingsRepository @Inject constructor(
     @ApplicationContext private val appContext: Context,
 ) {
     val appSettingsFlow = appContext.AppSettingsLocalDataSource.data
-    val themeKey = stringPreferencesKey("theme_pref")
+
+    companion object {
+        val themeKey = stringPreferencesKey("theme_pref")
+    }
 
     suspend fun updateTheme(theme: AppTheme) {
         withContext(Dispatchers.IO) {

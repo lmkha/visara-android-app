@@ -95,7 +95,6 @@ fun HomeScreen(
     }
 
     Scaffold(
-        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
                 scrollBehavior = scrollBehavior,
@@ -120,7 +119,8 @@ fun HomeScreen(
                 )
             )
         },
-        bottomBar = { bottomNavBar() }
+        bottomBar = { bottomNavBar() },
+        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
     ) { innerPadding->
         Box(modifier = modifier.fillMaxSize().padding(innerPadding)) {
             Column(

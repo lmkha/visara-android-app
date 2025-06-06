@@ -145,7 +145,6 @@ fun App(
     VisaraTheme(appTheme = appState.appTheme) {
         Box(modifier = Modifier.fillMaxSize()) {
             Scaffold(
-                modifier = Modifier.zIndex(0f),
                 bottomBar = {
                     Column {
                         AnimatedVisibility(
@@ -159,12 +158,16 @@ fun App(
                             )
                         }
                     }
-                }
+                },
+                modifier = Modifier.zIndex(0f)
             ) {
                 NavHost(
-                    modifier = Modifier.fillMaxSize(),
                     navController = navController,
                     startDestination = Destination.Main,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .statusBarsPadding()
+                        .background(color = MaterialTheme.colorScheme.background)
                 ) {
                     navigation<Destination.Main>(startDestination = Destination.Main.Home) {
                         composable<Destination.Main.Home> {

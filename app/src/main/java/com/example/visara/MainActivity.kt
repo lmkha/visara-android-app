@@ -23,8 +23,12 @@ import dagger.hilt.android.AndroidEntryPoint
 import android.content.res.Configuration
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
+import com.example.visara.data.repository.AppSettingsRepository
+import com.example.visara.di.AppSettingsLocalDataSource
 import com.example.visara.service.play_back.PlaybackService
+import com.example.visara.ui.theme.AppTheme
 import com.google.common.util.concurrent.MoreExecutors
+import kotlinx.coroutines.flow.collectLatest
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -39,8 +43,22 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
         windowInsetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        windowInsetsController.isAppearanceLightStatusBars = false
 
         setContent {
+            LaunchedEffect(Unit) {
+                applicationContext.AppSettingsLocalDataSource.data.collectLatest { prefs->
+                    val themeKey = AppSettingsRepository.themeKey
+                    val themeName = prefs[themeKey]
+                    val theme = AppTheme.entries.find { it.name == themeName } ?: AppTheme.SYSTEM
+                    if (theme == AppTheme.DARK) {
+                        windowInsetsController.isAppearanceLightStatusBars = false
+                    } else if (theme == AppTheme.LIGHT) {
+                        windowInsetsController.isAppearanceLightStatusBars = true
+                    }
+                }
+            }
+
             val appViewModel: AppViewModel = hiltViewModel()
             controllerFuture.addListener({
                 appViewModel.setPlayer(controllerFuture.get())

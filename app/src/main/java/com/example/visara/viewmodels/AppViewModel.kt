@@ -44,25 +44,22 @@ class AppViewModel @Inject constructor(
         observerVideoDetail()
         observerNetworkState()
 
-        val tag = "CHECK_VAR"
-
         FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
             if (!task.isSuccessful) {
-                Log.w(tag, "Fetching FCM registration failed!", task.exception)
+                Log.w("CHECK_VAR", "Fetching FCM registration failed!", task.exception)
                 return@OnCompleteListener
             }
 
             val token = task.result
 
-            Log.d(tag, "FCM token: $token")
+            Log.d("CHECK_VAR", "FCM token: $token")
         })
-        Log.i("CHECK_VAR", "init app view model")
     }
 
     private fun observerTheme() {
         viewModelScope.launch {
             appSettingsRepository.appSettingsFlow.map { prefs ->
-                val themeKey = appSettingsRepository.themeKey
+                val themeKey = AppSettingsRepository.themeKey
                 val themeName = prefs[themeKey]
                 AppTheme.entries.firstOrNull { it.name == themeName } ?: AppTheme.SYSTEM
             }

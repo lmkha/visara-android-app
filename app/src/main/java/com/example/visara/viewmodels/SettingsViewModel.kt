@@ -35,7 +35,7 @@ class SettingsViewModel @Inject constructor(
     private fun observerThemeSettingsState() {
         viewModelScope.launch {
             appSettingsRepository.appSettingsFlow.collectLatest { prefs ->
-                val themeKey = appSettingsRepository.themeKey
+                val themeKey = AppSettingsRepository.themeKey
                 val themeName = prefs[themeKey]
                 val theme = AppTheme.entries.find { it.name == themeName } ?: AppTheme.SYSTEM
                 _uiState.update { it.copy(theme = theme) }
