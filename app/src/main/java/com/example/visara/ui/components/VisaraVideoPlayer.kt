@@ -1,7 +1,6 @@
 package com.example.visara.ui.components
 
 import android.content.res.Configuration
-import android.net.Uri
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -48,9 +47,6 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata
-import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
 import androidx.media3.ui.compose.PlayerSurface
@@ -59,56 +55,18 @@ import androidx.media3.ui.compose.modifiers.resizeWithContentScale
 import androidx.media3.ui.compose.state.rememberPresentationState
 import com.example.visara.R
 import kotlinx.coroutines.delay
-import androidx.core.net.toUri
-import com.example.visara.data.model.VideoModel
-
-class VideoPlayerManager(val mediaController: MediaController) {
-    fun playDash(url: String, videoModel: VideoModel, playWhenReady: Boolean = true) {
-        mediaController.stop()
-        mediaController.clearMediaItems()
-
-        val mediaItem = MediaItem.Builder()
-            .setUri(url)
-            .setMimeType(MimeTypes.APPLICATION_MPD)
-            .setMediaMetadata(
-                MediaMetadata.Builder()
-                    .setArtist(videoModel.username)
-                    .setTitle(videoModel.title)
-                    .setArtworkUri(videoModel.thumbnailUrl.toUri())
-                    .build()
-            )
-            .build()
-
-        mediaController.setMediaItem(mediaItem)
-        mediaController.playWhenReady = playWhenReady
-        mediaController.prepare()
-    }
-
-    fun playUri(uri: Uri, playWhenReady: Boolean = true) {
-        mediaController.stop()
-        mediaController.clearMediaItems()
-
-        val mediaItem = MediaItem.Builder()
-            .setUri(uri)
-            .build()
-
-        mediaController.setMediaItem(mediaItem)
-        mediaController.playWhenReady = playWhenReady
-        mediaController.prepare()
-    }
-}
 
 @OptIn(UnstableApi::class)
 @Composable
 fun VisaraVideoPlayer(
     modifier: Modifier = Modifier,
-    player: MediaController,
+    mediaController: MediaController,
     showControls: Boolean = true,
     requireLandscapeMode: () -> Unit,
     requirePortraitMode: () -> Unit,
 ) {
     var showControlsState by remember(showControls) { mutableStateOf(showControls) }
-    val presentationState = rememberPresentationState(player)
+    val presentationState = rememberPresentationState(mediaController)
     val scaledModifier = Modifier.resizeWithContentScale(
         contentScale = ContentScale.Fit,
         sourceSizeDp = presentationState.videoSizeDp
@@ -125,7 +83,7 @@ fun VisaraVideoPlayer(
 
     ) {
         PlayerSurface(
-            player = player,
+            player = mediaController,
             surfaceType = SURFACE_TYPE_SURFACE_VIEW,
             modifier = scaledModifier,
         )
@@ -142,13 +100,13 @@ fun VisaraVideoPlayer(
             modifier = Modifier.fillMaxSize()
         ) {
             PlayerControls(
-                player = player,
+                player = mediaController,
                 requireLandscapeMode = requireLandscapeMode,
                 requirePortraitMode = requirePortraitMode,
                 modifier = Modifier.fillMaxSize(),
             )
-            LaunchedEffect(showControlsState, player.isPlaying) {
-                if (showControlsState && player.isPlaying) {
+            LaunchedEffect(showControlsState, mediaController.isPlaying) {
+                if (showControlsState && mediaController.isPlaying) {
                     delay(2000)
                     showControlsState = false
                 }

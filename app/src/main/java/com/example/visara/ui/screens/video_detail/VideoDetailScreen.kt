@@ -22,7 +22,10 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,6 +46,7 @@ import com.example.visara.ui.screens.video_detail.components.MinimizedCommentSec
 import com.example.visara.ui.screens.video_detail.components.MinimizedModeControl
 import com.example.visara.ui.screens.video_detail.components.VideoHeaderSection
 import com.example.visara.ui.theme.LocalVisaraCustomColors
+import com.example.visara.viewmodels.VideoDetailScreenEvent
 import com.example.visara.viewmodels.VideoDetailViewModel
 
 @Composable
@@ -57,6 +61,7 @@ fun VideoDetailScreen(
     onNavigateToLoginScreen: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val currentMediaController by viewModel.player.collectAsStateWithLifecycle()
     var liked by remember(uiState.isVideoLiked) {
         mutableStateOf(uiState.isVideoLiked)
     }
@@ -65,10 +70,21 @@ fun VideoDetailScreen(
     }
     val columnState = rememberLazyListState()
     val loginRequestDialogState = rememberLoginRequestDialogState()
+    var reloadKey by remember { mutableIntStateOf(0) }
 
     if (uiState.isOpenExpandedCommentSection) {
         BackHandler {
             viewModel.minimizeCommentSection()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.eventFlow.collect { event ->
+            when (event) {
+                is VideoDetailScreenEvent.RequireReloadPlayer -> {
+                    reloadKey = reloadKey + 1
+                }
+            }
         }
     }
 
@@ -79,7 +95,7 @@ fun VideoDetailScreen(
         val remainingHeight = screenHeight - playerHeight
         Column(modifier = Modifier.fillMaxSize()) {
             // Video
-            if (viewModel.player != null) {
+            if (currentMediaController != null) {
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
@@ -87,15 +103,17 @@ fun VideoDetailScreen(
                         .height(playerHeight)
                         .aspectRatio(16f / 9f),
                 ) {
-                    VisaraVideoPlayer(
-                        player = viewModel.player!!,
-                        showControls = uiState.isFullScreenMode,
-                        requireLandscapeMode = requireLandscapeMode,
-                        requirePortraitMode = requirePortraitMode,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .aspectRatio(16f / 9f)
-                    )
+                    key(reloadKey) {
+                        VisaraVideoPlayer(
+                            mediaController = currentMediaController!!,
+                            showControls = uiState.isFullScreenMode,
+                            requireLandscapeMode = requireLandscapeMode,
+                            requirePortraitMode = requirePortraitMode,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .aspectRatio(16f / 9f)
+                        )
+                    }
                     if (!isFullScreenMode) {
                         MinimizedModeControl(
                             isPlaying = uiState.isPlaying,

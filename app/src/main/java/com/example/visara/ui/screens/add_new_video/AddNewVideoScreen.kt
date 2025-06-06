@@ -19,6 +19,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.visara.ui.screens.add_new_video.components.enter_video_info.EnterVideoInfoStep
 import com.example.visara.ui.screens.add_new_video.components.review.ReviewSectionStep
 import com.example.visara.ui.screens.add_new_video.components.select.SelectVideoStep
@@ -32,6 +33,7 @@ fun AddNewVideoScreen(
     viewModel: AddNewVideoViewModel = hiltViewModel(),
     onNavigateToStudio: () -> Unit,
 ) {
+    val currentMediaController by viewModel.mediaController.collectAsStateWithLifecycle()
     var videoUri by remember { mutableStateOf<Uri?>(null) }
     val scope = rememberCoroutineScope()
     var step by remember { mutableIntStateOf(1) }
@@ -39,7 +41,7 @@ fun AddNewVideoScreen(
         videoUri = uri
         uri?.let {
             scope.launch {
-                viewModel.manager?.playUri(it)
+                viewModel.playUriVideo(it)
                 step = 2
             }
         }
@@ -57,7 +59,7 @@ fun AddNewVideoScreen(
     }
 
     DisposableEffect(Unit) {
-        onDispose { viewModel.manager?.mediaController?.stop() }
+        onDispose { currentMediaController?.stop() }
     }
 
     if (step > 1) {
@@ -81,9 +83,9 @@ fun AddNewVideoScreen(
                 )
             }
             2 -> {
-                if (videoUri != null && viewModel.manager != null) {
+                if (videoUri != null && currentMediaController != null) {
                     ReviewSectionStep(
-                        videoPlayerManager = viewModel.manager!!,
+                        mediaController = currentMediaController!!,
                         modifier = modifier,
                         onBack = { step -= 1 },
                         onGoNext = { step += 1 },

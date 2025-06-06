@@ -8,8 +8,8 @@ import com.example.visara.data.model.UserModel
 import com.example.visara.data.repository.AppSettingsRepository
 import com.example.visara.data.repository.AuthRepository
 import com.example.visara.data.repository.UserRepository
-import com.example.visara.data.repository.VideoDetailRepository
-import com.example.visara.data.repository.VideoDetailState
+import com.example.visara.PlayerManager
+import com.example.visara.VideoDetailState
 import com.example.visara.common.NetworkMonitor
 import com.example.visara.ui.theme.AppTheme
 import com.google.android.gms.tasks.OnCompleteListener
@@ -30,7 +30,7 @@ class AppViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val appSettingsRepository: AppSettingsRepository,
     private val userRepository: UserRepository,
-    private val videoDetailRepository: VideoDetailRepository,
+    private val playerManager: PlayerManager,
     private val networkMonitor: NetworkMonitor,
 ) : ViewModel() {
     private val _appState = MutableStateFlow(AppState())
@@ -90,7 +90,7 @@ class AppViewModel @Inject constructor(
 
     private fun observerVideoDetail() {
         viewModelScope.launch {
-            videoDetailRepository.videoDetail.collect { videoDetail ->
+            playerManager.videoDetail.collect { videoDetail ->
                 _appState.update { it.copy(videoDetailState = videoDetail) }
             }
         }
@@ -117,30 +117,38 @@ class AppViewModel @Inject constructor(
 
     fun minimizeVideoDetail() {
         viewModelScope.launch {
-            videoDetailRepository.enableMinimizedMode()
+            playerManager.enableMinimizedMode()
         }
     }
 
     fun pauseVideoDetail() {
         viewModelScope.launch {
-            videoDetailRepository.videoPlayerManager?.mediaController?.pause()
+            playerManager.pause()
         }
     }
 
     fun setPlayer(player: MediaController) {
-        videoDetailRepository.setPlayer(player)
+        playerManager.setPlayer(player)
     }
 
     fun hideVideoDetail() {
-        videoDetailRepository.hide()
+        playerManager.hide()
     }
 
     fun displayVideoDetail() {
-        videoDetailRepository.display()
+        playerManager.display()
     }
 
     fun syncCurrentUser() {
         viewModelScope.launch { userRepository.syncCurrentUser() }
+    }
+
+    fun saveCurrentPlaybackState() {
+        playerManager.saveCurrentPlaybackState()
+    }
+
+    fun restoreStoredPlaybackState() {
+        playerManager.restoreStoredPlaybackState()
     }
 }
 

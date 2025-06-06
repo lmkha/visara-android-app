@@ -4,12 +4,13 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.session.MediaController
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.example.visara.data.model.VideoPrivacy
-import com.example.visara.data.repository.VideoDetailRepository
+import com.example.visara.PlayerManager
 import com.example.visara.data.repository.VideoRepository
 import com.example.visara.worker.UploadVideoWorkerParams
 import com.example.visara.worker.UploadVideoWorker
@@ -18,6 +19,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -26,13 +28,16 @@ import javax.inject.Inject
 class AddNewVideoViewModel @Inject constructor(
     @ApplicationContext private val appContext: Context,
     private val videoRepository: VideoRepository,
-    private val videoDetailRepository: VideoDetailRepository,
+    private val playerManager: PlayerManager,
     private val gson: Gson,
 ) : ViewModel() {
     private val _eventChannel: Channel<AddNewVideoScreenEvent> = Channel<AddNewVideoScreenEvent>()
     val eventFlow: Flow<AddNewVideoScreenEvent> = _eventChannel.receiveAsFlow()
+    val mediaController: StateFlow<MediaController?> = playerManager.mediaControllerFlow
 
-    val manager get() = videoDetailRepository.videoPlayerManager
+    fun playUriVideo(uri: Uri) {
+        playerManager.playUri(uri)
+    }
 
     fun postVideo(
         videoUri: Uri?,

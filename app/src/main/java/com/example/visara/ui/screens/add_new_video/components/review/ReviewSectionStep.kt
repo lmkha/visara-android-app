@@ -20,18 +20,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.visara.ui.components.VideoPlayerManager
+import androidx.media3.session.MediaController
 import com.example.visara.ui.components.VisaraVideoPlayer
 
 @Composable
 fun ReviewSectionStep(
     modifier: Modifier = Modifier,
-    videoPlayerManager: VideoPlayerManager,
+    mediaController: MediaController,
     onBack: () -> Unit,
     onGoNext: () -> Unit,
 ) {
     DisposableEffect(Unit) {
-        onDispose { videoPlayerManager.mediaController.pause() }
+        onDispose { mediaController.pause() }
     }
 
     Box(modifier = modifier) {
@@ -75,7 +75,7 @@ fun ReviewSectionStep(
                 .background(color = Color.Black)
         ) {
             VisaraVideoPlayer(
-                player = videoPlayerManager.mediaController,
+                mediaController = mediaController,
                 requireLandscapeMode = {},
                 requirePortraitMode = {},
             )

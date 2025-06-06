@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.visara.data.model.UserModel
 import com.example.visara.data.model.VideoModel
 import com.example.visara.data.repository.SearchRepository
-import com.example.visara.data.repository.VideoDetailRepository
+import com.example.visara.PlayerManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +17,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val searchRepository: SearchRepository,
-    private val videoDetailRepository: VideoDetailRepository,
+    private val playerManager: PlayerManager,
 ) : ViewModel() {
     private val _uiState: MutableStateFlow<SearchScreenUiState> = MutableStateFlow(SearchScreenUiState())
     val uiState: StateFlow<SearchScreenUiState> = _uiState.asStateFlow()
@@ -79,7 +79,7 @@ class SearchViewModel @Inject constructor(
 
     fun selectVideo(videoModel: VideoModel) {
         viewModelScope.launch {
-            videoDetailRepository.setVideoDetail(videoModel)
+            playerManager.setVideoDetail(videoModel)
         }
     }
 }

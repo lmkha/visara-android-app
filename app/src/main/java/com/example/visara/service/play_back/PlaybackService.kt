@@ -36,5 +36,4 @@ class PlaybackService : MediaSessionService() {
     override fun onGetSession(
         controllerInfo: MediaSession.ControllerInfo
     ): MediaSession? = mediaSession
-
 }

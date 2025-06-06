@@ -208,19 +208,20 @@ fun App(
                                 targetScale = 0.8f
                             ) + fadeOut()
                         }) {
-                            /*
                             val isVideoDetailVisibleBefore = appState.videoDetailState.isVisible
-                            appViewModel.pauseVideoDetail()
                             appViewModel.hideVideoDetail()
-
+                            LaunchedEffect(Unit) {
+                                appViewModel.saveCurrentPlaybackState()
+                            }
                             DisposableEffect(Unit) {
                                 onDispose {
                                     if (isVideoDetailVisibleBefore) {
                                         appViewModel.displayVideoDetail()
                                     }
+                                    appViewModel.restoreStoredPlaybackState()
+                                    videoDetailViewModel.refreshPlayer()
                                 }
                             }
-                             */
                             AddNewVideoScreen(
                                 onNavigateToStudio = {
                                     navController.navigate(Destination.Studio) {

@@ -2,21 +2,25 @@ package com.example.visara.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.session.MediaController
 import com.example.visara.data.model.CommentModel
 import com.example.visara.data.model.UserModel
 import com.example.visara.data.model.VideoModel
 import com.example.visara.data.repository.AuthRepository
 import com.example.visara.data.repository.CommentRepository
 import com.example.visara.data.repository.UserRepository
-import com.example.visara.data.repository.VideoDetailRepository
+import com.example.visara.PlayerManager
 import com.example.visara.data.repository.VideoRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -27,15 +31,17 @@ class VideoDetailViewModel @Inject constructor(
     private val commentRepository: CommentRepository,
     private val userRepository: UserRepository,
     private val videoRepository: VideoRepository,
-    private val videoDetailRepository: VideoDetailRepository,
+    private val playerManager: PlayerManager,
 ) : ViewModel() {
+    val player: StateFlow<MediaController?> = playerManager.mediaControllerFlow
     private val _uiState: MutableStateFlow<VideoDetailScreenUiState> = MutableStateFlow(VideoDetailScreenUiState())
     val uiState: StateFlow<VideoDetailScreenUiState> = _uiState.asStateFlow()
+    private val _eventChannel: Channel<VideoDetailScreenEvent> = Channel<VideoDetailScreenEvent>()
+    val eventFlow: Flow<VideoDetailScreenEvent> = _eventChannel.receiveAsFlow()
     var likeCommentJobMap: MutableMap<String, Job> = mutableMapOf<String, Job>()
     private var changeVideoLikeJob: Job? = null
     private var followAuthorJob: Job? = null
     private var unfollowAuthorJob: Job? = null
-    val player get() = videoDetailRepository.videoPlayerManager?.mediaController
 
     init {
         observerAuthenticationState()
@@ -45,7 +51,7 @@ class VideoDetailViewModel @Inject constructor(
 
     private fun observerVideoDetail() {
         viewModelScope.launch {
-            videoDetailRepository.videoDetail.collect { videoDetail ->
+            playerManager.videoDetail.collect { videoDetail ->
                 _uiState.update { oldState->
                     if (videoDetail.video?.id == oldState.video?.id) {
                         oldState.copy(
@@ -268,32 +274,32 @@ class VideoDetailViewModel @Inject constructor(
 
     fun play() {
         viewModelScope.launch {
-            videoDetailRepository.videoPlayerManager?.mediaController?.play()
+            playerManager.play()
         }
     }
 
     fun pause() {
         viewModelScope.launch {
-            videoDetailRepository.videoPlayerManager?.mediaController?.pause()
+            playerManager.pause()
         }
     }
 
     fun close() {
         viewModelScope.launch {
-            videoDetailRepository.videoPlayerManager?.mediaController?.stop()
-            videoDetailRepository.close()
+            playerManager.stop()
+            playerManager.close()
         }
     }
 
     fun enableFullScreenMode() {
         viewModelScope.launch {
-            videoDetailRepository.enableFullScreenMode()
+            playerManager.enableFullScreenMode()
         }
     }
 
     fun enableMinimizedMode() {
         viewModelScope.launch {
-            videoDetailRepository.enableMinimizedMode()
+            playerManager.enableMinimizedMode()
         }
     }
 
@@ -354,6 +360,16 @@ class VideoDetailViewModel @Inject constructor(
             unfollowAuthorJob = null
         }
     }
+
+    fun refreshPlayer() {
+        viewModelScope.launch {
+            _eventChannel.send(VideoDetailScreenEvent.RequireReloadPlayer)
+        }
+    }
+}
+
+sealed class VideoDetailScreenEvent {
+    object RequireReloadPlayer: VideoDetailScreenEvent()
 }
 
 data class VideoDetailScreenUiState(

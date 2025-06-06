@@ -8,7 +8,7 @@ import com.example.visara.data.model.VideoModel
 import com.example.visara.data.repository.AuthRepository
 import com.example.visara.data.repository.PlaylistRepository
 import com.example.visara.data.repository.UserRepository
-import com.example.visara.data.repository.VideoDetailRepository
+import com.example.visara.PlayerManager
 import com.example.visara.data.repository.VideoRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
@@ -30,7 +30,7 @@ class ProfileViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val videoRepository: VideoRepository,
     private val playlistRepository: PlaylistRepository,
-    private val videoDetailRepository: VideoDetailRepository,
+    private val playerManager: PlayerManager,
 ) : ViewModel() {
     private val _uiState: MutableStateFlow<ProfileScreenUiState> = MutableStateFlow(ProfileScreenUiState(isLoading = true))
     val uiState: StateFlow<ProfileScreenUiState> = _uiState.asStateFlow()
@@ -127,7 +127,7 @@ class ProfileViewModel @Inject constructor(
 
     fun selectVideo(video: VideoModel) {
         viewModelScope.launch {
-            videoDetailRepository.setVideoDetail(video)
+            playerManager.setVideoDetail(video)
         }
     }
 

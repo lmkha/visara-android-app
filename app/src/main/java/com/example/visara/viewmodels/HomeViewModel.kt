@@ -3,7 +3,7 @@ package com.example.visara.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.visara.data.model.VideoModel
-import com.example.visara.data.repository.VideoDetailRepository
+import com.example.visara.PlayerManager
 import com.example.visara.data.repository.VideoRepository
 import com.example.visara.common.NetworkMonitor
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,7 +18,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val videoRepository: VideoRepository,
-    private val videoDetailRepository: VideoDetailRepository,
+    private val playerManager: PlayerManager,
     private val networkMonitor: NetworkMonitor,
 ) : ViewModel() {
     private val _uiState: MutableStateFlow<HomeScreenUiState> = MutableStateFlow(HomeScreenUiState())
@@ -65,7 +65,7 @@ class HomeViewModel @Inject constructor(
 
     fun selectVideo(video: VideoModel) {
         viewModelScope.launch {
-            videoDetailRepository.setVideoDetail(video)
+            playerManager.setVideoDetail(video)
         }
     }
 }
