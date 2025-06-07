@@ -164,10 +164,7 @@ fun App(
                 NavHost(
                     navController = navController,
                     startDestination = Destination.Main,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .statusBarsPadding()
-                        .background(color = MaterialTheme.colorScheme.background)
+                    modifier = Modifier.fillMaxSize()
                 ) {
                     navigation<Destination.Main>(startDestination = Destination.Main.Home) {
                         composable<Destination.Main.Home> {

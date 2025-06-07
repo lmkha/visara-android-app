@@ -11,8 +11,10 @@ import okhttp3.Request
 import okhttp3.Response
 import okhttp3.Route
 import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.collections.get
 
+@Singleton
 class TokenAuthenticator @Inject constructor(
     private val tokenStorage: TokenStorage,
     private val userSessionManager: UserSessionManager,

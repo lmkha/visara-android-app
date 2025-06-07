@@ -43,7 +43,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
         windowInsetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-        windowInsetsController.isAppearanceLightStatusBars = false
 
         setContent {
             LaunchedEffect(Unit) {
@@ -51,10 +50,17 @@ class MainActivity : ComponentActivity() {
                     val themeKey = AppSettingsRepository.themeKey
                     val themeName = prefs[themeKey]
                     val theme = AppTheme.entries.find { it.name == themeName } ?: AppTheme.SYSTEM
-                    if (theme == AppTheme.DARK) {
-                        windowInsetsController.isAppearanceLightStatusBars = false
-                    } else if (theme == AppTheme.LIGHT) {
-                        windowInsetsController.isAppearanceLightStatusBars = true
+                    when (theme) {
+                        AppTheme.DARK -> {
+                            windowInsetsController.isAppearanceLightStatusBars = false
+                        }
+                        AppTheme.LIGHT -> {
+                            windowInsetsController.isAppearanceLightStatusBars = true
+                        }
+                        AppTheme.SYSTEM -> {
+                            val currentNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+                            windowInsetsController.isAppearanceLightStatusBars = (currentNightMode != Configuration.UI_MODE_NIGHT_YES)
+                        }
                     }
                 }
             }
