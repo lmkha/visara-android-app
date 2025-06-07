@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import android.webkit.MimeTypeMap
+import com.example.visara.data.model.UserModel
 import com.example.visara.data.model.VideoPrivacy
 import com.example.visara.data.model.VideoModel
 import com.example.visara.data.remote.common.ApiResult
@@ -222,5 +223,25 @@ class VideoRepository @Inject constructor(
         }
 
         return result
+    }
+
+    suspend fun increaseVideoView(videoId: String) : Boolean {
+        val apiResult = videoRemoteDataSource.increaseVideoView(videoId)
+        return apiResult is ApiResult.Success
+    }
+
+    suspend fun addVideoToHistory(video: VideoModel, currentUser: UserModel?) : Boolean {
+        if (currentUser == null) return false
+        val apiResult = videoRemoteDataSource.addVideoToHistory(
+            videoId = video.id,
+            videoTitle = video.title,
+            thumbnailUrl = video.thumbnailUrl,
+            ownerId = video.userId.toString(),
+            ownerUsername = video.username,
+            ownerFullName = video.userFullName,
+            viewerId = currentUser.id.toString(),
+            viewerUsername = currentUser.username,
+        )
+        return apiResult is ApiResult.Success
     }
 }

@@ -24,6 +24,17 @@ class PlayerManager @Inject constructor(private val videoRepository: VideoReposi
     val videoDetail: StateFlow<VideoDetailState> = _videoDetail.asStateFlow()
     private var storedPlaybackState: PlaybackStateSnapshot? = null
 
+    /**
+     * Sets the [MediaController] instance for the player.
+     * This method is designed to be called only once during the application's lifecycle,
+     * typically from [MainActivity.onCreate].
+     *
+     * To prevent re-initialization and potential issues (e.g., duplicate listeners)
+     * during configuration changes (like screen rotation), this method
+     * ensures the MediaController is set only if it's currently null.
+     *
+     * @param mediaPlayer The [MediaController] instance to be used by the PlayerManager.
+     */
     fun setPlayer(mediaPlayer: MediaController) {
         if (this._mediaControllerFlow.value == null) {
             this._mediaControllerFlow.value = mediaPlayer.apply {
@@ -33,6 +44,20 @@ class PlayerManager @Inject constructor(private val videoRepository: VideoReposi
                     }
                 })
             }
+        }
+    }
+
+    fun setVideoDetail(video: VideoModel) {
+        if (video.id != _videoDetail.value.video?.id) {
+            val videoUrl = videoRepository.getVideoUrl(video.id)
+            playDash(url = videoUrl, videoModel = video)
+        }
+        _videoDetail.update {
+            it.copy(
+                video = video,
+                isVisible = true,
+                isFullScreenMode = true,
+            )
         }
     }
 
@@ -90,32 +115,18 @@ class PlayerManager @Inject constructor(private val videoRepository: VideoReposi
         }
     }
 
-fun restoreStoredPlaybackState() {
-    _mediaControllerFlow.value?.let { mediaController ->
-        storedPlaybackState?.let { snapshot ->
-            mediaController.stop()
-            mediaController.clearMediaItems()
+    fun restoreStoredPlaybackState() {
+        _mediaControllerFlow.value?.let { mediaController ->
+            storedPlaybackState?.let { snapshot ->
+                mediaController.stop()
+                mediaController.clearMediaItems()
 
-            mediaController.setMediaItem(snapshot.mediaItem)
-            mediaController.seekTo(snapshot.positionMs)
-            mediaController.playWhenReady = false
-            mediaController.prepare()
-        }
-        this.storedPlaybackState = null
-    }
-}
-
-    fun setVideoDetail(video: VideoModel) {
-        if (video.id != _videoDetail.value.video?.id) {
-            val videoUrl = videoRepository.getVideoUrl(video.id)
-            playDash(url = videoUrl, videoModel = video)
-        }
-        _videoDetail.update {
-            it.copy(
-                video = video,
-                isVisible = true,
-                isFullScreenMode = true,
-            )
+                mediaController.setMediaItem(snapshot.mediaItem)
+                mediaController.seekTo(snapshot.positionMs)
+                mediaController.playWhenReady = false
+                mediaController.prepare()
+            }
+            this.storedPlaybackState = null
         }
     }
 

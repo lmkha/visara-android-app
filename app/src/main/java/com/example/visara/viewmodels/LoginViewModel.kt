@@ -30,8 +30,12 @@ class LoginViewModel @Inject constructor(
     fun login(username: String, password: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(isProcessing = true) }
-            val isLogged = authRepository.login(username, password)
-            if (isLogged) {
+            val isAuthenticated = authRepository.login(username, password)
+            if (isAuthenticated) {
+                userRepository.syncCurrentUser()
+            }
+
+            if (isAuthenticated) {
                 _uiState.update { oldState-> oldState.copy(isLogged = true, isProcessing = false) }
             } else {
                 _uiState.update { oldState-> oldState.copy(isLogged = false, isProcessing = false) }

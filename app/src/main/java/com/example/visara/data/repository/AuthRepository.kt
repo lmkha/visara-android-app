@@ -1,6 +1,5 @@
 package com.example.visara.data.repository
 
-import android.util.Log
 import com.example.visara.data.local.datasource.AuthLocalDataSource
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.datasource.AuthRemoteDataSource
@@ -15,8 +14,6 @@ import javax.inject.Singleton
 class AuthRepository @Inject constructor(
     private val authRemoteDataSource: AuthRemoteDataSource,
     private val authLocalDataSource: AuthLocalDataSource,
-    private val userRepository: UserRepository,
-    private val appSettingsRepository: AppSettingsRepository,
 ) {
     private val _isAuthenticated: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val isAuthenticated: StateFlow<Boolean> = _isAuthenticated.asStateFlow()
@@ -34,11 +31,8 @@ class AuthRepository @Inject constructor(
         authLocalDataSource.setCurrentUsername(username)
         val accessToken = loginResult.data.accessToken
         val refreshToken = loginResult.data.refreshToken
-        Log.i("CHECK_VAR", "refresh token: $refreshToken")
-        Log.i("CHECK_VAR", "access token: $accessToken")
         authLocalDataSource.saveAccessToken(accessToken)
         authLocalDataSource.saveRefreshToken(refreshToken)
-        userRepository.syncCurrentUser()
         _isAuthenticated.update { true }
 
         return true
@@ -49,15 +43,10 @@ class AuthRepository @Inject constructor(
         authLocalDataSource.clearToken()
         authLocalDataSource.clearCurrentUsername()
         _isAuthenticated.update { false }
-        userRepository.refreshCurrentUser()
     }
 
     fun refreshAuthenticationState() {
         val hasToken = !authLocalDataSource.getAccessToken().isNullOrEmpty()
         _isAuthenticated.value = hasToken
-    }
-
-    fun updateFcmToken(token: String) {
-        // TODO: Get oldToken, send both oldToken and newToken to server, update token to datastore
     }
 }

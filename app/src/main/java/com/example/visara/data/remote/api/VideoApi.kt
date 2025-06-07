@@ -136,7 +136,13 @@ class VideoApi @Inject constructor(
         return authorizedOkHttpClient.newCall(request).execute()
     }
 
-    fun uploadVideoMetaData(title: String, description: String, hashtags: List<String>, isPrivate: Boolean, isCommentOff: Boolean) : Response {
+    fun uploadVideoMetaData(
+        title: String,
+        description: String,
+        hashtags: List<String>,
+        isPrivate: Boolean,
+        isCommentOff: Boolean,
+    ) : Response {
         val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
             .addPathSegments("videos/new/")
             .build()
@@ -217,7 +223,14 @@ class VideoApi @Inject constructor(
         return unauthorizedOkHttpClient.newCall(request).execute()
     }
 
-    fun updateVideo(videoId: String, title: String, description: String, hashtags: List<String>, isCommentOff: Boolean, isPrivate: Boolean): Response {
+    fun updateVideo(
+        videoId: String,
+        title: String,
+        description: String,
+        hashtags: List<String>,
+        isCommentOff: Boolean,
+        isPrivate: Boolean
+    ): Response {
         val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
             .addPathSegment("videos")
             .build()
@@ -237,6 +250,58 @@ class VideoApi @Inject constructor(
         val request: Request = Request.Builder()
             .url(url)
             .put(requestBody)
+            .build()
+
+        return authorizedOkHttpClient.newCall(request).execute()
+    }
+
+    fun increaseVideoView(videoId: String) : Response {
+        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+            .addPathSegment("videos")
+            .addPathSegment(videoId)
+            .addPathSegment("view")
+            .build()
+
+        val request: Request = Request.Builder()
+            .url(url)
+            .get()
+            .build()
+
+        return unauthorizedOkHttpClient.newCall(request).execute()
+    }
+
+    fun addVideoToHistory(
+        videoId: String,
+        videoTitle: String,
+        thumbnailUrl: String,
+        ownerId: String,
+        ownerUsername: String,
+        ownerFullName: String,
+        viewerId: String,
+        viewerUsername: String,
+    ) : Response {
+        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+            .addPathSegments("videos/history")
+            .build()
+
+        val requestBody = gson.toJson(
+            mapOf<String, String>(
+                "videoId" to videoId,
+                "videoTitle" to videoTitle,
+                "thumbnailUrl" to thumbnailUrl,
+                "ownerId" to ownerId,
+                "ownerUsername" to ownerUsername,
+                "ownerFullname" to ownerFullName,
+                "viewerId" to viewerId,
+                "viewerUsername" to viewerUsername,
+            )
+        ).toRequestBody(
+            contentType = "application/json".toMediaTypeOrNull()
+        )
+
+        val request: Request = Request.Builder()
+            .url(url)
+            .post(requestBody)
             .build()
 
         return authorizedOkHttpClient.newCall(request).execute()

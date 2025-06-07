@@ -52,15 +52,17 @@ class VideoDetailViewModel @Inject constructor(
     private fun observerVideoDetail() {
         viewModelScope.launch {
             playerManager.videoDetail.collect { videoDetail ->
-                _uiState.update { oldState->
-                    if (videoDetail.video?.id == oldState.video?.id) {
-                        oldState.copy(
+                if (videoDetail.video?.id == _uiState.value.video?.id) {
+                    _uiState.update {
+                        it.copy(
                             isFullScreenMode = videoDetail.isFullScreenMode,
                             isPlaying = videoDetail.isPlaying,
                         )
-                    } else {
-                        val videoId = videoDetail.video?.id
-                        if (videoId != null) {
+                    }
+                } else {
+                    val videoId = videoDetail.video?.id
+                    if (videoId != null) {
+                        _uiState.update { oldState ->
                             val videoDeferred = async { videoRepository.getVideoById(videoId) }
                             val isVideoLikedDeferred =  async { videoRepository.isVideoLiked(videoId) }
                             val authorDeferred = async { userRepository.getPublicUser(videoDetail.video.username) }
@@ -72,7 +74,10 @@ class VideoDetailViewModel @Inject constructor(
                                 parentComments.map { CommentWithReplies(comment = it) }
                             }
 
-                            val video = videoDeferred.await()
+                            val video = videoDeferred.await()?.let {
+                                val viewCount = it.viewsCount
+                                it.copy(viewsCount = viewCount + 1)
+                            }
                             val isVideoLiked = isVideoLikedDeferred.await()
                             val author = authorDeferred.await()
                             val isFollowing = isFollowingDeferred.await()
@@ -87,7 +92,15 @@ class VideoDetailViewModel @Inject constructor(
                                 isFullScreenMode = videoDetail.isFullScreenMode,
                                 isPlaying = videoDetail.isPlaying,
                             )
-                        } else {
+                        }
+                        videoRepository.increaseVideoView(videoId)
+                        videoRepository.addVideoToHistory(
+                            video = videoDetail.video,
+                            currentUser = _uiState.value.currentUser
+                        )
+
+                    } else {
+                        _uiState.update { oldState ->
                             VideoDetailScreenUiState(
                                 isFullScreenMode = videoDetail.isFullScreenMode,
                                 isPlaying = videoDetail.isPlaying,

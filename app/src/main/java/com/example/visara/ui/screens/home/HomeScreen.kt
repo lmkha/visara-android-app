@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -142,9 +143,9 @@ fun HomeScreen(
                             state = lazyColumnState,
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
-                            items(uiState.videos.size) { index->
+                            items(uiState.videos) { video ->
                                 VideoItem(
-                                    state = uiState.videos[index],
+                                    state = video,
                                     onVideoSelect = {
                                         viewModel.selectVideo(it)
                                     },

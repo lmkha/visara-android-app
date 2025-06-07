@@ -68,6 +68,7 @@ class SettingsViewModel @Inject constructor(
     fun logout() {
         viewModelScope.launch(Dispatchers.IO) {
             authRepository.logout()
+            userRepository.refreshCurrentUser()
         }
     }
 }

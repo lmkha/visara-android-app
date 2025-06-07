@@ -1,5 +1,6 @@
 package com.example.visara.data.remote.datasource
 
+import android.util.Log
 import com.example.visara.data.model.VideoModel
 import com.example.visara.data.remote.common.ApiError
 import com.example.visara.data.remote.common.ApiResult
@@ -336,6 +337,81 @@ class VideoRemoteDataSource @Inject constructor(
                     val type = object : TypeToken<List<VideoDto>>() {}.type
                     val videoDtoList: List<VideoDto> = gson.fromJson(dataJson, type)
                     ApiResult.Success(videoDtoList)
+                } else {
+                    ApiResult.Failure(
+                        ApiError(
+                            code = response.code,
+                            errorCode = response.code.toString(),
+                            message = response.message,
+                            rawBody = responseBody
+                        )
+                    )
+                }
+            } catch (e: Exception) {
+                ApiResult.Error(e)
+            }
+        }
+    }
+
+    suspend fun increaseVideoView(videoId: String) : ApiResult<Long> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = videoApi.increaseVideoView(videoId)
+                val responseBody = response.body?.string()
+                val jsonObject = gson.fromJson(responseBody, Map::class.java)
+                val messageValue = jsonObject["message"]
+                val videoViewCount = if (messageValue is String) {
+                    messageValue.toLongOrNull() ?: 0L
+                } else 0L
+
+                if (response.isSuccessful) {
+                    ApiResult.Success(videoViewCount)
+                } else {
+                    ApiResult.Failure(
+                        ApiError(
+                            code = response.code,
+                            errorCode = response.code.toString(),
+                            message = response.message,
+                            rawBody = responseBody
+                        )
+                    )
+                }
+            } catch (e: Exception) {
+                ApiResult.Error(e)
+            }
+        }
+    }
+
+    suspend fun addVideoToHistory(
+        videoId: String,
+        videoTitle: String,
+        thumbnailUrl: String,
+        ownerId: String,
+        ownerUsername: String,
+        ownerFullName: String,
+        viewerId: String,
+        viewerUsername: String,
+    ) : ApiResult<Unit> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = videoApi.addVideoToHistory(
+                    videoId = videoId,
+                    videoTitle = videoTitle,
+                    thumbnailUrl = thumbnailUrl,
+                    ownerId = ownerId,
+                    ownerUsername = ownerUsername,
+                    ownerFullName = ownerFullName,
+                    viewerId = viewerId,
+                    viewerUsername = viewerUsername,
+                )
+                val responseBody = response.body?.string()
+                val jsonObject = gson.fromJson(responseBody, Map::class.java)
+                Log.d("CHECK_VAR", "add to history response: $response")
+                val successValue = jsonObject["success"]
+                val success = successValue is Boolean && successValue == true
+
+                if (response.isSuccessful && success) {
+                    ApiResult.Success(Unit)
                 } else {
                     ApiResult.Failure(
                         ApiError(
