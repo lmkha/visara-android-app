@@ -101,6 +101,7 @@ import com.example.visara.viewmodels.AppViewModel
 import com.example.visara.viewmodels.ChatInboxViewModel
 import com.example.visara.viewmodels.EditVideoViewModel
 import com.example.visara.viewmodels.FollowScreenViewModel
+import com.example.visara.viewmodels.ProfileViewModel
 import com.example.visara.viewmodels.SearchViewModel
 import com.example.visara.viewmodels.VideoDetailViewModel
 import com.google.gson.Gson
@@ -286,14 +287,13 @@ fun App(
                         }
                         composable<Destination.Main.Profile> { backStackEntry ->
                             val route: Destination.Main.Profile = backStackEntry.toRoute()
-                            LaunchedEffect(route.shouldNavigateToMyProfile) {
-                                if (route.shouldNavigateToMyProfile) {
-                                    appViewModel.syncCurrentUser()
-                                }
-                            }
-                            ProfileScreen(
-                                username = route.username,
+                            val viewModel: ProfileViewModel = hiltViewModel()
+                            viewModel.setProfile(
                                 isMyProfileRequested = route.shouldNavigateToMyProfile,
+                                username = route.username
+                            )
+                            ProfileScreen(
+                                viewModel = viewModel,
                                 onBack = { navController.popBackStack() },
                                 onNavigateToFollowScreen = {
                                     navController.navigate(

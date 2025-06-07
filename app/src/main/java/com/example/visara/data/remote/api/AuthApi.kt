@@ -4,6 +4,7 @@ import com.example.visara.BuildConfig
 import com.example.visara.di.AuthorizedOkHttpClient
 import com.example.visara.di.UnauthenticatedOkhttpClient
 import com.google.gson.Gson
+import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
@@ -94,5 +95,35 @@ class AuthApi @Inject constructor(
             .build()
 
         return unauthorizedOkHttpClient.newCall(request).execute()
+    }
+
+    fun addFcmToken(token: String, username: String) : Response {
+        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+            .addPathSegments("notifications/token")
+            .build()
+
+        val request: Request = Request.Builder()
+            .url(url)
+            .post("".toRequestBody())
+            .addHeader("X-FCMToken", token)
+            .addHeader("X-Username", username)
+            .build()
+
+        return authorizedOkHttpClient.newCall(request).execute()
+    }
+
+    fun removeFcmToken(token: String, username: String) : Response {
+        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+            .addPathSegments("notifications/token")
+            .build()
+
+        val request: Request = Request.Builder()
+            .url(url)
+            .delete()
+            .addHeader("X-FCMToken", token)
+            .addHeader("X-Username", username)
+            .build()
+
+        return authorizedOkHttpClient.newCall(request).execute()
     }
 }

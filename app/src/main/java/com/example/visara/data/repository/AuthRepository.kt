@@ -14,6 +14,7 @@ import javax.inject.Singleton
 class AuthRepository @Inject constructor(
     private val authRemoteDataSource: AuthRemoteDataSource,
     private val authLocalDataSource: AuthLocalDataSource,
+    private val appSettingsRepository: AppSettingsRepository,
 ) {
     private val _isAuthenticated: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val isAuthenticated: StateFlow<Boolean> = _isAuthenticated.asStateFlow()
@@ -34,12 +35,27 @@ class AuthRepository @Inject constructor(
         authLocalDataSource.saveAccessToken(accessToken)
         authLocalDataSource.saveRefreshToken(refreshToken)
         _isAuthenticated.update { true }
+        val fcmToken = appSettingsRepository.getFcmToken()
+        if (fcmToken != null) {
+            authRemoteDataSource.addFcmTokenForAccount(
+                username = username,
+                fcmToken = fcmToken
+            )
+        }
 
         return true
     }
 
     suspend fun logout() {
         // Clear token first — username is needed to locate the correct token key.
+        val currentUsername = authLocalDataSource.getCurrentUsername()
+        val currentFcmToken = appSettingsRepository.getFcmToken()
+        if (currentUsername != null && currentFcmToken != null) {
+            authRemoteDataSource.removeFcmTokenForAccount(
+                fcmToken = currentFcmToken,
+                username = currentUsername
+            )
+        }
         authLocalDataSource.clearToken()
         authLocalDataSource.clearCurrentUsername()
         _isAuthenticated.update { false }

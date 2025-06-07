@@ -1,10 +1,8 @@
 package com.example.visara.ui.screens.profile
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.visara.data.model.VideoModel
 import com.example.visara.viewmodels.ProfileViewModel
@@ -12,9 +10,7 @@ import com.example.visara.viewmodels.ProfileViewModel
 @Composable
 fun ProfileScreen(
     modifier: Modifier = Modifier,
-    viewModel: ProfileViewModel = hiltViewModel(),
-    isMyProfileRequested: Boolean,
-    username: String?,
+    viewModel: ProfileViewModel,
     bottomNavBar: @Composable () -> Unit,
     onBack: () -> Unit,
     onNavigateToFollowScreen: (startedTabIndex: Int) -> Unit,
@@ -25,10 +21,6 @@ fun ProfileScreen(
     onNavigateToAddNewVideoScreen: () -> Unit,
     onNavigateToEditVideoScreen: (video: VideoModel) -> Unit,
 ) {
-    LaunchedEffect(isMyProfileRequested, username) {
-        viewModel.setProfile(isMyProfileRequested, username)
-    }
-
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     if (!uiState.isLoading) {
