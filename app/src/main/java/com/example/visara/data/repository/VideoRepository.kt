@@ -61,6 +61,8 @@ class VideoRepository @Inject constructor(
         hashtags: List<String>,
         privacy: VideoPrivacy,
         isAllowComment: Boolean,
+        videoUri: Uri,
+        thumbnailUri: Uri?,
     ) : VideoModel? {
         val uploadVideoMetaDataResult = videoRemoteDataSource.uploadVideoMetaData(
             title = title,
@@ -71,16 +73,22 @@ class VideoRepository @Inject constructor(
         )
 
         if (uploadVideoMetaDataResult !is ApiResult.Success) return null
-        return uploadVideoMetaDataResult.data.toVideoModel()
+        val result = uploadVideoMetaDataResult.data.toVideoModel().copy(
+            localVideoUri = videoUri,
+            localThumbnailUri = thumbnailUri,
+        )
+
+        _postingVideo.update { result }
+
+        return result
     }
 
-    suspend fun uploadVideo(
+    suspend fun uploadVideoFile(
         videoMetaData: VideoModel,
         videoUri: Uri,
         thumbnailUri: Uri?,
         onProgressChange: (progress: Int) -> Unit,
     ) : Boolean {
-        _postingVideo.update { videoMetaData }
         val videoId = videoMetaData.id
         val videoFile = uriToFile(context = appContext, uri = videoUri)
         val uploadVideoFileResult = videoFile?.let {

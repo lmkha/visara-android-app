@@ -38,7 +38,7 @@ class UploadVideoWorker @AssistedInject constructor(
         }
 
         val result = with(params) {
-            val uploadResult = videoRepository.uploadVideo(
+            val uploadResult = videoRepository.uploadVideoFile(
                 videoMetaData = videoMetaData,
                 videoUri = videoUri.toUri(),
                 thumbnailUri = thumbnailUri?.toUri(),

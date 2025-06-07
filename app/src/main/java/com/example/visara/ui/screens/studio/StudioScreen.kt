@@ -1,5 +1,9 @@
 package com.example.visara.ui.screens.studio
 
+import android.annotation.SuppressLint
+import android.content.Context
+import android.media.MediaMetadataRetriever
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -12,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -31,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -40,9 +46,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.example.visara.data.model.VideoModel
 import com.example.visara.ui.components.VideoThumbnailFromVideoUri
-import com.example.visara.ui.utils.formatDuration
 import com.example.visara.ui.utils.toTimeAgo
 import com.example.visara.viewmodels.StudioViewModel
+import java.io.IOException
+import java.util.concurrent.TimeUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -125,6 +132,7 @@ private fun PostingVideoItem(
     video: VideoModel,
     onVideoSelected: () -> Unit,
 ) {
+    val context = LocalContext.current
     Box(
         modifier = modifier
             .height(120.dp)
@@ -162,15 +170,17 @@ private fun PostingVideoItem(
                             bottom = 8.dp,
                             end = 8.dp,
                         )
-                        .width(60.dp)
+                        .width(70.dp)
                         .clip(RoundedCornerShape(5.dp))
                         .background(Color.Black)
                     ,
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = formatDuration(video.duration),
+                        text = getVideoDurationFormatted(context, video.localVideoUri),
                         color = Color.White,
+                        maxLines = 1,
+                        modifier = Modifier.wrapContentWidth(),
                     )
                 }
             }
@@ -212,4 +222,38 @@ private fun PostingVideoItem(
             }
         }
     }
+}
+
+private fun getVideoDurationFormatted(context: Context, videoUri: Uri?): String {
+    if (videoUri == null) return "00:00:00"
+    val retriever = MediaMetadataRetriever()
+    return try {
+        retriever.setDataSource(context, videoUri)
+        val durationString = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+        val millis = durationString?.toLongOrNull() ?: 0L
+        formatDuration(millis)
+    } catch (e: IllegalArgumentException) {
+        e.printStackTrace()
+        "00:00:00"
+    } catch (e: IOException) {
+        e.printStackTrace()
+        "00:00:00"
+    } catch (e: SecurityException) {
+        e.printStackTrace()
+        "00:00:00"
+    } finally {
+        try {
+            retriever.release()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
+}
+
+@SuppressLint("DefaultLocale")
+private fun formatDuration(millis: Long): String {
+    val hours = TimeUnit.MILLISECONDS.toHours(millis)
+    val minutes = TimeUnit.MILLISECONDS.toMinutes(millis) - TimeUnit.HOURS.toMinutes(hours)
+    val seconds = TimeUnit.MILLISECONDS.toSeconds(millis) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis))
+    return String.format("%02d:%02d:%02d", hours, minutes, seconds)
 }

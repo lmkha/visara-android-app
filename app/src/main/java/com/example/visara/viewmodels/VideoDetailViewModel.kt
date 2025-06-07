@@ -299,7 +299,6 @@ class VideoDetailViewModel @Inject constructor(
 
     fun close() {
         viewModelScope.launch {
-            playerManager.stop()
             playerManager.close()
         }
     }

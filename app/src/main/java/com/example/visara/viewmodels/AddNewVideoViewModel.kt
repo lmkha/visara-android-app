@@ -55,7 +55,9 @@ class AddNewVideoViewModel @Inject constructor(
                 description = description,
                 hashtags = hashtags,
                 privacy = privacy,
-                isAllowComment = isAllowComment
+                isAllowComment = isAllowComment,
+                videoUri = videoUri,
+                thumbnailUri = thumbnailUri,
             )
 
             if (newVideoMetaData == null) {

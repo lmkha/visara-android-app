@@ -140,6 +140,8 @@ class PlayerManager @Inject constructor(private val videoRepository: VideoReposi
 
     fun close() {
         _videoDetail.update {
+            mediaControllerFlow.value?.stop()
+            mediaControllerFlow.value?.clearMediaItems()
             it.copy(
                 video = null,
                 isVisible = false,
@@ -162,10 +164,6 @@ class PlayerManager @Inject constructor(private val videoRepository: VideoReposi
 
     fun pause() {
         _mediaControllerFlow.value?.pause()
-    }
-
-    fun stop() {
-        _mediaControllerFlow.value?.stop()
     }
 }
 
