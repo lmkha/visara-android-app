@@ -306,4 +306,18 @@ class VideoApi @Inject constructor(
 
         return authorizedOkHttpClient.newCall(request).execute()
     }
+
+    fun getFollowingVideos(count: Long) : Response {
+        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+            .addPathSegments("videos/following/random")
+            .addQueryParameter("count", count.toString())
+            .build()
+
+        val request: Request = Request.Builder()
+            .url(url)
+            .get()
+            .build()
+
+        return authorizedOkHttpClient.newCall(request).execute()
+    }
 }

@@ -1,14 +1,21 @@
 package com.example.visara
 
+import android.content.ComponentName
+import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
+import androidx.media3.session.SessionToken
 import com.example.visara.data.model.VideoModel
 import com.example.visara.data.repository.VideoRepository
+import com.example.visara.service.play_back.PlaybackService
+import com.google.common.util.concurrent.MoreExecutors
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,34 +24,29 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class PlayerManager @Inject constructor(private val videoRepository: VideoRepository) {
+class PlayerManager @Inject constructor(
+    @ApplicationContext appContext: Context,
+    private val videoRepository: VideoRepository,
+) {
     private val _mediaControllerFlow: MutableStateFlow<MediaController?> = MutableStateFlow(null)
     val mediaControllerFlow: StateFlow<MediaController?> = _mediaControllerFlow.asStateFlow()
     private val _videoDetail: MutableStateFlow<VideoDetailState> = MutableStateFlow(VideoDetailState())
     val videoDetail: StateFlow<VideoDetailState> = _videoDetail.asStateFlow()
     private var storedPlaybackState: PlaybackStateSnapshot? = null
 
-    /**
-     * Sets the [MediaController] instance for the player.
-     * This method is designed to be called only once during the application's lifecycle,
-     * typically from [MainActivity.onCreate].
-     *
-     * To prevent re-initialization and potential issues (e.g., duplicate listeners)
-     * during configuration changes (like screen rotation), this method
-     * ensures the MediaController is set only if it's currently null.
-     *
-     * @param mediaPlayer The [MediaController] instance to be used by the PlayerManager.
-     */
-    fun setPlayer(mediaPlayer: MediaController) {
-        if (this._mediaControllerFlow.value == null) {
-            this._mediaControllerFlow.value = mediaPlayer.apply {
+    init {
+        Log.i("CHECK_VAR", "Init player manager")
+        val sessionToken = SessionToken(appContext, ComponentName(appContext, PlaybackService::class.java))
+        val controllerFuture = MediaController.Builder(appContext, sessionToken).buildAsync()
+        controllerFuture.addListener({
+            this._mediaControllerFlow.value = controllerFuture.get().apply {
                 this.addListener(object : Player.Listener {
                     override fun onIsPlayingChanged(isPlayingNow: Boolean) {
                         _videoDetail.update { it.copy(isPlaying = isPlayingNow) }
                     }
                 })
             }
-        }
+        }, MoreExecutors.directExecutor())
     }
 
     fun setVideoDetail(video: VideoModel) {

@@ -1,9 +1,9 @@
 package com.example.visara
 
 import android.Manifest
-import android.content.ComponentName
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -20,15 +20,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.visara.ui.App
 import com.example.visara.viewmodels.AppViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import android.content.res.Configuration
-import androidx.media3.session.MediaController
-import androidx.media3.session.SessionToken
-import com.example.visara.data.repository.AppSettingsRepository
-import com.example.visara.di.AppSettingsLocalDataSource
-import com.example.visara.service.play_back.PlaybackService
-import com.example.visara.ui.theme.AppTheme
-import com.google.common.util.concurrent.MoreExecutors
-import kotlinx.coroutines.flow.collectLatest
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -37,38 +28,12 @@ class MainActivity : ComponentActivity() {
 
         askNotificationPermission()
 
-        val sessionToken = SessionToken(this, ComponentName(this, PlaybackService::class.java))
-        val controllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
-
         enableEdgeToEdge()
         val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
         windowInsetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
 
         setContent {
-            LaunchedEffect(Unit) {
-                applicationContext.AppSettingsLocalDataSource.data.collectLatest { prefs->
-                    val themeKey = AppSettingsRepository.themeKey
-                    val themeName = prefs[themeKey]
-                    val theme = AppTheme.entries.find { it.name == themeName } ?: AppTheme.SYSTEM
-                    when (theme) {
-                        AppTheme.DARK -> {
-                            windowInsetsController.isAppearanceLightStatusBars = false
-                        }
-                        AppTheme.LIGHT -> {
-                            windowInsetsController.isAppearanceLightStatusBars = true
-                        }
-                        AppTheme.SYSTEM -> {
-                            val currentNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
-                            windowInsetsController.isAppearanceLightStatusBars = (currentNightMode != Configuration.UI_MODE_NIGHT_YES)
-                        }
-                    }
-                }
-            }
-
             val appViewModel: AppViewModel = hiltViewModel()
-            controllerFuture.addListener({
-                appViewModel.setPlayer(controllerFuture.get())
-            }, MoreExecutors.directExecutor())
 
             val orientation = LocalConfiguration.current.orientation
             LaunchedEffect(orientation) {
@@ -84,12 +49,22 @@ class MainActivity : ComponentActivity() {
 
             App(
                 appViewModel = appViewModel,
-                requireLandscapeMode = {
+                onRequireLandscapeMode = {
                     requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
                 },
-                requirePortraitMode = {
+                onRequirePortraitMode = {
                     requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
                 },
+                onRequireAppearanceDarkStatusBars = {
+                    windowInsetsController.isAppearanceLightStatusBars = false
+                },
+                onRequireAppearanceLightStatusBars = {
+                    windowInsetsController.isAppearanceLightStatusBars = true
+                },
+                onRequireAppearanceDefaultStatusBars = {
+                    val currentNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+                    windowInsetsController.isAppearanceLightStatusBars = (currentNightMode != Configuration.UI_MODE_NIGHT_YES)
+                }
             )
         }
     }

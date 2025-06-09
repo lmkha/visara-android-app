@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -141,11 +142,11 @@ fun SearchScreen(
 
             when (selectedType) {
                 SearchType.TITLE, SearchType.HASHTAG -> {
-                    items(uiState.videos.size) { index->
+                    items(uiState.videos) { video ->
                         VideoItem(
-                            state = uiState.videos[index],
-                            onVideoSelect = { viewModel.selectVideo(it) },
-                            onAuthorSelected = { onViewUserProfile(it) },
+                            state = video,
+                            onVideoSelect = { viewModel.selectVideo(video) },
+                            onAuthorSelected = { onViewUserProfile(video.username) },
                             modifier = Modifier.fillMaxWidth()
                         )
                     }

@@ -39,13 +39,13 @@ fun VideoItem(
     modifier: Modifier = Modifier,
     state: VideoModel,
     videoHeight: Dp = 250.dp,
-    onVideoSelect: (video: VideoModel) -> Unit = {},
-    onAuthorSelected: (username: String) -> Unit = {},
+    onVideoSelect: () -> Unit = {},
+    onAuthorSelected: () -> Unit = {},
 ) {
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = {onVideoSelect(state)})
+            .clickable(onClick = onVideoSelect)
     ) {
         Column {
             Box {
@@ -88,7 +88,7 @@ fun VideoItem(
                     modifier = Modifier
                         .size(50.dp)
                         .clickable(
-                            onClick = { onAuthorSelected(state.username) },
+                            onClick = onAuthorSelected,
                             interactionSource = null,
                             indication = null,
                         )

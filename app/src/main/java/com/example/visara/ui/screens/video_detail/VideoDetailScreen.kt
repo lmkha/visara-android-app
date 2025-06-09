@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -37,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.visara.ui.components.LoginRequestDialog
+import com.example.visara.ui.components.VideoItem
 import com.example.visara.ui.components.VisaraVideoPlayer
 import com.example.visara.ui.components.rememberLoginRequestDialogState
 import com.example.visara.ui.screens.video_detail.components.ActionsSection
@@ -101,7 +103,7 @@ fun VideoDetailScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(playerHeight)
-                        .aspectRatio(16f / 9f),
+                        .aspectRatio(16f / 9f)
                 ) {
                     key(reloadKey) {
                         VisaraVideoPlayer(
@@ -203,17 +205,18 @@ fun VideoDetailScreen(
                         )
                     }
                     // Recommend videos
-                    /*
-                    items(5) {
+                    items(uiState.recommendedVideos) { recommendedVideo ->
                         VideoItem(
-                            onVideoSelect = {},
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            videoHeight = 200.dp,
+                            state = recommendedVideo,
+                            modifier = Modifier.clip(RoundedCornerShape(16.dp)),
+                            onVideoSelect = {
+                                viewModel.selectRecommendedVideo(recommendedVideo)
+                            },
+                            onAuthorSelected = {
+                                onNavigateToProfileScreen(recommendedVideo.username)
+                            }
                         )
-                        Spacer(Modifier.height(8.dp))
                     }
-                 */
                 }
 
                 // Expanded Comment section: Wrap content in column to use slideInVertically and slideOutVertically

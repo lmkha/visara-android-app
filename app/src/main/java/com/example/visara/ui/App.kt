@@ -48,7 +48,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -95,6 +94,7 @@ import com.example.visara.ui.screens.settings.SettingsScreen
 import com.example.visara.ui.screens.studio.StudioScreen
 import com.example.visara.ui.screens.test.TestScreen
 import com.example.visara.ui.screens.video_detail.VideoDetailScreen
+import com.example.visara.ui.theme.AppTheme
 import com.example.visara.ui.theme.VisaraTheme
 import com.example.visara.viewmodels.AppState
 import com.example.visara.viewmodels.AppViewModel
@@ -115,8 +115,11 @@ import kotlin.math.roundToInt
 )
 fun App(
     appViewModel: AppViewModel,
-    requireLandscapeMode: () -> Unit,
-    requirePortraitMode: () -> Unit,
+    onRequireLandscapeMode: () -> Unit,
+    onRequirePortraitMode: () -> Unit,
+    onRequireAppearanceLightStatusBars: () -> Unit,
+    onRequireAppearanceDarkStatusBars: () -> Unit,
+    onRequireAppearanceDefaultStatusBars: () -> Unit,
 ) {
 
     val appState by appViewModel.appState.collectAsStateWithLifecycle()
@@ -134,6 +137,23 @@ fun App(
                 val popped = navController.popBackStack(route = dest, inclusive = false)
                 if (!popped) navController.navigate(dest)
             }
+        }
+    }
+
+    LaunchedEffect(
+        key1 = appState.appTheme,
+        key2 = appState.videoDetailState.isFullScreenMode,
+    ) {
+        when(appState.appTheme) {
+            AppTheme.LIGHT -> {
+                if (appState.videoDetailState.isFullScreenMode) {
+                    onRequireAppearanceDarkStatusBars()
+                } else {
+                    onRequireAppearanceLightStatusBars()
+                }
+            }
+            AppTheme.DARK -> onRequireAppearanceDarkStatusBars()
+            AppTheme.SYSTEM -> onRequireAppearanceDefaultStatusBars()
         }
     }
 
@@ -196,6 +216,15 @@ fun App(
                                         onNavigate = { botNavBarNavigate(it) }
                                     )
                                 },
+                                onNavigateToProfileScreen = { username ->
+                                    navController.navigate(Destination.Main.Profile(username = username))
+                                },
+                                onNavigateToFollowingScreen = {
+                                    navController.navigate(Destination.Follow(startedTabIndex = 0))
+                                },
+                                onNavigateToLoginScreen = {
+                                    navController.navigate(Destination.Login)
+                                }
                             )
                         }
                         composable<Destination.Main.AddNewVideo>(enterTransition = {
@@ -435,7 +464,12 @@ fun App(
             }
 
             // Video detail
-            Box(modifier = Modifier.zIndex(if (appState.videoDetailState.isVisible) 10f else -10f)) {
+            Box(modifier = Modifier
+                .zIndex(if (appState.videoDetailState.isVisible) 10f else -10f)
+                .fillMaxSize()
+                .background(color = if (appState.videoDetailState.isFullScreenMode) Color.Black else Color.Transparent)
+                .statusBarsPadding()
+                .imePadding()) {
                 val isFullScreen = appState.videoDetailState.isFullScreenMode
                 val shape by animateDpAsState(targetValue = if (isFullScreen) 0.dp else 15.dp, label = "shape")
                 val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp
@@ -486,91 +520,89 @@ fun App(
                     }
                 }
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .statusBarsPadding()
-                        .imePadding()
-                ) {
-                    key(appState.videoDetailState.video?.id) {
-                        VideoDetailScreen(
-                            viewModel = videoDetailViewModel,
-                            isFullScreenMode = isFullScreen,
-                            isLandscapeMode = appState.isLandscapeMode,
-                            requirePortraitMode = requirePortraitMode,
-                            requireLandscapeMode = requireLandscapeMode,
-                            onNavigateToProfileScreen = { username ->
+                VideoDetailScreen(
+                    viewModel = videoDetailViewModel,
+                    isFullScreenMode = isFullScreen,
+                    isLandscapeMode = appState.isLandscapeMode,
+                    requirePortraitMode = onRequirePortraitMode,
+                    requireLandscapeMode = onRequireLandscapeMode,
+                    onNavigateToProfileScreen = { username ->
+                        appViewModel.minimizeVideoDetail()
+                        try {
+                            val route = navController.currentBackStackEntry?.toRoute<Destination.Main.Profile>()
+                            if (route == null || route.username != username) {
                                 navController.navigate(Destination.Main.Profile(username = username))
-                            },
-                            onNavigateToLoginScreen = {
-                                appViewModel.minimizeVideoDetail()
-                                navController.navigate(Destination.Login)
-                            },
-                            modifier = Modifier
-                                .offset {
-                                    IntOffset(
-                                        offsetX.value.roundToInt(),
-                                        offsetY.value.roundToInt()
-                                    )
-                                }
-                                // Only allow drag when in minimized mode
-                                .then(
-                                    if (!isFullScreen) Modifier.pointerInput(Unit) {
-                                        detectDragGestures(
-                                            onDrag = { change, dragAmount ->
-                                                change.consume()
-                                                coroutineScope.launch {
-                                                    val newX = offsetX.value + dragAmount.x
-                                                    val newY = offsetY.value + dragAmount.y
+                            }
+                        } catch (_: Exception) {
+                            navController.navigate(Destination.Main.Profile(username = username))
+                        }
+                    },
+                    onNavigateToLoginScreen = {
+                        appViewModel.minimizeVideoDetail()
+                        navController.navigate(Destination.Login)
+                    },
+                    modifier = Modifier
+                        .offset {
+                            IntOffset(
+                                offsetX.value.roundToInt(),
+                                offsetY.value.roundToInt()
+                            )
+                        }
+                        // Only allow drag when in minimized mode
+                        .then(
+                            if (!isFullScreen) Modifier.pointerInput(Unit) {
+                                detectDragGestures(
+                                    onDrag = { change, dragAmount ->
+                                        change.consume()
+                                        coroutineScope.launch {
+                                            val newX = offsetX.value + dragAmount.x
+                                            val newY = offsetY.value + dragAmount.y
 
-                                                    offsetX.snapTo(newX)
-                                                    offsetY.snapTo(newY)
-                                                }
-                                            },
-                                            onDragEnd = {
-                                                val midX = screenWidthPx / 2
-                                                val midY = screenHeightPx / 2
-                                                // Decide target snap position based on whether box center is in left or right half,
-                                                // and top or bottom half of the screen
-                                                val targetX = if (offsetX.value + boxWidthPx / 2 < midX) startPaddingPx else maxOffsetX
-                                                val targetY = if (offsetY.value + boxHeightPx / 2 < midY) 0f else maxOffsetY
-                                                coroutineScope.launch {
-                                                    // Animate snapping to nearest corner smoothly
-                                                    launch {
-                                                        offsetX.animateTo(
-                                                            targetValue = targetX,
-                                                            animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
-                                                        )
-                                                    }
-                                                    launch {
-                                                        offsetY.animateTo(
-                                                            targetValue = targetY,
-                                                            animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
-                                                        )
-                                                    }
-                                                }
-                                            }
-                                        )
-                                    } else Modifier
-                                )
-                                .then(
-                                    if (isFullScreen) Modifier
-                                        .fillMaxSize()
-                                        .graphicsLayer {
-                                            scaleX = 1f
-                                            scaleY = 1f
-                                            transformOrigin = TransformOrigin(1f, 1f)
+                                            offsetX.snapTo(newX)
+                                            offsetY.snapTo(newY)
                                         }
-                                        .statusBarsPadding()
-                                    else Modifier
-                                        .width(250.dp)
-                                        .aspectRatio(16f / 9f)
-                                        .clip(RoundedCornerShape(shape))
+                                    },
+                                    onDragEnd = {
+                                        val midX = screenWidthPx / 2
+                                        val midY = screenHeightPx / 2
+                                        // Decide target snap position based on whether box center is in left or right half,
+                                        // and top or bottom half of the screen
+                                        val targetX = if (offsetX.value + boxWidthPx / 2 < midX) startPaddingPx else maxOffsetX
+                                        val targetY = if (offsetY.value + boxHeightPx / 2 < midY) 0f else maxOffsetY
+                                        coroutineScope.launch {
+                                            // Animate snapping to nearest corner smoothly
+                                            launch {
+                                                offsetX.animateTo(
+                                                    targetValue = targetX,
+                                                    animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
+                                                )
+                                            }
+                                            launch {
+                                                offsetY.animateTo(
+                                                    targetValue = targetY,
+                                                    animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
+                                                )
+                                            }
+                                        }
+                                    }
                                 )
-                                .animateContentSize()
+                            } else Modifier
                         )
-                    }
-                }
+                        .then(
+                            if (isFullScreen) Modifier
+                                .fillMaxSize()
+                                .graphicsLayer {
+                                    scaleX = 1f
+                                    scaleY = 1f
+                                    transformOrigin = TransformOrigin(1f, 1f)
+                                }
+                            else Modifier
+                                .width(250.dp)
+                                .aspectRatio(16f / 9f)
+                                .clip(RoundedCornerShape(shape))
+                        )
+                        .animateContentSize()
+                )
             }
 
             LoginRequestDialog(

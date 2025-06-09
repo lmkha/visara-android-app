@@ -46,7 +46,7 @@ class HomeViewModel @Inject constructor(
             if (networkMonitor.isOnline.first()) {
                 _uiState.update { it.copy(isLoading = true, isRefreshing = true) }
                 val newVideoList = videoRepository.getVideoForHomeScreen()
-                if (newVideoList != null) {
+                if (newVideoList.isNotEmpty()) {
                     _uiState.update {
                         it.copy(
                             videos = newVideoList,
@@ -74,4 +74,5 @@ data class HomeScreenUiState(
     val isLoading: Boolean = true,
     val isRefreshing: Boolean = false,
     val videos: List<VideoModel> = emptyList(),
+    val suggestionHashtags: List<String> = emptyList(),
 )

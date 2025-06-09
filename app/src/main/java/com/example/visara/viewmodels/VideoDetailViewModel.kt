@@ -52,18 +52,12 @@ class VideoDetailViewModel @Inject constructor(
     private fun observerVideoDetail() {
         viewModelScope.launch {
             playerManager.videoDetail.collect { videoDetail ->
-                if (videoDetail.video?.id == _uiState.value.video?.id) {
-                    _uiState.update {
-                        it.copy(
-                            isFullScreenMode = videoDetail.isFullScreenMode,
-                            isPlaying = videoDetail.isPlaying,
-                        )
-                    }
-                } else {
+                if (videoDetail.video?.id != _uiState.value.video?.id) {
                     val videoId = videoDetail.video?.id
                     if (videoId != null) {
                         _uiState.update { oldState ->
                             val videoDeferred = async { videoRepository.getVideoById(videoId) }
+                            val recommendedVideosDeferred = async { videoRepository.getRecommendedVideos(videoDetail.video) }
                             val isVideoLikedDeferred =  async { videoRepository.isVideoLiked(videoId) }
                             val authorDeferred = async { userRepository.getPublicUser(videoDetail.video.username) }
                             val isFollowingDeferred = async {
@@ -78,6 +72,7 @@ class VideoDetailViewModel @Inject constructor(
                                 val viewCount = it.viewsCount
                                 it.copy(viewsCount = viewCount + 1)
                             }
+                            val recommendedVideos = recommendedVideosDeferred.await()
                             val isVideoLiked = isVideoLikedDeferred.await()
                             val author = authorDeferred.await()
                             val isFollowing = isFollowingDeferred.await()
@@ -85,6 +80,7 @@ class VideoDetailViewModel @Inject constructor(
 
                             oldState.copy(
                                 video = video,
+                                recommendedVideos = recommendedVideos,
                                 isVideoLiked = isVideoLiked,
                                 commentList = commentList,
                                 author = author,
@@ -109,6 +105,14 @@ class VideoDetailViewModel @Inject constructor(
                             )
                         }
                     }
+
+                } else {
+                    _uiState.update {
+                        it.copy(
+                            isFullScreenMode = videoDetail.isFullScreenMode,
+                            isPlaying = videoDetail.isPlaying,
+                        )
+                    }
                 }
             }
         }
@@ -127,6 +131,12 @@ class VideoDetailViewModel @Inject constructor(
             userRepository.currentUser.collect { currentUser ->
                 _uiState.update { it.copy(currentUser = currentUser) }
             }
+        }
+    }
+
+    fun selectRecommendedVideo(video: VideoModel) {
+        viewModelScope.launch {
+            playerManager.setVideoDetail(video)
         }
     }
 
@@ -387,6 +397,7 @@ sealed class VideoDetailScreenEvent {
 data class VideoDetailScreenUiState(
     val isUserAuthenticated: Boolean = false,
     val video: VideoModel? = null,
+    val recommendedVideos: List<VideoModel> = emptyList(),
     val isVideoLiked: Boolean = false,
     val commentList: List<CommentWithReplies> = emptyList(),
     val isLoading: Boolean = true,

@@ -10,12 +10,10 @@ import com.example.visara.data.model.VideoModel
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.datasource.VideoRemoteDataSource
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
@@ -38,16 +36,25 @@ class VideoRepository @Inject constructor(
         return null
     }
 
-    suspend fun getVideoForHomeScreen(): List<VideoModel>? {
-        return withContext(Dispatchers.IO) {
-            val videoListResult = videoRemoteDataSource.getRandomVideos(50)
+    suspend fun getVideoForHomeScreen(): List<VideoModel> {
+        val videoListResult = videoRemoteDataSource.getRandomVideos(50)
+        return if (videoListResult is ApiResult.Success) {
+            videoListResult.data.map { it.toVideoModel() }
+        } else {
+            emptyList()
+        }
+    }
 
-            if (videoListResult is ApiResult.Success) {
-                val videoModelList = videoListResult.data.map { it.toVideoModel() }
-                videoModelList
-            } else {
-                null
-            }
+    suspend fun getRecommendedVideos(video: VideoModel) : List<VideoModel> {
+        val videoListResult = videoRemoteDataSource.getRandomVideos(50)
+        return if (videoListResult is ApiResult.Success) {
+            videoListResult.data
+                .asSequence()
+                .map { it.toVideoModel() }
+                .filter { it.id != video.id }
+                .toList()
+        } else {
+            emptyList()
         }
     }
 
@@ -251,5 +258,11 @@ class VideoRepository @Inject constructor(
             viewerUsername = currentUser.username,
         )
         return apiResult is ApiResult.Success
+    }
+
+    suspend fun getFollowingVideos(count: Long = 50) : List<VideoModel> {
+        val apiResult = videoRemoteDataSource.getFollowingVideos(count)
+        if (apiResult !is ApiResult.Success) return emptyList()
+        return apiResult.data.map { it.toVideoModel() }
     }
 }

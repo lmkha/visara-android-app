@@ -69,15 +69,6 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val suggestionTags = listOf(
-        "football",
-        "barca",
-        "champion league",
-        "music",
-        "hiphop",
-        "rap",
-        "information technology"
-    )
     val lazyColumnState = rememberLazyListState()
     val scrollBehavior: TopAppBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scope = rememberCoroutineScope()
@@ -128,7 +119,7 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxSize()
             ) {
                 SuggestionTag(
-                    tags = suggestionTags,
+                    tags = uiState.suggestionHashtags,
                     modifier = Modifier.wrapContentHeight()
                 )
 
@@ -147,10 +138,10 @@ fun HomeScreen(
                                 VideoItem(
                                     state = video,
                                     onVideoSelect = {
-                                        viewModel.selectVideo(it)
+                                        viewModel.selectVideo(video)
                                     },
-                                    onAuthorSelected = { username ->
-                                        navigateToProfileScreen(username)
+                                    onAuthorSelected = {
+                                        navigateToProfileScreen(video.username)
                                     },
                                     modifier = Modifier.fillMaxWidth()
                                 )
