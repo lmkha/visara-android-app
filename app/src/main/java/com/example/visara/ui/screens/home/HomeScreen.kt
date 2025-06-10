@@ -119,7 +119,7 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxSize()
             ) {
                 SuggestionTag(
-                    tags = uiState.suggestionHashtags,
+                    tags = uiState.recommendedHashtags,
                     modifier = Modifier.wrapContentHeight()
                 )
 

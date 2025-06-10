@@ -199,9 +199,14 @@ fun VideoDetailScreen(
                     // Comment
                     item {
                         MinimizedCommentSection(
+                            isCommentOff = uiState.video?.isCommentOff == true,
                             commentsCount = uiState.video?.commentsCount ?: 0L,
                             coverComment = uiState.commentList.firstOrNull()?.comment,
-                            onClick = { viewModel.expandCommentSection() }
+                            onClick = {
+                                if (uiState.video?.isCommentOff == false) {
+                                    viewModel.expandCommentSection()
+                                }
+                            }
                         )
                     }
                     // Recommend videos

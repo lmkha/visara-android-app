@@ -78,10 +78,18 @@ class VideoRemoteDataSource @Inject constructor(
         hashtags: List<String>,
         isPrivate: Boolean,
         isCommentOff: Boolean,
+        playlistIds: List<String>,
     ) : ApiResult<VideoDto> {
         return withContext(Dispatchers.IO) {
             try {
-                val response = videoApi.uploadVideoMetaData(title, description, hashtags, isPrivate, isCommentOff)
+                val response = videoApi.uploadVideoMetaData(
+                    title = title,
+                    description = description,
+                    hashtags = hashtags,
+                    isPrivate = isPrivate,
+                    isCommentOff = isCommentOff,
+                    playlistIds = playlistIds,
+                )
                 val responseBody = response.body?.string()
 
                 if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
@@ -197,6 +205,8 @@ class VideoRemoteDataSource @Inject constructor(
             try {
                 val response = videoApi.uploadVideoFile(videoId, videoFile, progressListener)
                 val responseBody = response.body?.string()
+                Log.d("CHECK_VAR", "Upload file rp: $response")
+                Log.d("CHECK_VAR", "Upload file rp body: ${responseBody.toString()}")
 
                 if (response.isSuccessful) {
                     ApiResult.Success(Unit)

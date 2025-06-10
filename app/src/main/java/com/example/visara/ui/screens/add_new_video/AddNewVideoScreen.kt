@@ -1,6 +1,7 @@
 package com.example.visara.ui.screens.add_new_video
 
-import android.net.Uri
+import android.content.Intent
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -12,48 +13,64 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.visara.ui.screens.add_new_video.components.enter_video_info.EnterVideoInfoStep
 import com.example.visara.ui.screens.add_new_video.components.review.ReviewSectionStep
 import com.example.visara.ui.screens.add_new_video.components.select.SelectVideoStep
+import com.example.visara.ui.screens.studio.StudioSelectedTag
 import com.example.visara.viewmodels.AddNewVideoScreenEvent
 import com.example.visara.viewmodels.AddNewVideoViewModel
-import kotlinx.coroutines.launch
 
 @Composable
 fun AddNewVideoScreen(
     modifier: Modifier = Modifier,
-    viewModel: AddNewVideoViewModel = hiltViewModel(),
-    onNavigateToStudio: () -> Unit,
+    viewModel: AddNewVideoViewModel,
+    startingStep: AddNewVideoStep = AddNewVideoStep.SELECT_VIDEO,
+    onNavigateToStudio: (selectedTag: StudioSelectedTag) -> Unit,
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current.applicationContext
     val currentMediaController by viewModel.mediaController.collectAsStateWithLifecycle()
-    var videoUri by remember { mutableStateOf<Uri?>(null) }
-    val scope = rememberCoroutineScope()
-    var step by remember { mutableIntStateOf(1) }
+    var videoUri by remember(uiState.draftData.videoUri) { mutableStateOf(uiState.draftData.videoUri) }
+    var step by remember(startingStep) { mutableStateOf(startingStep) }
     val pickMedia = rememberLauncherForActivityResult(PickVisualMedia()) { uri->
-        videoUri = uri
         uri?.let {
-            scope.launch {
-                viewModel.playUriVideo(it)
-                step = 2
+            try {
+                context.contentResolver.takePersistableUriPermission(it, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                videoUri = it
+                step = AddNewVideoStep.REVIEW_VIDEO
+
+            } catch (e : Exception) {
+                Log.e("DraftVideo", "Error: Cannot get persistable permission for video URI: ${e.message}")
             }
         }
     }
 
-    LaunchedEffect(Unit) {
-        viewModel.eventFlow.collect { event ->
-            when (event) {
-                is AddNewVideoScreenEvent.UploadNewVideoMetaDataSuccess -> {
-                    onNavigateToStudio()
+    LaunchedEffect(videoUri) {
+        videoUri?.let { viewModel.playUriVideo(it) }
+    }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(lifecycleOwner.lifecycle) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            viewModel.eventFlow.collect { event ->
+                when (event) {
+                    is AddNewVideoScreenEvent.UploadNewVideoMetaDataSuccess -> {
+                        onNavigateToStudio(StudioSelectedTag.UPLOADING)
+                    }
+                    is AddNewVideoScreenEvent.DraftVideoPostSuccess -> {
+                        onNavigateToStudio(StudioSelectedTag.DRAFT)
+                    }
+                    else -> {}
                 }
-                else -> {}
             }
         }
     }
@@ -62,19 +79,20 @@ fun AddNewVideoScreen(
         onDispose { currentMediaController?.stop() }
     }
 
-    if (step > 1) {
+    if (step != AddNewVideoStep.entries.first()) {
         BackHandler {
-            step -= 1
+            val stepIndex = AddNewVideoStep.entries.indexOf(step)
+            AddNewVideoStep.entries.getOrNull(stepIndex - 1)?.let {
+                step = it
+            }
         }
     }
 
-    Box(
-        modifier = modifier
-            .statusBarsPadding()
-            .navigationBarsPadding()
-    ) {
+    Box(modifier = modifier
+        .statusBarsPadding()
+        .navigationBarsPadding()) {
         when (step) {
-            1 -> {
+            AddNewVideoStep.SELECT_VIDEO -> {
                 SelectVideoStep(
                     onOpenPhotoPicker = {
                         pickMedia.launch(PickVisualMediaRequest(PickVisualMedia.VideoOnly))
@@ -82,26 +100,29 @@ fun AddNewVideoScreen(
                     modifier = modifier,
                 )
             }
-            2 -> {
-                if (videoUri != null && currentMediaController != null) {
-                    ReviewSectionStep(
-                        mediaController = currentMediaController!!,
-                        modifier = modifier,
-                        onBack = { step -= 1 },
-                        onGoNext = { step += 1 },
-                    )
-                }
-            }
-            3 -> {
-                EnterVideoInfoStep(
-                    videoUri = videoUri,
-                    onBack = { step -= 1 },
-                    onSubmit = { title, description, hashtags, privacy, isAllowComment, thumbnailUri ->
-                        viewModel.postVideo(videoUri, thumbnailUri, title, description, hashtags, privacy.value, isAllowComment)
-                    }
+            AddNewVideoStep.REVIEW_VIDEO -> {
+                ReviewSectionStep(
+                    mediaController = currentMediaController,
+                    modifier = modifier,
+                    onBack = { step = AddNewVideoStep.SELECT_VIDEO },
+                    onGoNext = { step = AddNewVideoStep.ENTER_DATA_AND_POST },
                 )
             }
-            else -> { }
+            AddNewVideoStep.ENTER_DATA_AND_POST -> {
+                EnterVideoInfoStep(
+                    videoUri = videoUri,
+                    uiState = uiState,
+                    onBack = { step = AddNewVideoStep.REVIEW_VIDEO },
+                    onPost = { viewModel.postVideo(it.copy(videoUri = videoUri)) },
+                    onDraft = { viewModel.draftVideoPost(it.copy(videoUri = videoUri)) }
+                )
+            }
         }
     }
+}
+
+enum class AddNewVideoStep {
+    SELECT_VIDEO,
+    REVIEW_VIDEO,
+    ENTER_DATA_AND_POST
 }

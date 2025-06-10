@@ -1,5 +1,6 @@
 package com.example.visara.viewmodels
 
+import android.content.Intent
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,15 +11,19 @@ import com.example.visara.data.repository.UserRepository
 import com.example.visara.PlayerManager
 import com.example.visara.VideoDetailState
 import com.example.visara.common.NetworkMonitor
+import com.example.visara.ui.navigation.Destination
 import com.example.visara.ui.theme.AppTheme
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
+import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -31,9 +36,12 @@ class AppViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val playerManager: PlayerManager,
     private val networkMonitor: NetworkMonitor,
+    private val gson: Gson,
 ) : ViewModel() {
     private val _appState = MutableStateFlow(AppState())
     val appState: StateFlow<AppState> = _appState.asStateFlow()
+    private val _eventChannel: Channel<AppEvent> = Channel<AppEvent>()
+    val eventFlow = _eventChannel.receiveAsFlow()
     private var wasOfflineBefore = false
 
     init {
@@ -142,6 +150,37 @@ class AppViewModel @Inject constructor(
     fun restoreStoredPlaybackState() {
         playerManager.restoreStoredPlaybackState()
     }
+
+    fun handleNewIntent(intent: Intent?) {
+        viewModelScope.launch {
+            Log.d("CHECK_VAR", "receive intent in app viewmodel: ${intent.toString()}")
+            val requestType = intent?.getStringExtra("request-type")
+            if (requestType == "navigation") {
+                val route = intent.getStringExtra("route")
+                var destination: Destination? = null
+                try {
+                    when (route) {
+                        "studio" -> {
+                            destination = intent.getStringExtra("destination")?.let {
+                                gson.fromJson(it, Destination.Studio::class.java)
+                            }
+                        }
+
+                        else -> {}
+                    }
+                } catch (e : Exception) {
+                    Log.e("CHECK_VAR", "request navigate: ${e.printStackTrace()}")
+                }
+                if (destination != null) {
+                    _eventChannel.send(AppEvent.NavigateToScreen(destination))
+                }
+            }
+        }
+    }
+}
+
+sealed class AppEvent {
+    data class NavigateToScreen(val destination: Destination) : AppEvent()
 }
 
 data class AppState(

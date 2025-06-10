@@ -6,6 +6,7 @@ data class VideoModel(
     val createdAt: String = "",
     val updatedAt: String = "",
     val id: String = "",
+    val localId: Long? = null,
     val userId: Long = 0L,
     val username: String = "",
     val userFullName: String = "",

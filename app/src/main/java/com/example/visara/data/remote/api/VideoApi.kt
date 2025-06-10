@@ -142,6 +142,7 @@ class VideoApi @Inject constructor(
         hashtags: List<String>,
         isPrivate: Boolean,
         isCommentOff: Boolean,
+        playlistIds: List<String>,
     ) : Response {
         val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
             .addPathSegments("videos/new/")
@@ -154,6 +155,7 @@ class VideoApi @Inject constructor(
                 "tags" to hashtags,
                 "isPrivate" to isPrivate,
                 "isCommentOff" to isCommentOff,
+                "playlistIds" to playlistIds,
             )
         ).toRequestBody("application/json".toMediaTypeOrNull())
 

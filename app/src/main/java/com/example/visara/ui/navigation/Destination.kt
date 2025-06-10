@@ -8,7 +8,10 @@ sealed class Destination(val name: String) {
     @Serializable object Main : Destination("Main") {
         @Serializable object Home : Destination("Main.Home")
         @Serializable object FollowingFeed : Destination("Main.FollowingFeed")
-        @Serializable object AddNewVideo : Destination("Main.AddNewVideo")
+        @Serializable data class AddNewVideo(
+            val isPostDraft: Boolean = false,
+            val localDraftVideoId: Long? = null,
+        ) : Destination("Main.AddNewVideo")
         @Serializable object Inbox : Destination("Main.Inbox") {
             @Serializable object InboxList : Destination("Main.Inbox.InboxList")
             @Serializable object NewFollowersInbox : Destination("Main.Inbox.NewFollowers")
@@ -29,8 +32,8 @@ sealed class Destination(val name: String) {
         val pattern: String = "",
     ): Destination("Search")
     @Serializable object Login : Destination("Login")
-//    @Serializable object SignUp : Destination("SignUp")
-    @Serializable object Studio : Destination("Studio")
+    //    @Serializable object SignUp : Destination("SignUp")
+    @Serializable data class Studio(val selectedTagIndex: Int = 0) : Destination("Studio")
     @Serializable data class EditVideo(val videoJson: String) : Destination("EditVideo")
     @Serializable object Test : Destination("Test")
 }

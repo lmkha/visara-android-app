@@ -99,10 +99,18 @@ class NotificationHelper @Inject constructor(
             .setContentText("Your video is being uploaded...")
             .setSmallIcon(R.drawable.arrow_upward_24px)
             .setOngoing(true)
-            .setProgress(currentProgress, maxProgress, false)
+            .setProgress(maxProgress, currentProgress, false)
             .build()
 
         return notification
+    }
+
+    fun createUploadingNewVideoNotificationBuilder() : NotificationCompat.Builder {
+        return NotificationCompat.Builder(appContext, NotificationChannelInfo.UploadingNewVideo.id)
+            .setContentTitle("Uploading Video")
+            .setContentText("Your video is being uploaded...")
+            .setSmallIcon(R.drawable.arrow_upward_24px)
+            .setOngoing(true)
     }
 
     private fun getBitmapFromURL(src: String): Bitmap? {

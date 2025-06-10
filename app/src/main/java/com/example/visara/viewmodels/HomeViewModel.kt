@@ -7,6 +7,7 @@ import com.example.visara.PlayerManager
 import com.example.visara.data.repository.VideoRepository
 import com.example.visara.common.NetworkMonitor
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -45,17 +46,19 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             if (networkMonitor.isOnline.first()) {
                 _uiState.update { it.copy(isLoading = true, isRefreshing = true) }
-                val newVideoList = videoRepository.getVideoForHomeScreen()
-                if (newVideoList.isNotEmpty()) {
-                    _uiState.update {
-                        it.copy(
-                            videos = newVideoList,
-                            isLoading = false,
-                            isRefreshing = false
-                        )
-                    }
-                } else {
-                    _uiState.update { it.copy(isLoading = false, isRefreshing = false) }
+//                val newVideoList = videoRepository.getVideoForHomeScreen()
+                val newVideoListDeferred =  async { videoRepository.getVideoForHomeScreen() }
+                val recommendedHashtagsDeferred = async { videoRepository.getRecommendedHashtag() }
+                val newVideoList = newVideoListDeferred.await()
+                val recommendedHashtags = recommendedHashtagsDeferred.await()
+
+                _uiState.update {
+                    it.copy(
+                        videos = newVideoList,
+                        recommendedHashtags = recommendedHashtags,
+                        isLoading = false,
+                        isRefreshing = false
+                    )
                 }
             } else {
                 shouldReFetchWhenOnline = true
@@ -74,5 +77,5 @@ data class HomeScreenUiState(
     val isLoading: Boolean = true,
     val isRefreshing: Boolean = false,
     val videos: List<VideoModel> = emptyList(),
-    val suggestionHashtags: List<String> = emptyList(),
+    val recommendedHashtags: List<String> = emptyList(),
 )

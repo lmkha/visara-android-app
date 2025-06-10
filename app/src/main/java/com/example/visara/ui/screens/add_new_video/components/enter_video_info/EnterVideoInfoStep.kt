@@ -1,6 +1,9 @@
 package com.example.visara.ui.screens.add_new_video.components.enter_video_info
 
+import android.content.Intent
 import android.net.Uri
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -51,39 +54,59 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.core.net.toUri
 import com.example.visara.R
 import com.example.visara.ui.theme.LocalVisaraCustomColors
 import coil3.compose.AsyncImage
 import com.example.visara.ui.components.VideoThumbnailFromVideoUri
+import com.example.visara.viewmodels.AddNewVideoScreenUiState
+import com.example.visara.viewmodels.AddVideoSubmitData
 
 @Composable
 fun EnterVideoInfoStep(
     modifier: Modifier = Modifier,
-    videoUri: Uri? = null,
+    uiState: AddNewVideoScreenUiState,
+    videoUri: Uri?,
     onBack: () -> Unit,
-    onSubmit: (
-        title: String,
-        description: String,
-        hashtags: List<String>,
-        privacy: PrivacyState,
-        isAllowComment: Boolean,
-        thumbnailUri: Uri?,
-    ) -> Unit,
+    onPost: (data: AddVideoSubmitData) -> Unit,
+    onDraft: (data: AddVideoSubmitData) -> Unit,
 ) {
-    var thumbnailUri by remember { mutableStateOf<Uri?>(null) }
-    val pickMedia = rememberLauncherForActivityResult(PickVisualMedia()) { uri->
-        uri?.let { thumbnailUri = uri }
+    var thumbnailUri by remember(uiState.draftData.thumbnailUri) {
+        mutableStateOf(uiState.draftData.thumbnailUri)
     }
-
-    var title by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var hashTags by remember { mutableStateOf<List<String>>(emptyList()) }
-    var privacy by remember { mutableStateOf(PrivacyState.ALL) }
-    var isAllowComment by remember { mutableStateOf(true) }
-    var selectedPlaylists by remember { mutableStateOf<List<String>>(emptyList()) }
+    val context = LocalContext.current.applicationContext
+    val pickMedia = rememberLauncherForActivityResult(PickVisualMedia()) { uri->
+        uri?.let {
+            try {
+                context.contentResolver.takePersistableUriPermission(it, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                thumbnailUri = it
+            } catch (e: Exception) {
+                Log.e("DraftVideo", "Error: Cannot get persistable permission for video URI: ${e.message}")
+            }
+        }
+    }
+    var title by remember(uiState.draftData.title) {
+        mutableStateOf(uiState.draftData.title)
+    }
+    var description by remember(uiState.draftData.description) {
+        mutableStateOf(uiState.draftData.description)
+    }
+    var hashTags by remember(uiState.draftData.hashtags) {
+        mutableStateOf(uiState.draftData.hashtags)
+    }
+    var privacy by remember(uiState.draftData.privacy) {
+        mutableStateOf(uiState.draftData.privacy)
+    }
+    var isAllowComment by remember(uiState.draftData.isAllowComment) {
+        mutableStateOf(uiState.draftData.isAllowComment)
+    }
+    var selectedPlaylists by remember(uiState.draftData.playlists) {
+        mutableStateOf(uiState.draftData.playlists)
+    }
 
     var openAddDescriptionBox by remember { mutableStateOf(false) }
     var openSelectPrivacyBox by remember { mutableStateOf(false) }
@@ -132,16 +155,20 @@ fun EnterVideoInfoStep(
                             .background(color = Color.Black),
                         contentAlignment = Alignment.Center,
                     ) {
-                        if (thumbnailUri != null) {
+                        if (thumbnailUri != null && thumbnailUri != "null".toUri()) {
                             AsyncImage(
                                 model = thumbnailUri,
                                 contentDescription = null,
-                                modifier = Modifier.clip(RoundedCornerShape(8.dp)),
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(RoundedCornerShape(8.dp))
                             )
                         } else {
                             VideoThumbnailFromVideoUri(
                                 uri = videoUri,
-                                modifier = Modifier.clip(RoundedCornerShape(8.dp))
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(RoundedCornerShape(8.dp))
                             )
                         }
                     }
@@ -345,7 +372,21 @@ fun EnterVideoInfoStep(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Button(
-                    onClick = {},
+                    onClick = {
+                        if (title.isNotBlank()) {
+                            onDraft(
+                                AddVideoSubmitData(
+                                    title = title,
+                                    description = description,
+                                    playlists = selectedPlaylists,
+                                    hashtags = hashTags,
+                                    privacy = privacy,
+                                    isAllowComment = isAllowComment,
+                                    thumbnailUri = thumbnailUri,
+                                )
+                            )
+                        }
+                    },
                     modifier = Modifier
                         .height(50.dp)
                         .weight(1f),
@@ -363,17 +404,23 @@ fun EnterVideoInfoStep(
                 }
 
                 Button(
+                    enabled = title.isNotBlank(),
                     onClick = {
                         if (!isProcessing) {
-                            isProcessing = true
-                            onSubmit(
-                                title,
-                                description,
-                                hashTags,
-                                privacy,
-                                isAllowComment,
-                                thumbnailUri
-                            )
+                            if (!uiState.isOnline) {
+                                Toast.makeText(context, "You're offline", Toast.LENGTH_LONG).show()
+                            } else {
+                                isProcessing = true
+                                onPost(AddVideoSubmitData(
+                                    title = title,
+                                    description = description,
+                                    playlists = selectedPlaylists,
+                                    hashtags = hashTags,
+                                    privacy = privacy,
+                                    isAllowComment = isAllowComment,
+                                    thumbnailUri = thumbnailUri,
+                                ))
+                            }
                         }
                     },
                     colors = ButtonDefaults.buttonColors(
@@ -467,6 +514,7 @@ fun EnterVideoInfoStep(
             AddVideoToPlaylistsBox(
                 modifier = Modifier.fillMaxSize(),
                 onBack = { openAddPlaylistBox = false },
+                allPlaylists = uiState.allPlaylists,
                 currentSelectedPlaylists = selectedPlaylists,
                 onSelectFinished = {
                     selectedPlaylists = it

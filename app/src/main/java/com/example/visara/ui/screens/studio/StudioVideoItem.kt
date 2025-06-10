@@ -26,10 +26,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import coil3.compose.AsyncImage
 import com.example.visara.data.model.VideoModel
 import com.example.visara.ui.components.VideoThumbnailFromVideoUri
@@ -38,7 +38,7 @@ import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 @Composable
-fun UploadingVideoItem(
+fun StudioVideoItem(
     modifier: Modifier = Modifier,
     video: VideoModel,
     onVideoSelected: () -> Unit,
@@ -55,7 +55,16 @@ fun UploadingVideoItem(
             modifier = Modifier.fillMaxSize(),
         ) {
             Box(modifier = Modifier.weight(1f)) {
-                if (video.localThumbnailUri != null) {
+                if (video.thumbnailUrl.isNotBlank()) {
+                    AsyncImage(
+                        model = video.thumbnailUrl,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(color = MaterialTheme.colorScheme.surface)
+                    )
+                } else if (video.localThumbnailUri != "null".toUri()) {
                     AsyncImage(
                         model = video.localThumbnailUri,
                         contentDescription = null,
@@ -73,7 +82,6 @@ fun UploadingVideoItem(
                             .background(color = MaterialTheme.colorScheme.surface)
                     )
                 }
-
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
@@ -111,25 +119,6 @@ fun UploadingVideoItem(
                     fontSize = 13.sp,
                     color = Color.Gray,
                 )
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(
-                            color = if (!video.isUploaded)  Color.Cyan.copy(0.7f)
-                            else if (!video.isProcessed) Color.Green.copy(0.3f)
-                            else Color.Green
-                        )
-                ) {
-                    Text(
-                        text = if (!video.isUploaded) "Uploading"
-                        else if (!video.isProcessed) "Processing"
-                        else "Processed"
-                        ,
-                        color = Color.Black,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(6.dp)
-                    )
-                }
             }
         }
     }

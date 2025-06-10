@@ -3,6 +3,7 @@ package com.example.visara.di
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Context.NOTIFICATION_SERVICE
+import androidx.navigation.NavHostController
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import dagger.Module
@@ -29,4 +30,13 @@ object AppModule {
     fun provideNotificationManager(@ApplicationContext context: Context): NotificationManager {
         return context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
     }
+
+    @Provides
+    @Singleton
+    fun provideNavHostController(@ApplicationContext appContext: Context) : NavHostController = NavHostController(appContext)
 }
+
+val gson: Gson = GsonBuilder()
+        .setLenient()
+        .setPrettyPrinting()
+        .create()

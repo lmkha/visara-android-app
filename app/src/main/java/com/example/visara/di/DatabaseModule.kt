@@ -3,6 +3,7 @@ package com.example.visara.di
 import android.content.Context
 import androidx.room.Room
 import com.example.visara.data.local.dao.UserDao
+import com.example.visara.data.local.dao.VideoDao
 import com.example.visara.data.local.database.AppDatabase
 import dagger.Module
 import dagger.Provides
@@ -27,4 +28,8 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideUserDao(database: AppDatabase): UserDao = database.userDao()
+
+    @Provides
+    @Singleton
+    fun provideVideoDao(database: AppDatabase): VideoDao = database.videoDao()
 }

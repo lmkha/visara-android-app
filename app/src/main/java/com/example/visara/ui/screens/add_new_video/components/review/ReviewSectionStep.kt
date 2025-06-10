@@ -26,12 +26,12 @@ import com.example.visara.ui.components.VisaraVideoPlayer
 @Composable
 fun ReviewSectionStep(
     modifier: Modifier = Modifier,
-    mediaController: MediaController,
+    mediaController: MediaController?,
     onBack: () -> Unit,
     onGoNext: () -> Unit,
 ) {
     DisposableEffect(Unit) {
-        onDispose { mediaController.pause() }
+        onDispose { mediaController?.pause() }
     }
 
     Box(modifier = modifier) {
@@ -74,11 +74,13 @@ fun ReviewSectionStep(
                 .align(Alignment.Center)
                 .background(color = Color.Black)
         ) {
-            VisaraVideoPlayer(
-                mediaController = mediaController,
-                requireLandscapeMode = {},
-                requirePortraitMode = {},
-            )
+            if (mediaController != null) {
+                VisaraVideoPlayer(
+                    mediaController = mediaController,
+                    requireLandscapeMode = {},
+                    requirePortraitMode = {},
+                )
+            }
         }
     }
 }

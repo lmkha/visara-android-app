@@ -2,7 +2,6 @@ package com.example.visara.service.fcm
 
 import android.util.Log
 import com.example.visara.data.repository.InboxRepository
-import com.example.visara.service.fcm.FcmMessageType
 import com.example.visara.service.fcm.dto.FcmNewMessageDto
 import com.example.visara.service.fcm.dto.IFcmMessageDto
 import com.google.firebase.messaging.RemoteMessage

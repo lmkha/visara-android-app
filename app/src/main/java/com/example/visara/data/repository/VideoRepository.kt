@@ -4,16 +4,20 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import android.webkit.MimeTypeMap
+import com.example.visara.data.local.dao.VideoDao
+import com.example.visara.data.local.entity.LocalVideoEntity
+import com.example.visara.data.local.entity.LocalVideoStatus
+import com.example.visara.data.model.PlaylistModel
 import com.example.visara.data.model.UserModel
-import com.example.visara.data.model.VideoPrivacy
 import com.example.visara.data.model.VideoModel
+import com.example.visara.data.model.VideoPrivacy
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.datasource.VideoRemoteDataSource
+import com.example.visara.di.gson
+import com.example.visara.viewmodels.AddVideoSubmitData
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
@@ -23,11 +27,9 @@ import javax.inject.Singleton
 @Singleton
 class VideoRepository @Inject constructor(
     private val videoRemoteDataSource: VideoRemoteDataSource,
+    private val videoDao: VideoDao,
     @ApplicationContext private val appContext: Context,
 ) {
-    private val _postingVideo: MutableStateFlow<VideoModel?> = MutableStateFlow(null)
-    val postingVideo: StateFlow<VideoModel?> = _postingVideo.asStateFlow()
-
     suspend fun getVideoById(videoId: String) : VideoModel? {
         val apiResult = videoRemoteDataSource.getVideoById(videoId)
         if (apiResult is ApiResult.Success) {
@@ -43,6 +45,10 @@ class VideoRepository @Inject constructor(
         } else {
             emptyList()
         }
+    }
+
+    fun getRecommendedHashtag() : List<String> {
+        return emptyList()
     }
 
     suspend fun getRecommendedVideos(video: VideoModel) : List<VideoModel> {
@@ -66,26 +72,55 @@ class VideoRepository @Inject constructor(
         title: String,
         description: String,
         hashtags: List<String>,
+        playlists: List<PlaylistModel>,
         privacy: VideoPrivacy,
         isAllowComment: Boolean,
         videoUri: Uri,
         thumbnailUri: Uri?,
+        draftId: Long?,
+        currentUser: UserModel?,
     ) : VideoModel? {
+
+        if (title.isBlank() || currentUser == null) return null
+
         val uploadVideoMetaDataResult = videoRemoteDataSource.uploadVideoMetaData(
             title = title,
             description = description,
             hashtags = hashtags,
             isPrivate = privacy != VideoPrivacy.ALL,
-            isCommentOff = !isAllowComment
+            isCommentOff = !isAllowComment,
+            playlistIds = playlists.map { it.id },
         )
 
         if (uploadVideoMetaDataResult !is ApiResult.Success) return null
+
+        val videoEntity = LocalVideoEntity(
+            userId = currentUser.id,
+            username = currentUser.username,
+            userFullName = currentUser.fullName,
+            userProfilePic = currentUser.networkAvatarUrl,
+            title = title,
+            description = description,
+            playlistsJson = gson.toJson(playlists),
+            hashtagsJson = gson.toJson(hashtags),
+            localVideoUriString = videoUri.toString(),
+            localThumbnailUriString = thumbnailUri.toString(),
+            isPrivate = privacy == VideoPrivacy.ONLY_ME,
+            isCommentOff = !isAllowComment,
+            statusCode = LocalVideoStatus.UPLOADING.code,
+        )
+
+        if (draftId == null) {
+            videoDao.insertVideo(videoEntity)
+        } else {
+            videoDao.updateVideo(videoEntity.copy(localId = draftId))
+        }
+
         val result = uploadVideoMetaDataResult.data.toVideoModel().copy(
+            localId = draftId,
             localVideoUri = videoUri,
             localThumbnailUri = thumbnailUri,
         )
-
-        _postingVideo.update { result }
 
         return result
     }
@@ -110,14 +145,25 @@ class VideoRepository @Inject constructor(
             }
         }
         val result = uploadVideoFileResult != null && uploadVideoFileResult is ApiResult.Success
-        if (result) _postingVideo.update { it?.copy(isUploaded = true) }
+
+        val videoEntity = videoMetaData.localId?.let { getLocalVideoEntityById(it) }
+        if (result) {
+            videoEntity?.let {
+                videoDao.updateVideo(it.copy(statusCode = LocalVideoStatus.PROCESSING.code))
+            }
+        } else {
+            videoEntity?.let {
+                videoDao.updateVideo(it.copy(statusCode = LocalVideoStatus.PENDING_RE_UPLOAD.code))
+            }
+        }
+
         val thumbnailFile = thumbnailUri?.let { uriToFile(appContext, it) }
         thumbnailFile?.let {
             try {
                 videoRemoteDataSource.uploadThumbnailFile(
                     videoId = videoId,
                     thumbnailFile = thumbnailFile,
-                    progressListener = { progress-> Log.i("CHECK_VAR", "upload thumbnail progress: $progress %") }
+                    progressListener = {}
                 )
             } finally {
                 thumbnailFile.delete()
@@ -163,19 +209,6 @@ class VideoRepository @Inject constructor(
         }
 
         return true
-    }
-
-    suspend fun syncPostingVideo() {
-        postingVideo.value?.id?.let { videoId ->
-            getVideoById(videoId)?.let { remoteVideo ->
-                // Uploaded and processed, video is not still in POST progress
-                if (remoteVideo.isProcessed) {
-                    _postingVideo.update { null }
-                } else {
-                    _postingVideo.update { it?.copy(isProcessed = false) }
-                }
-            }
-        }
     }
 
     private fun uriToFile(context: Context, uri: Uri): File? {
@@ -264,5 +297,59 @@ class VideoRepository @Inject constructor(
         val apiResult = videoRemoteDataSource.getFollowingVideos(count)
         if (apiResult !is ApiResult.Success) return emptyList()
         return apiResult.data.map { it.toVideoModel() }
+    }
+
+    suspend fun draftVideoPost(
+        title: String,
+        description: String,
+        hashtags: List<String>,
+        playlists: List<PlaylistModel>,
+        privacy: VideoPrivacy,
+        isAllowComment: Boolean,
+        videoUri: Uri,
+        thumbnailUri: Uri?,
+        currentUser: UserModel?,
+        draftId: Long?,
+    ) : Boolean {
+        if (currentUser == null) return false
+        val videoEntity = LocalVideoEntity(
+            userId = currentUser.id,
+            username = currentUser.username,
+            userFullName = currentUser.fullName,
+            userProfilePic = currentUser.networkAvatarUrl,
+            title = title,
+            description = description,
+            playlistsJson = gson.toJson(playlists),
+            hashtagsJson = gson.toJson(hashtags),
+            localVideoUriString = videoUri.toString(),
+            localThumbnailUriString = thumbnailUri.toString(),
+            isPrivate = privacy == VideoPrivacy.ONLY_ME,
+            isCommentOff = !isAllowComment,
+            statusCode = LocalVideoStatus.DRAFT.code,
+        )
+
+        if (draftId == null) {
+            videoDao.insertVideo(videoEntity)
+        } else {
+            videoDao.updateVideo(videoEntity.copy(localId = draftId))
+        }
+
+        return true
+    }
+
+    suspend fun getDraftVideoByLocalId(localDraftVideoId: Long) : AddVideoSubmitData? {
+        val videoEntity = videoDao.getVideoByLocalId(localDraftVideoId)
+        val draftData = videoEntity.first()?.toAddVideoSubmitData()
+        return draftData
+    }
+
+    suspend fun getLocalVideoEntityById(localId: Long) : LocalVideoEntity? {
+        return videoDao.getVideoByLocalId(localId).distinctUntilChanged().first()
+    }
+
+    suspend fun getAllLocalVideoEntity(username: String) : List<LocalVideoEntity> {
+        return videoDao.getAllLocalVideoByUsername(username)
+            .distinctUntilChanged()
+            .first()
     }
 }

@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.visara.data.model.CommentModel
@@ -28,6 +29,7 @@ import com.example.visara.ui.components.UserAvatar
 
 @Composable
 fun MinimizedCommentSection(
+    isCommentOff: Boolean,
     commentsCount: Long = 0L,
     coverComment: CommentModel?,
     onClick: () -> Unit,
@@ -62,22 +64,32 @@ fun MinimizedCommentSection(
                 )
             }
 
-            coverComment?.let {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.Top,
-                ) {
-                    UserAvatar(
-                        avatarLink = coverComment.userAvatarUrl,
-                        modifier = Modifier.size(36.dp)
-                    )
-                    Text(
-                        text = it.content,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                    )
+            if (!isCommentOff) {
+                coverComment?.let {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.Top,
+                    ) {
+                        UserAvatar(
+                            avatarLink = coverComment.userAvatarUrl,
+                            modifier = Modifier.size(36.dp)
+                        )
+                        Text(
+                            text = it.content,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
                 }
+            } else {
+                Text(
+                    text = "Comments are turn off.",
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
             }
         }
     }

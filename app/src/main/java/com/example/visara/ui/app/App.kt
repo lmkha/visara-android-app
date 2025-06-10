@@ -1,4 +1,4 @@
-package com.example.visara.ui
+package com.example.visara.ui.app
 
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
@@ -27,23 +27,11 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -57,7 +45,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
@@ -76,10 +63,10 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.visara.data.model.VideoModel
 import com.example.visara.ui.components.LoginRequestDialog
-import com.example.visara.ui.components.UserAvatar
 import com.example.visara.ui.components.rememberLoginRequestDialogState
 import com.example.visara.ui.navigation.Destination
 import com.example.visara.ui.screens.add_new_video.AddNewVideoScreen
+import com.example.visara.ui.screens.add_new_video.AddNewVideoStep
 import com.example.visara.ui.screens.edit_video.EditVideoScreen
 import com.example.visara.ui.screens.follow.FollowScreen
 import com.example.visara.ui.screens.following_feed.FollowingFeedScreen
@@ -95,12 +82,13 @@ import com.example.visara.ui.screens.profile.ProfileScreen
 import com.example.visara.ui.screens.search.SearchScreen
 import com.example.visara.ui.screens.settings.SettingsScreen
 import com.example.visara.ui.screens.studio.StudioScreen
+import com.example.visara.ui.screens.studio.StudioSelectedTag
 import com.example.visara.ui.screens.test.TestScreen
 import com.example.visara.ui.screens.video_detail.VideoDetailScreen
 import com.example.visara.ui.theme.AppTheme
 import com.example.visara.ui.theme.VisaraTheme
+import com.example.visara.viewmodels.AddNewVideoViewModel
 import com.example.visara.viewmodels.AppEvent
-import com.example.visara.viewmodels.AppState
 import com.example.visara.viewmodels.AppViewModel
 import com.example.visara.viewmodels.ChatInboxViewModel
 import com.example.visara.viewmodels.EditVideoViewModel
@@ -135,7 +123,7 @@ fun App(
     val loginRequestDialogState = rememberLoginRequestDialogState()
     fun botNavBarNavigate(dest: Destination) {
         coroutineScope.launch {
-            if (dest.route == Destination.Main.AddNewVideo.route && !appState.isAuthenticated) {
+            if (dest.route == Destination.Main.AddNewVideo().route && !appState.isAuthenticated) {
                 loginRequestDialogState.show("Please log in to post a new video.")
             } else {
                 val popped = navController.popBackStack(route = dest, inclusive = false)
@@ -216,7 +204,7 @@ fun App(
                                     )
                                 },
                                 bottomNavBar = {
-                                    BotNavBar(
+                                    BottomNavBar(
                                         activeDestination = Destination.Main.Home,
                                         appState = appState,
                                         onNavigate = { botNavBarNavigate(it) }
@@ -227,7 +215,7 @@ fun App(
                         composable<Destination.Main.FollowingFeed> {
                             FollowingFeedScreen(
                                 bottomNavBar = {
-                                    BotNavBar(
+                                    BottomNavBar(
                                         activeDestination = Destination.Main.FollowingFeed,
                                         appState = appState,
                                         onNavigate = { botNavBarNavigate(it) }
@@ -254,9 +242,9 @@ fun App(
                                 transformOrigin = TransformOrigin(0.5f, 1f),
                                 targetScale = 0.8f
                             ) + fadeOut()
-                        }) {
-                            val isVideoDetailVisibleBefore = appState.videoDetailState.isVisible
+                        }) { backStackEntry ->
                             appViewModel.hideVideoDetail()
+                            val isVideoDetailVisibleBefore = appState.videoDetailState.isVisible
                             LaunchedEffect(Unit) {
                                 appViewModel.saveCurrentPlaybackState()
                             }
@@ -269,11 +257,40 @@ fun App(
                                     videoDetailViewModel.refreshPlayer()
                                 }
                             }
+
+                            val viewModel: AddNewVideoViewModel = hiltViewModel()
+                            val route: Destination.Main.AddNewVideo = backStackEntry.toRoute()
+                            val postFromDraft = route.isPostDraft && route.localDraftVideoId != null
+                            if (postFromDraft) {
+                                viewModel.prepareDraftData(route.localDraftVideoId)
+                            }
+
                             AddNewVideoScreen(
-                                onNavigateToStudio = {
-                                    navController.navigate(Destination.Studio) {
-                                        popUpTo(Destination.Main.AddNewVideo) {
-                                            inclusive = true
+                                viewModel = viewModel,
+                                startingStep = if (postFromDraft) AddNewVideoStep.REVIEW_VIDEO
+                                else AddNewVideoStep.SELECT_VIDEO,
+                                onNavigateToStudio = { selectedTag ->
+                                    when (selectedTag) {
+                                        StudioSelectedTag.UPLOADING -> {
+                                            navController.navigate(Destination.Studio(selectedTagIndex = StudioSelectedTag.UPLOADING.ordinal)) {
+                                                popUpTo(navController.currentDestination?.id ?: return@navigate) {
+                                                    inclusive = true
+                                                }
+                                            }
+                                        }
+                                        StudioSelectedTag.DRAFT -> {
+                                            navController.navigate(Destination.Studio(selectedTagIndex = StudioSelectedTag.DRAFT.ordinal)) {
+                                                popUpTo(navController.currentDestination?.id ?: return@navigate) {
+                                                    inclusive = true
+                                                }
+                                            }
+                                        }
+                                        else -> {
+                                            navController.navigate(Destination.Studio(selectedTagIndex = StudioSelectedTag.ACTIVE.ordinal)) {
+                                                popUpTo(navController.currentDestination?.id ?: return@navigate) {
+                                                    inclusive = true
+                                                }
+                                            }
                                         }
                                     }
                                 },
@@ -293,7 +310,7 @@ fun App(
                                     onOpenSystemNotificationInbox = { navController.navigate(Destination.Main.Inbox.SystemNotificationInbox) },
                                     openStudioInbox = { navController.navigate(Destination.Main.Inbox.Studio) },
                                     bottomNavBar = {
-                                        BotNavBar(
+                                        BottomNavBar(
                                             activeDestination = Destination.Main.Inbox,
                                             appState = appState,
                                             onNavigate = { botNavBarNavigate(it) }
@@ -355,7 +372,7 @@ fun App(
                                     )
                                 },
                                 onNavigateToAddNewVideoScreen = { navController.navigate(Destination.Main.AddNewVideo) },
-                                onNavigateToStudioScreen = { navController.navigate(Destination.Studio) },
+                                onNavigateToStudioScreen = { navController.navigate(Destination.Studio()) },
                                 onNavigateToQRCodeScreen = {},
                                 onNavigateToEditVideoScreen = { video ->
                                     coroutineScope.launch {
@@ -364,7 +381,7 @@ fun App(
                                     }
                                 },
                                 bottomNavBar = {
-                                    BotNavBar(
+                                    BottomNavBar(
                                         activeDestination = Destination.Main.Profile(),
                                         appState = appState,
                                         onNavigate = { botNavBarNavigate(it) }
@@ -458,8 +475,17 @@ fun App(
                             },
                         )
                     }
-                    composable<Destination.Studio> {
+                    composable<Destination.Studio> { backStackEntry ->
+                        val route: Destination.Studio = backStackEntry.toRoute()
+                        val selectedTag = StudioSelectedTag.entries.getOrNull(route.selectedTagIndex)
                         StudioScreen(
+                            initialSelectedTag = selectedTag ?: StudioSelectedTag.ACTIVE,
+                            onNavigateToAddNewVideoScreen = {
+                                navController.navigate(Destination.Main.AddNewVideo(
+                                    isPostDraft = true,
+                                    localDraftVideoId = it,
+                                ))
+                            },
                             onBack = {
                                 val popped = navController.popBackStack(route = Destination.Main, inclusive = false)
                                 if (!popped) navController.navigate(Destination.Main)
@@ -629,48 +655,3 @@ fun App(
         }
     }
 }
-
-@Composable
-private fun BotNavBar(
-    activeDestination: Destination,
-    appState: AppState,
-    onNavigate: (Destination) -> Unit
-) {
-    val botNavItems = listOf(
-        BottomNavigationItemData("Home", Icons.Filled.Home, Destination.Main.Home),
-        BottomNavigationItemData("Following", Icons.Filled.Star, Destination.Main.FollowingFeed),
-        BottomNavigationItemData("Add", Icons.Filled.AddCircle, Destination.Main.AddNewVideo),
-        BottomNavigationItemData("Inbox", Icons.Filled.Email, Destination.Main.Inbox),
-        BottomNavigationItemData("Profile", Icons.Filled.AccountCircle, Destination.Main.Profile(shouldNavigateToMyProfile = true)),
-    )
-    NavigationBar(containerColor = Color.Transparent) {
-        botNavItems.forEach { item ->
-            NavigationBarItem(
-                label = { Text(item.label) },
-                selected = item.destination.route == activeDestination.route,
-                onClick = { onNavigate(item.destination) },
-                icon = {
-                    if (item.destination.route != Destination.Main.Profile().route) {
-                        Icon(imageVector = item.icon, contentDescription = item.label)
-                    } else {
-                        UserAvatar(
-                            avatarLink = appState.currentUser?.networkAvatarUrl,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = MaterialTheme.colorScheme.primary,
-                    selectedTextColor = MaterialTheme.colorScheme.primary,
-                    indicatorColor = MaterialTheme.colorScheme.surface,
-                )
-            )
-        }
-    }
-}
-
-private data class BottomNavigationItemData (
-    val label: String,
-    val icon: ImageVector,
-    val destination: Destination,
-)

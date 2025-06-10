@@ -61,6 +61,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
@@ -450,11 +451,13 @@ fun ProfileScreenContainer(
                             modifier = Modifier
                                 .fillMaxWidth()
                         ) {
+                            val bio = uiState.user?.bio
                             Text(
-                                text = "...checkmate information technology",
+                                text = if (bio?.isNotBlank() == true) bio else "No bio yet",
                                 maxLines = 1,
                                 modifier = Modifier.width(300.dp),
-                                overflow = TextOverflow.Ellipsis
+                                overflow = TextOverflow.Ellipsis,
+                                textAlign = TextAlign.Center,
                             )
                         }
                     }

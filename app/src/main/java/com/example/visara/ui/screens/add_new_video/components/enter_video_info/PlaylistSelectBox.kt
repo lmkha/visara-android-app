@@ -26,21 +26,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.visara.R
+import com.example.visara.data.model.PlaylistModel
 
 @Composable
 fun AddVideoToPlaylistsBox (
     modifier: Modifier = Modifier,
-    currentSelectedPlaylists: List<String>,
+    allPlaylists: List<PlaylistModel>,
+    currentSelectedPlaylists: List<PlaylistModel>,
     onBack: () -> Unit = {},
-    onSelectFinished: (value: List<String>) -> Unit = { _ -> },
+    onSelectFinished: (value: List<PlaylistModel>) -> Unit = { _ -> },
 ) {
-    val playlists = listOf<String>("music", "football", "barca", "champion league")
-    var selectedPlaylists by remember { mutableStateOf<List<String>>(currentSelectedPlaylists) }
+//    val allPlaylists = listOf<String>("music", "football", "barca", "champion league")
+    var selectedPlaylists by remember { mutableStateOf(currentSelectedPlaylists) }
 
     Column(
         modifier = modifier
@@ -82,8 +82,8 @@ fun AddVideoToPlaylistsBox (
                 .weight(1f)
                 .fillMaxWidth()
         ) {
-            items(playlists.size) {index ->
-                val playlist = playlists[index]
+            items(allPlaylists.size) { index ->
+                val playlist = allPlaylists[index]
                 Row(
                     modifier = Modifier
                         .height(70.dp)
@@ -112,15 +112,10 @@ fun AddVideoToPlaylistsBox (
                     )
 
                     Text(
-                        text = playlist,
+                        text = playlist.name,
                         fontWeight = FontWeight.Medium,
                         modifier = Modifier.weight(1f)
                     )
-                    Icon(
-                        painter = painterResource(id = R.drawable.public_24px),
-                        contentDescription = null
-                    )
-
                     Spacer(Modifier.height(24.dp))
                 }
             }
