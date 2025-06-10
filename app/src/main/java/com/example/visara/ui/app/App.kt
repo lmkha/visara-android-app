@@ -65,7 +65,10 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
@@ -96,6 +99,7 @@ import com.example.visara.ui.screens.test.TestScreen
 import com.example.visara.ui.screens.video_detail.VideoDetailScreen
 import com.example.visara.ui.theme.AppTheme
 import com.example.visara.ui.theme.VisaraTheme
+import com.example.visara.viewmodels.AppEvent
 import com.example.visara.viewmodels.AppState
 import com.example.visara.viewmodels.AppViewModel
 import com.example.visara.viewmodels.ChatInboxViewModel
@@ -154,6 +158,19 @@ fun App(
             }
             AppTheme.DARK -> onRequireAppearanceDarkStatusBars()
             AppTheme.SYSTEM -> onRequireAppearanceDefaultStatusBars()
+        }
+    }
+
+    val lifeCycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(lifeCycleOwner.lifecycle) {
+        lifeCycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            appViewModel.eventFlow.collect { event ->
+                when (event) {
+                    is AppEvent.NavigateToScreen -> {
+                        navController.navigate(event.destination)
+                    }
+                }
+            }
         }
     }
 
