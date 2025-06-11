@@ -16,6 +16,7 @@ import com.example.visara.data.remote.datasource.VideoRemoteDataSource
 import com.example.visara.di.gson
 import com.example.visara.viewmodels.AddVideoSubmitData
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import java.io.File
@@ -95,6 +96,7 @@ class VideoRepository @Inject constructor(
         if (uploadVideoMetaDataResult !is ApiResult.Success) return null
 
         val videoEntity = LocalVideoEntity(
+            remoteId = uploadVideoMetaDataResult.data.id,
             userId = currentUser.id,
             username = currentUser.username,
             userFullName = currentUser.fullName,
@@ -112,25 +114,26 @@ class VideoRepository @Inject constructor(
 
         if (draftId == null) {
             videoDao.insertVideo(videoEntity)
-        } else {
-            videoDao.updateVideo(videoEntity.copy(localId = draftId))
+            return videoDao.getVideoByRemoteId(uploadVideoMetaDataResult.data.id)
+                .distinctUntilChanged()
+                .first()
+                ?.toVideoModel()
         }
 
-        val result = uploadVideoMetaDataResult.data.toVideoModel().copy(
+        videoDao.updateVideo(videoEntity.copy(localId = draftId))
+
+        return uploadVideoMetaDataResult.data.toVideoModel().copy(
             localId = draftId,
             localVideoUri = videoUri,
             localThumbnailUri = thumbnailUri,
         )
-
-        return result
     }
 
     suspend fun uploadVideoFile(
         videoMetaData: VideoModel,
         videoUri: Uri,
-        thumbnailUri: Uri?,
         onProgressChange: (progress: Int) -> Unit,
-    ) : Boolean {
+    ) : ApiResult<Unit> {
         val videoId = videoMetaData.id
         val videoFile = uriToFile(context = appContext, uri = videoUri)
         val uploadVideoFileResult = videoFile?.let {
@@ -144,10 +147,9 @@ class VideoRepository @Inject constructor(
                 videoFile.delete()
             }
         }
-        val result = uploadVideoFileResult != null && uploadVideoFileResult is ApiResult.Success
 
         val videoEntity = videoMetaData.localId?.let { getLocalVideoEntityById(it) }
-        if (result) {
+        if (uploadVideoFileResult is ApiResult.Success) {
             videoEntity?.let {
                 videoDao.updateVideo(it.copy(statusCode = LocalVideoStatus.PROCESSING.code))
             }
@@ -157,7 +159,18 @@ class VideoRepository @Inject constructor(
             }
         }
 
-        val thumbnailFile = thumbnailUri?.let { uriToFile(appContext, it) }
+        if (uploadVideoFileResult != null) {
+            return uploadVideoFileResult
+        }
+
+        return ApiResult.Error(exception = Exception("Upload video failed!"))
+    }
+
+    suspend fun uploadThumbnailFile(
+        videoId: String,
+        thumbnailUri: Uri,
+    ) {
+        val thumbnailFile = uriToFile(appContext, thumbnailUri)
         thumbnailFile?.let {
             try {
                 videoRemoteDataSource.uploadThumbnailFile(
@@ -169,8 +182,6 @@ class VideoRepository @Inject constructor(
                 thumbnailFile.delete()
             }
         }
-
-        return result
     }
 
     suspend fun updateVideo(
@@ -347,9 +358,17 @@ class VideoRepository @Inject constructor(
         return videoDao.getVideoByLocalId(localId).distinctUntilChanged().first()
     }
 
-    suspend fun getAllLocalVideoEntity(username: String) : List<LocalVideoEntity> {
+    fun getAllLocalVideoEntityFlow(username: String) : Flow<List<LocalVideoEntity>> {
         return videoDao.getAllLocalVideoByUsername(username)
             .distinctUntilChanged()
-            .first()
+    }
+
+    suspend fun updateLocalVideoEntity(videoEntity: LocalVideoEntity) {
+        videoDao.updateVideo(videoEntity)
+    }
+
+    suspend fun deleteLocalVideoEntity(localId: Long) {
+        val videoEntity = getLocalVideoEntityById(localId)
+        videoEntity?.let { videoDao.deleteVideo(it) }
     }
 }

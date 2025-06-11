@@ -13,6 +13,7 @@ import com.google.gson.reflect.TypeToken
 @Entity(tableName = "videos")
 data class LocalVideoEntity(
     @PrimaryKey(autoGenerate = true) val localId: Long = 0L,
+    val remoteId: String = "",
     val userId: Long = 0L,
     val username: String = "",
     val userFullName: String = "",

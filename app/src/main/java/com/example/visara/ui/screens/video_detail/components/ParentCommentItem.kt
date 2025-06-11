@@ -36,7 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.visara.R
 import com.example.visara.ui.components.UserAvatar
-import com.example.visara.ui.utils.toTimeAgo
+import com.example.visara.utils.toTimeAgo
 import com.example.visara.viewmodels.CommentWithReplies
 
 @Composable

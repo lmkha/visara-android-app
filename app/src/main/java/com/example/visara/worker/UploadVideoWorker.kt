@@ -11,9 +11,15 @@ import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import com.example.visara.MainActivity
+import com.example.visara.R
+import com.example.visara.data.local.entity.LocalVideoStatus
+import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.repository.VideoRepository
 import com.example.visara.notification.NotificationHelper
 import com.example.visara.ui.navigation.Destination
+import com.example.visara.ui.screens.studio.StudioSelectedTag
+import com.example.visara.utils.createBitmapFromLocalUri
+import com.example.visara.utils.createVideoThumbFromLocalUri
 import com.google.gson.Gson
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -41,21 +47,26 @@ class UploadVideoWorker @AssistedInject constructor(
             return Result.failure()
         }
 
-        val result = with(params) {
-            val intent = Intent(applicationContext, MainActivity::class.java).apply {
+        return with(params) {
+            val progressIntent = Intent(applicationContext, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                 putExtra("request-type", "navigation")
                 putExtra("route", "studio")
-                putExtra("destination", gson.toJson(Destination.Studio))
+                putExtra("destination", gson.toJson(Destination.Studio()))
             }
-            val pendingIntent: PendingIntent = PendingIntent.getActivity(applicationContext, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-            val notificationBuilder: NotificationCompat.Builder = notificationHelper.createUploadingNewVideoNotificationBuilder()
-                .setContentIntent(pendingIntent)
+            val progressPendingIntent: PendingIntent = PendingIntent.getActivity(
+                applicationContext,
+                0,
+                progressIntent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+            val notificationBuilder: NotificationCompat.Builder = notificationHelper
+                .createUploadingNewVideoNotificationBuilder()
+                .setContentIntent(progressPendingIntent)
 
             val uploadResult = videoRepository.uploadVideoFile(
                 videoMetaData = videoMetaData,
                 videoUri = videoUri.toUri(),
-                thumbnailUri = thumbnailUri?.toUri(),
                 onProgressChange = { progress ->
                     if (progress < 100) {
                         val notification = notificationBuilder
@@ -67,9 +78,98 @@ class UploadVideoWorker @AssistedInject constructor(
                     }
                 }
             )
-            return@with uploadResult
+
+            when (uploadResult) {
+                is ApiResult.Success<*> -> {
+
+                    val localVideoEntity = videoMetaData.localId?.let { videoRepository.getLocalVideoEntityById(it) }
+                    localVideoEntity?.let {
+                        videoRepository.updateLocalVideoEntity(
+                            it.copy(statusCode = LocalVideoStatus.PROCESSING.code)
+                        )
+                    }
+
+                    val thumbnailUri = thumbnailUri?.toUri()
+                    if (thumbnailUri != null && thumbnailUri != "null".toUri()) {
+                        videoRepository.uploadThumbnailFile(
+                            videoId = videoMetaData.id,
+                            thumbnailUri = thumbnailUri,
+                        )
+                    }
+                    val videoThumbnailBitmap = if (thumbnailUri != null && thumbnailUri != "null".toUri()) {
+                        createBitmapFromLocalUri(applicationContext, thumbnailUri)
+                    } else {
+                        createVideoThumbFromLocalUri(applicationContext, videoUri.toUri())
+                    }
+
+                    val successIntent = Intent(applicationContext, MainActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        putExtra("request-type", "navigation")
+                        putExtra("route", "studio")
+                        putExtra("destination", gson.toJson(Destination.Studio(selectedTagIndex = StudioSelectedTag.PROCESSING.ordinal)))
+                    }
+                    val successPendingIntent: PendingIntent = PendingIntent.getActivity(
+                        applicationContext,
+                        0,
+                        successIntent,
+                        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                    )
+                    val notification = notificationHelper
+                        .createFinishUploadVideoFileNotificationBuilder(videoThumbnailBitmap)
+                        .setContentIntent(successPendingIntent)
+                        .build()
+
+                    notificationManager.notify(NOTIFICATION_ID, notification)
+
+                    Result.success()
+                }
+                else -> {
+
+                    val localVideoEntity = videoMetaData.localId?.let { videoRepository.getLocalVideoEntityById(it) }
+                    localVideoEntity?.let {
+                        videoRepository.updateLocalVideoEntity(
+                            it.copy(statusCode = LocalVideoStatus.PENDING_RE_UPLOAD.code)
+                        )
+                    }
+
+                    val thumbnailUri = thumbnailUri?.toUri()
+                    if (thumbnailUri != null && thumbnailUri != "null".toUri()) {
+                        videoRepository.uploadThumbnailFile(
+                            videoId = videoMetaData.id,
+                            thumbnailUri = thumbnailUri,
+                        )
+                    }
+                    val videoThumbnailBitmap = if (thumbnailUri != null && thumbnailUri != "null".toUri()) {
+                        createBitmapFromLocalUri(applicationContext, thumbnailUri)
+                    } else {
+                        createVideoThumbFromLocalUri(applicationContext, videoUri.toUri())
+                    }
+
+                    val failureIntent = Intent(applicationContext, MainActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        putExtra("request-type", "navigation")
+                        putExtra("route", "studio")
+                        putExtra("destination", gson.toJson(Destination.Studio(selectedTagIndex = StudioSelectedTag.PENDING_RE_UPLOAD.ordinal)))
+                    }
+                    val failurePendingIntent: PendingIntent = PendingIntent.getActivity(
+                        applicationContext,
+                        0,
+                        failureIntent,
+                        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                    )
+
+                    val notification = notificationHelper
+                        .createUploadVideoErrorFileNotificationBuilder(videoThumbnailBitmap)
+                        .setContentIntent(failurePendingIntent)
+                        .addAction(R.drawable.restart_alt_24px, "Retry", failurePendingIntent)
+                        .build()
+
+                    notificationManager.notify(NOTIFICATION_ID, notification)
+
+                    Result.failure()
+                }
+            }
         }
-        return if (result) Result.success() else Result.failure()
     }
 
     override suspend fun getForegroundInfo(): ForegroundInfo {

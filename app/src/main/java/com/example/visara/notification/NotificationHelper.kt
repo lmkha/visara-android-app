@@ -113,6 +113,38 @@ class NotificationHelper @Inject constructor(
             .setOngoing(true)
     }
 
+    fun createFinishUploadVideoFileNotificationBuilder(videoThumbnail: Bitmap?) : NotificationCompat.Builder {
+        val notificationBuilder = NotificationCompat.Builder(appContext, NotificationChannelInfo.Message.id)
+            .setContentTitle("Upload video success")
+            .setContentText("Your video has been uploaded. It is currently being processed.")
+            .setSmallIcon(R.drawable.arrow_upward_24px)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setAutoCancel(true)
+
+        if (videoThumbnail != null) {
+            return notificationBuilder.setLargeIcon(videoThumbnail)
+        }
+
+        return notificationBuilder
+    }
+
+    fun createUploadVideoErrorFileNotificationBuilder(videoThumbnail: Bitmap?) : NotificationCompat.Builder {
+        val notificationBuilder = NotificationCompat.Builder(appContext, NotificationChannelInfo.Message.id)
+            .setContentTitle("Upload failed")
+            .setContentText("Video upload failed. An unexpected error occurred.")
+            .setSmallIcon(R.drawable.arrow_upward_24px)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setAutoCancel(true)
+
+        if (videoThumbnail != null) {
+            return notificationBuilder.setLargeIcon(videoThumbnail)
+        }
+
+        return notificationBuilder
+    }
+
     private fun getBitmapFromURL(src: String): Bitmap? {
         fun Bitmap.toCircleBitmap(): Bitmap {
             val size = minOf(width, height)

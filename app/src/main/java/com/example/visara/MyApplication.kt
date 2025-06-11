@@ -6,7 +6,7 @@ import android.app.NotificationManager
 import androidx.core.content.getSystemService
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.lifecycle.ProcessLifecycleOwner
-import com.example.visara.common.AppLifecycleObserver
+import com.example.visara.utils.AppLifecycleObserver
 import com.example.visara.notification.NotificationChannelInfo
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject

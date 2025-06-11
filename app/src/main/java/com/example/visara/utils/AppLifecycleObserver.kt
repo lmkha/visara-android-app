@@ -1,4 +1,4 @@
-package com.example.visara.common
+package com.example.visara.utils
 
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner

@@ -11,6 +11,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -26,37 +27,51 @@ class StudioViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val currentUsername = userRepository.currentUser.first()?.username
-            val currentUserId = userRepository.currentUser.first()?.id
+            val currentUser = userRepository.currentUser.first()
+            val currentUsername = currentUser?.username
+            val currentUserId = currentUser?.id
             if (currentUsername != null && currentUserId != null) {
-                val allLocalVideoEntity = videoRepository.getAllLocalVideoEntity(currentUsername)
-
                 val activeVideoDeferred = async { videoRepository.getAllVideoByUserId(currentUserId) }
-                val processingVideos = mutableListOf<VideoModel>()
-                val uploadingVideos = mutableListOf<VideoModel>()
-                val draftVideos = mutableListOf<VideoModel>()
-                val pendingReUploadVideos = mutableListOf<VideoModel>()
+                videoRepository.getAllLocalVideoEntityFlow(currentUsername)
+                    .collectLatest { allVideoEntity ->
+                        val processingVideos = mutableListOf<VideoModel>()
+                        val uploadingVideos = mutableListOf<VideoModel>()
+                        val draftVideos = mutableListOf<VideoModel>()
+                        val pendingReUploadVideos = mutableListOf<VideoModel>()
 
-                allLocalVideoEntity.forEach { videoEntity ->
-                    when (videoEntity.statusCode) {
-                        LocalVideoStatus.PROCESSING.code -> { processingVideos.add(videoEntity.toVideoModel()) }
-                        LocalVideoStatus.UPLOADING.code -> { uploadingVideos.add(videoEntity.toVideoModel()) }
-                        LocalVideoStatus.DRAFT.code -> { draftVideos.add(videoEntity.toVideoModel()) }
-                        LocalVideoStatus.PENDING_RE_UPLOAD.code -> { pendingReUploadVideos.add(videoEntity.toVideoModel()) }
+                        allVideoEntity.forEach { videoEntity ->
+                            when (videoEntity.statusCode) {
+                                LocalVideoStatus.PROCESSING.code -> { processingVideos.add(videoEntity.toVideoModel()) }
+                                LocalVideoStatus.UPLOADING.code -> { uploadingVideos.add(videoEntity.toVideoModel()) }
+                                LocalVideoStatus.DRAFT.code -> { draftVideos.add(videoEntity.toVideoModel()) }
+                                LocalVideoStatus.PENDING_RE_UPLOAD.code -> { pendingReUploadVideos.add(videoEntity.toVideoModel()) }
+                            }
+                        }
+                        val activeVideos = activeVideoDeferred.await()
+
+                        _uiState.update {
+                            it.copy(
+                                activeVideos = activeVideos,
+                                processingVideos = processingVideos,
+                                uploadingVideos = uploadingVideos,
+                                draftVideos = draftVideos,
+                                pendingReUploadVideos = pendingReUploadVideos
+                            )
+                        }
                     }
-                }
-                val activeVideos = activeVideoDeferred.await()
-
-                _uiState.update {
-                    it.copy(
-                        activeVideos = activeVideos,
-                        processingVideos = processingVideos,
-                        uploadingVideos = uploadingVideos,
-                        draftVideos = draftVideos,
-                        pendingReUploadVideos = pendingReUploadVideos
-                    )
-                }
             }
+        }
+    }
+
+    fun deleteDraftVideo(localId: Long) {
+        viewModelScope.launch {
+            videoRepository.deleteLocalVideoEntity(localId)
+        }
+    }
+
+    fun deletePendingReUploadVideo(localId: Long) {
+        viewModelScope.launch {
+            videoRepository.deleteLocalVideoEntity(localId)
         }
     }
 }

@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.example.visara.R
 import com.example.visara.data.model.CommentModel
 import com.example.visara.ui.components.UserAvatar
-import com.example.visara.ui.utils.toTimeAgo
+import com.example.visara.utils.toTimeAgo
 
 @Composable
 fun ChildCommentItem(

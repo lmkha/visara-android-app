@@ -30,9 +30,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.example.visara.data.model.VideoModel
-import com.example.visara.ui.utils.formatDuration
-import com.example.visara.ui.utils.formatViews
-import com.example.visara.ui.utils.toTimeAgo
+import com.example.visara.utils.formatDuration
+import com.example.visara.utils.formatViews
+import com.example.visara.utils.toTimeAgo
 
 @Composable
 fun VideoItem(

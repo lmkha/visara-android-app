@@ -5,7 +5,6 @@ import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +17,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,17 +39,17 @@ import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 @Composable
-fun StudioVideoItem(
+fun StudioDraftVideoItem(
     modifier: Modifier = Modifier,
     video: VideoModel,
-    onVideoSelected: () -> Unit,
+    onPost: () -> Unit,
+    onDelete: () -> Unit,
 ) {
     val context = LocalContext.current
     Box(
         modifier = modifier
             .height(120.dp)
             .fillMaxWidth()
-            .clickable { onVideoSelected() }
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -103,7 +104,10 @@ fun StudioVideoItem(
                     )
                 }
             }
-            Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
+            Column(
+                verticalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.weight(1f).fillMaxHeight()
+            ) {
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         text = video.title,
@@ -119,6 +123,31 @@ fun StudioVideoItem(
                     fontSize = 13.sp,
                     color = Color.Gray,
                 )
+
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+                ) {
+                    Button(
+                        onClick = onDelete,
+                        colors = ButtonDefaults.buttonColors(
+                            contentColor = Color.White,
+                            containerColor = Color.Red,
+                        )
+                    ) {
+                        Text(text = "Delete")
+                    }
+
+                    Button(
+                        onClick = onPost,
+                        colors = ButtonDefaults.buttonColors(
+                            contentColor = Color.Black,
+                            containerColor = Color.Green,
+                        )
+                    ) {
+                        Text(text = "Post")
+                    }
+                }
             }
         }
     }

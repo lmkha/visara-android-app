@@ -1,7 +1,7 @@
 package com.example.visara.data.repository
 
 import android.app.NotificationManager
-import com.example.visara.common.AppLifecycleObserver
+import com.example.visara.utils.AppLifecycleObserver
 import com.example.visara.data.model.fcm.FcmNewMessageModel
 import com.example.visara.notification.NotificationHelper
 import com.example.visara.service.fcm.dto.FcmNewMessageDto

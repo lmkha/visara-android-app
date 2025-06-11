@@ -1,6 +1,7 @@
 package com.example.visara.ui.app
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -477,6 +478,7 @@ fun App(
                     }
                     composable<Destination.Studio> { backStackEntry ->
                         val route: Destination.Studio = backStackEntry.toRoute()
+                        Log.d("CHECK_VAR", "Studio route: $route")
                         val selectedTag = StudioSelectedTag.entries.getOrNull(route.selectedTagIndex)
                         StudioScreen(
                             initialSelectedTag = selectedTag ?: StudioSelectedTag.ACTIVE,

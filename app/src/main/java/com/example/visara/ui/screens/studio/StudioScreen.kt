@@ -148,17 +148,27 @@ fun StudioScreen(
                     }
                     StudioSelectedTag.DRAFT -> {
                         items(uiState.draftVideos) { video ->
-                            StudioVideoItem(
+                            StudioDraftVideoItem(
                                 video = video,
-                                onVideoSelected = { video.localId?.let {onNavigateToAddNewVideoScreen(it) } }
+                                onDelete = {
+                                    video.localId?.let { viewModel.deleteDraftVideo(it) }
+                                },
+                                onPost = {
+                                    video.localId?.let { onNavigateToAddNewVideoScreen(it) }
+                                }
                             )
                         }
                     }
                     StudioSelectedTag.PENDING_RE_UPLOAD -> {
-                        items(uiState.draftVideos) { video ->
-                            StudioVideoItem(
+                        items(uiState.pendingReUploadVideos) { video ->
+                            StudioPendingReUploadVideoItem(
                                 video = video,
-                                onVideoSelected = {  }
+                                onReUpload = {
+                                    video.localId?.let { onNavigateToAddNewVideoScreen(it) }
+                                },
+                                onDelete = {
+                                    video.localId?.let { viewModel.deletePendingReUploadVideo(it) }
+                                }
                             )
                         }
                     }

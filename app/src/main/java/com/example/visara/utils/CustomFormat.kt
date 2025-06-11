@@ -1,4 +1,4 @@
-package com.example.visara.ui.utils
+package com.example.visara.utils
 
 import android.annotation.SuppressLint
 import java.time.Duration

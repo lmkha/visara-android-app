@@ -22,14 +22,14 @@ fun VideoThumbnailFromVideoUri(
     uri: Uri?,
 ) {
     var bitmap by remember { mutableStateOf<Bitmap?>(null) }
-    val content = LocalContext.current
+    val context = LocalContext.current
 
     LaunchedEffect(uri) {
         if (uri != null) {
             withContext(Dispatchers.IO) {
                 val retriever = MediaMetadataRetriever()
                 try {
-                    retriever.setDataSource(content, uri)
+                    retriever.setDataSource(context, uri)
                     bitmap = retriever.frameAtTime
                 } catch (e: Exception) {
                     e.printStackTrace()

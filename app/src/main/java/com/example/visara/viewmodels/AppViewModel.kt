@@ -10,12 +10,12 @@ import com.example.visara.data.repository.AuthRepository
 import com.example.visara.data.repository.UserRepository
 import com.example.visara.PlayerManager
 import com.example.visara.VideoDetailState
-import com.example.visara.common.NetworkMonitor
+import com.example.visara.di.gson
+import com.example.visara.utils.NetworkMonitor
 import com.example.visara.ui.navigation.Destination
 import com.example.visara.ui.theme.AppTheme
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
-import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -36,7 +36,6 @@ class AppViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val playerManager: PlayerManager,
     private val networkMonitor: NetworkMonitor,
-    private val gson: Gson,
 ) : ViewModel() {
     private val _appState = MutableStateFlow(AppState())
     val appState: StateFlow<AppState> = _appState.asStateFlow()
@@ -153,7 +152,6 @@ class AppViewModel @Inject constructor(
 
     fun handleNewIntent(intent: Intent?) {
         viewModelScope.launch {
-            Log.d("CHECK_VAR", "receive intent in app viewmodel: ${intent.toString()}")
             val requestType = intent?.getStringExtra("request-type")
             if (requestType == "navigation") {
                 val route = intent.getStringExtra("route")
@@ -169,7 +167,7 @@ class AppViewModel @Inject constructor(
                         else -> {}
                     }
                 } catch (e : Exception) {
-                    Log.e("CHECK_VAR", "request navigate: ${e.printStackTrace()}")
+                    Log.e("CHECK_VAR", "request navigate: ${e.toString()}")
                 }
                 if (destination != null) {
                     _eventChannel.send(AppEvent.NavigateToScreen(destination))

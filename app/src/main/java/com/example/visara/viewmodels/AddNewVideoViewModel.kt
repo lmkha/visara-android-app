@@ -10,7 +10,7 @@ import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.example.visara.PlayerManager
-import com.example.visara.common.NetworkMonitor
+import com.example.visara.utils.NetworkMonitor
 import com.example.visara.data.model.PlaylistModel
 import com.example.visara.data.model.UserModel
 import com.example.visara.data.repository.PlaylistRepository

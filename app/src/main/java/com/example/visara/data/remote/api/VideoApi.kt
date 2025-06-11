@@ -1,7 +1,7 @@
 package com.example.visara.data.remote.api
 
 import com.example.visara.BuildConfig
-import com.example.visara.common.getMimeTypeOrNull
+import com.example.visara.utils.getMimeTypeOrNull
 import com.example.visara.data.remote.common.ProgressRequestBody
 import com.example.visara.di.AuthorizedOkHttpClient
 import com.example.visara.di.UnauthenticatedOkhttpClient

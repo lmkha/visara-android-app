@@ -15,8 +15,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.visara.ui.utils.formatViews
-import com.example.visara.ui.utils.toTimeAgo
+import com.example.visara.utils.formatViews
+import com.example.visara.utils.toTimeAgo
 
 @Composable
 fun VideoHeaderSection(

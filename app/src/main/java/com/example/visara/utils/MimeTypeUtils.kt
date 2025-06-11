@@ -1,4 +1,4 @@
-package com.example.visara.common
+package com.example.visara.utils
 
 import android.webkit.MimeTypeMap
 import java.io.File
