@@ -205,6 +205,8 @@ class VideoRemoteDataSource @Inject constructor(
             try {
                 val response = videoApi.uploadVideoFile(videoId, videoFile, progressListener)
                 val responseBody = response.body?.string()
+                Log.i("CHECK_VAR", "upload video rp: $response")
+                Log.i("CHECK_VAR", "upload video rp body: ${responseBody.toString()}")
 
                 if (response.isSuccessful) {
                     ApiResult.Success(Unit)

@@ -1,5 +1,6 @@
 package com.example.visara.service.fcm
 
+import android.util.Log
 import com.example.visara.data.repository.AppSettingsRepository
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
@@ -13,7 +14,7 @@ class FCMService : FirebaseMessagingService() {
     @Inject
     lateinit var appSettingsRepository: AppSettingsRepository
     @Inject
-    lateinit var fcmDispatcher: FcmDispatcher
+    lateinit var fcmProcessor: FcmProcessor
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
@@ -23,6 +24,7 @@ class FCMService : FirebaseMessagingService() {
     }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
-        fcmDispatcher.dispatch(remoteMessage)
+        Log.i("CHECK_VAR", "received fcm message, data = : ${remoteMessage.data}")
+        fcmProcessor.process(remoteMessage)
     }
 }

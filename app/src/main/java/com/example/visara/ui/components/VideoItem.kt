@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -75,7 +76,7 @@ fun VideoItem(
                 ) {
                     Text(
                         text = formatDuration(state.duration),
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onBackground,
                     )
                 }
             }
@@ -101,7 +102,8 @@ fun VideoItem(
                             overflow = TextOverflow.Ellipsis,
                             maxLines = 2,
                             fontWeight = FontWeight.W600,
-                            fontSize = 20.sp
+                            fontSize = 20.sp,
+                            color = MaterialTheme.colorScheme.onBackground,
                         )
                         IconButton(onClick = {}) {
                             Icon(
@@ -115,14 +117,17 @@ fun VideoItem(
                     ) {
                         Text(
                             text = state.username.toString(),
+                            color = MaterialTheme.colorScheme.onBackground,
                         )
                         Text("-")
                         Text(
-                            text = formatViews(state.viewsCount)
+                            text = formatViews(state.viewsCount),
+                            color = MaterialTheme.colorScheme.onBackground,
                         )
                         Text("-")
                         Text(
                             text = state.createdAt.toTimeAgo(),
+                            color = MaterialTheme.colorScheme.onBackground,
                         )
                     }
                 }

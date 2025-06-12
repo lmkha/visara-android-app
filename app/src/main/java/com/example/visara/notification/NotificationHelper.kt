@@ -29,6 +29,18 @@ import javax.inject.Singleton
 class NotificationHelper @Inject constructor(
     @ApplicationContext private val appContext: Context,
 ) {
+    fun createVideoProcessedNotificationBuilder(title: String, thumbnailUrl: String) : NotificationCompat.Builder {
+        val thumbnailBitmap = getBitmapFromURL(thumbnailUrl)
+        return NotificationCompat.Builder(appContext, NotificationChannelInfo.Message.id)
+            .setContentTitle("Your video was processed successfully.")
+            .setContentText(title)
+            .setSmallIcon(R.drawable.app_logo)
+            .setLargeIcon(thumbnailBitmap)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setAutoCancel(true)
+    }
+
     fun createMessageNotification(messageDto: FcmNewMessageModel) : Notification {
         // Create person
         val bitmap = getBitmapFromURL(messageDto.senderAvatar)

@@ -65,13 +65,13 @@ class StudioViewModel @Inject constructor(
 
     fun deleteDraftVideo(localId: Long) {
         viewModelScope.launch {
-            videoRepository.deleteLocalVideoEntity(localId)
+            videoRepository.deleteLocalVideoEntityByLocalId(localId)
         }
     }
 
     fun deletePendingReUploadVideo(localId: Long) {
         viewModelScope.launch {
-            videoRepository.deleteLocalVideoEntity(localId)
+            videoRepository.deleteLocalVideoEntityByLocalId(localId)
         }
     }
 }

@@ -31,44 +31,6 @@ class VideoRepository @Inject constructor(
     private val videoDao: VideoDao,
     @ApplicationContext private val appContext: Context,
 ) {
-    suspend fun getVideoById(videoId: String) : VideoModel? {
-        val apiResult = videoRemoteDataSource.getVideoById(videoId)
-        if (apiResult is ApiResult.Success) {
-            return apiResult.data
-        }
-        return null
-    }
-
-    suspend fun getVideoForHomeScreen(): List<VideoModel> {
-        val videoListResult = videoRemoteDataSource.getRandomVideos(50)
-        return if (videoListResult is ApiResult.Success) {
-            videoListResult.data.map { it.toVideoModel() }
-        } else {
-            emptyList()
-        }
-    }
-
-    fun getRecommendedHashtag() : List<String> {
-        return emptyList()
-    }
-
-    suspend fun getRecommendedVideos(video: VideoModel) : List<VideoModel> {
-        val videoListResult = videoRemoteDataSource.getRandomVideos(50)
-        return if (videoListResult is ApiResult.Success) {
-            videoListResult.data
-                .asSequence()
-                .map { it.toVideoModel() }
-                .filter { it.id != video.id }
-                .toList()
-        } else {
-            emptyList()
-        }
-    }
-
-    fun getVideoUrl(videoId: String) : String {
-        return "http://10.0.2.2:8080/${videoId}/output.mpd"
-    }
-
     suspend fun uploadVideoMetaData(
         title: String,
         description: String,
@@ -222,6 +184,82 @@ class VideoRepository @Inject constructor(
         return true
     }
 
+    suspend fun draftVideoPost(
+        title: String,
+        description: String,
+        hashtags: List<String>,
+        playlists: List<PlaylistModel>,
+        privacy: VideoPrivacy,
+        isAllowComment: Boolean,
+        videoUri: Uri,
+        thumbnailUri: Uri?,
+        currentUser: UserModel?,
+        draftId: Long?,
+    ) : Boolean {
+        if (currentUser == null) return false
+        val videoEntity = LocalVideoEntity(
+            userId = currentUser.id,
+            username = currentUser.username,
+            userFullName = currentUser.fullName,
+            userProfilePic = currentUser.networkAvatarUrl,
+            title = title,
+            description = description,
+            playlistsJson = gson.toJson(playlists),
+            hashtagsJson = gson.toJson(hashtags),
+            localVideoUriString = videoUri.toString(),
+            localThumbnailUriString = thumbnailUri.toString(),
+            isPrivate = privacy == VideoPrivacy.ONLY_ME,
+            isCommentOff = !isAllowComment,
+            statusCode = LocalVideoStatus.DRAFT.code,
+        )
+
+        if (draftId == null) {
+            videoDao.insertVideo(videoEntity)
+        } else {
+            videoDao.updateVideo(videoEntity.copy(localId = draftId))
+        }
+
+        return true
+    }
+
+    suspend fun getVideoById(videoId: String) : VideoModel? {
+        val apiResult = videoRemoteDataSource.getVideoById(videoId)
+        if (apiResult is ApiResult.Success) {
+            return apiResult.data
+        }
+        return null
+    }
+
+    suspend fun getVideoForHomeScreen(): List<VideoModel> {
+        val videoListResult = videoRemoteDataSource.getRandomVideos(50)
+        return if (videoListResult is ApiResult.Success) {
+            videoListResult.data.map { it.toVideoModel() }
+        } else {
+            emptyList()
+        }
+    }
+
+    fun getRecommendedHashtag() : List<String> {
+        return emptyList()
+    }
+
+    suspend fun getRecommendedVideos(video: VideoModel) : List<VideoModel> {
+        val videoListResult = videoRemoteDataSource.getRandomVideos(50)
+        return if (videoListResult is ApiResult.Success) {
+            videoListResult.data
+                .asSequence()
+                .map { it.toVideoModel() }
+                .filter { it.id != video.id }
+                .toList()
+        } else {
+            emptyList()
+        }
+    }
+
+    fun getVideoUrl(videoId: String) : String {
+        return "http://10.0.2.2:8080/${videoId}/output.mpd"
+    }
+
     private fun uriToFile(context: Context, uri: Uri): File? {
         val contentResolver = context.contentResolver
         val extension = MimeTypeMap.getSingleton()
@@ -310,44 +348,6 @@ class VideoRepository @Inject constructor(
         return apiResult.data.map { it.toVideoModel() }
     }
 
-    suspend fun draftVideoPost(
-        title: String,
-        description: String,
-        hashtags: List<String>,
-        playlists: List<PlaylistModel>,
-        privacy: VideoPrivacy,
-        isAllowComment: Boolean,
-        videoUri: Uri,
-        thumbnailUri: Uri?,
-        currentUser: UserModel?,
-        draftId: Long?,
-    ) : Boolean {
-        if (currentUser == null) return false
-        val videoEntity = LocalVideoEntity(
-            userId = currentUser.id,
-            username = currentUser.username,
-            userFullName = currentUser.fullName,
-            userProfilePic = currentUser.networkAvatarUrl,
-            title = title,
-            description = description,
-            playlistsJson = gson.toJson(playlists),
-            hashtagsJson = gson.toJson(hashtags),
-            localVideoUriString = videoUri.toString(),
-            localThumbnailUriString = thumbnailUri.toString(),
-            isPrivate = privacy == VideoPrivacy.ONLY_ME,
-            isCommentOff = !isAllowComment,
-            statusCode = LocalVideoStatus.DRAFT.code,
-        )
-
-        if (draftId == null) {
-            videoDao.insertVideo(videoEntity)
-        } else {
-            videoDao.updateVideo(videoEntity.copy(localId = draftId))
-        }
-
-        return true
-    }
-
     suspend fun getDraftVideoByLocalId(localDraftVideoId: Long) : AddVideoSubmitData? {
         val videoEntity = videoDao.getVideoByLocalId(localDraftVideoId)
         val draftData = videoEntity.first()?.toAddVideoSubmitData()
@@ -367,8 +367,18 @@ class VideoRepository @Inject constructor(
         videoDao.updateVideo(videoEntity)
     }
 
-    suspend fun deleteLocalVideoEntity(localId: Long) {
+    suspend fun deleteLocalVideoEntityByLocalId(localId: Long) {
         val videoEntity = getLocalVideoEntityById(localId)
         videoEntity?.let { videoDao.deleteVideo(it) }
+    }
+
+    suspend fun deleteLocalVideoEntity(videoEntity: LocalVideoEntity) {
+        videoDao.deleteVideo(videoEntity)
+    }
+
+    suspend fun getLocalVideoEntityByTitle(title: String) : LocalVideoEntity? {
+        return videoDao.getLocalVideoByTitle(title)
+            .distinctUntilChanged()
+            .first()
     }
 }

@@ -26,6 +26,9 @@ interface VideoDao {
     @Query("SELECT * FROM videos WHERE remoteId = :remoteId")
     fun getVideoByRemoteId(remoteId: String) : Flow<LocalVideoEntity?>
 
+    @Query("SELECT * FROM videos WHERE title = :title")
+    fun getLocalVideoByTitle(title: String) : Flow<LocalVideoEntity?>
+
     @Query("SELECT * FROM videos WHERE username = :username and statusCode = :statusCode")
     fun getUploadingVideoOfUserByStatusCode(username: String, statusCode: Int) : Flow<List<LocalVideoEntity>>
 

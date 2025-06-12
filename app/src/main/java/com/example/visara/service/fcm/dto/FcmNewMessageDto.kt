@@ -6,7 +6,7 @@ data class FcmNewMessageDto(
     val senderUsername: String = "",
     val content: String = "",
     val senderAvatar: String = "",
-) : IFcmMessageDto {
+) : FcmDataDto {
     fun toFcmNewMessageModel() = FcmNewMessageModel(
         senderUsername = senderUsername,
         content = content,

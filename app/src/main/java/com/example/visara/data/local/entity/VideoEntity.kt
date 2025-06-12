@@ -50,6 +50,7 @@ data class LocalVideoEntity(
 
     fun toVideoModel() : VideoModel {
         return VideoModel(
+            id = remoteId,
             localId = localId,
             username = username,
             userId = userId,
