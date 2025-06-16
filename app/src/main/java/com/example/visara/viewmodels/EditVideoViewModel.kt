@@ -23,7 +23,7 @@ class EditVideoViewModel @Inject constructor(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(EditVideoScreenUiState())
     val uiState = _uiState.asStateFlow()
-    private val _eventChannel: Channel<EditVideoScreenEvent> = Channel<EditVideoScreenEvent>()
+    private val _eventChannel = Channel<EditVideoScreenEvent>()
     val eventFlow: Flow<EditVideoScreenEvent> = _eventChannel.receiveAsFlow()
 
     fun setVideo(video: VideoModel) {
@@ -63,8 +63,8 @@ class EditVideoViewModel @Inject constructor(
 }
 
 sealed class EditVideoScreenEvent {
-    object UpdateVideoSuccess: EditVideoScreenEvent()
-    object UpdateVideoFailure: EditVideoScreenEvent()
+    data object UpdateVideoSuccess: EditVideoScreenEvent()
+    data object UpdateVideoFailure: EditVideoScreenEvent()
 }
 
 data class EditVideoScreenUiState(

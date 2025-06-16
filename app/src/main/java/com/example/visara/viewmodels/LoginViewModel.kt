@@ -17,7 +17,7 @@ class LoginViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val userRepository: UserRepository,
 ) : ViewModel() {
-    private var _uiState: MutableStateFlow<LoginScreenUiState> = MutableStateFlow<LoginScreenUiState>(LoginScreenUiState())
+    private var _uiState = MutableStateFlow(LoginScreenUiState())
     val uiState: StateFlow<LoginScreenUiState> = _uiState.asStateFlow()
 
     init {

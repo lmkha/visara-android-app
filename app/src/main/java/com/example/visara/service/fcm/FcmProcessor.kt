@@ -2,39 +2,50 @@ package com.example.visara.service.fcm
 
 import android.util.Log
 import com.example.visara.di.gson
-import com.example.visara.service.fcm.dto.FcmResponseDto
-import com.example.visara.service.fcm.handler.FcmCommentLikeHandler
-import com.example.visara.service.fcm.handler.FcmCommentOnVideoHandler
-import com.example.visara.service.fcm.handler.FcmNewChatMessageHandler
-import com.example.visara.service.fcm.handler.FcmNewFollowerHandler
-import com.example.visara.service.fcm.handler.FcmNewVideoProcessedHandler
-import com.example.visara.service.fcm.handler.FcmVideoLikeHandler
+import com.example.visara.service.fcm.handlers.FcmCommentLikeHandler
+import com.example.visara.service.fcm.handlers.FcmCommentOnVideoHandler
+import com.example.visara.service.fcm.handlers.FcmNewChatMessageHandler
+import com.example.visara.service.fcm.handlers.FcmNewFollowerHandler
+import com.example.visara.service.fcm.handlers.FcmNewVideoProcessedHandler
+import com.example.visara.service.fcm.handlers.FcmUnknownTypeHandler
+import com.example.visara.service.fcm.handlers.FcmVideoLikeHandler
+import com.example.visara.service.fcm.handlers.IHandleFcmMessageStrategy
+import com.example.visara.service.fcm.dto.FcmContent
 import com.google.firebase.messaging.RemoteMessage
-import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class FcmProcessor @Inject constructor(
-    private val fcmNewVideoProcessedHandler: FcmNewVideoProcessedHandler,
-    private val fcmNewFollowerHandler: FcmNewFollowerHandler,
-    private val fcmVideoLikeHandler: FcmVideoLikeHandler,
-    private val fcmCommentLikeProcessedHandler: FcmCommentLikeHandler,
-    private val fcmCommentOnVideoHandler: FcmCommentOnVideoHandler,
-    private val fcmNewChatMessageHandler: FcmNewChatMessageHandler,
+    fcmNewVideoProcessedHandler: FcmNewVideoProcessedHandler,
+    fcmNewFollowerHandler: FcmNewFollowerHandler,
+    fcmVideoLikeHandler: FcmVideoLikeHandler,
+    fcmCommentLikeHandler: FcmCommentLikeHandler,
+    fcmCommentOnVideoHandler: FcmCommentOnVideoHandler,
+    fcmNewChatMessageHandler: FcmNewChatMessageHandler,
+    fcmUnknownTypeHandler: FcmUnknownTypeHandler,
 ) {
+    private val handlerMap: Map<FcmMessageType, IHandleFcmMessageStrategy> = mapOf(
+        FcmMessageType.VIDEO_UPLOAD_PROCESSED to fcmNewVideoProcessedHandler,
+        FcmMessageType.NEW_FOLLOWER to fcmNewFollowerHandler,
+        FcmMessageType.VIDEO_LIKED to fcmVideoLikeHandler,
+        FcmMessageType.COMMENT_LIKED to fcmCommentLikeHandler,
+        FcmMessageType.COMMENT_ON_VIDEO to fcmCommentOnVideoHandler,
+        FcmMessageType.NEW_MESSAGE to fcmNewChatMessageHandler,
+        FcmMessageType.UNKNOWN to fcmUnknownTypeHandler,
+    )
     fun process(remoteMessage: RemoteMessage) {
         if (remoteMessage.data.isNotEmpty()) {
             try {
                 val content = remoteMessage.data["content"]
-                val contentType = object : TypeToken<FcmResponseDto>() {}.type
-                val decodedContent: FcmResponseDto = gson.fromJson(content, contentType)
+                val contentType = object : TypeToken<FcmContent>() {}.type
+                val decodedContent: FcmContent = gson.fromJson(content, contentType)
                 val type = determineType(decodedContent.type)
-                dispatchMessage(type = type, dataJson = decodedContent.notiMetadata)
+                dispatchMessageToHandler(type = type, content = decodedContent)
 
             } catch (e: Exception) {
-                Log.e("CHECK_VAR", "error when process fcm message, error = ${e.toString()}")
+                Log.e("CHECK_VAR", "error when process fcm message, error = $e")
             }
         }
     }
@@ -44,29 +55,7 @@ class FcmProcessor @Inject constructor(
         return type ?: FcmMessageType.UNKNOWN
     }
 
-    private fun dispatchMessage(type: FcmMessageType, dataJson: JsonObject) {
-        when (type) {
-            FcmMessageType.VIDEO_UPLOAD_PROCESSED -> {
-                fcmNewVideoProcessedHandler.handle(dataJson)
-            }
-            FcmMessageType.NEW_FOLLOWER -> {
-                fcmNewFollowerHandler.handle(dataJson)
-            }
-            FcmMessageType.VIDEO_LIKED -> {
-                fcmVideoLikeHandler.handle(dataJson)
-            }
-            FcmMessageType.COMMENT_LIKED -> {
-                fcmCommentLikeProcessedHandler.handle(dataJson)
-            }
-            FcmMessageType.COMMENT_ON_VIDEO -> {
-                fcmCommentOnVideoHandler.handle(dataJson)
-            }
-            FcmMessageType.NEW_MESSAGE -> {
-                fcmNewChatMessageHandler.handle(dataJson)
-            }
-            FcmMessageType.UNKNOWN -> {
-                Log.e("CHECK_VAR", "Received unknown type FCM message")
-            }
-        }
+    private fun dispatchMessageToHandler(type: FcmMessageType, content: FcmContent) {
+        handlerMap[type]?.handle(content)
     }
 }

@@ -1,7 +1,7 @@
 package com.example.visara.service.fcm.dto
 
-data class NewVideoProcessedFcmDto(
+data class FcmNewVideoProcessedData(
     val videoId: String,
     val videoTitle: String,
     val thumbnailUrl: String,
-) : FcmDataDto
+) : FcmData

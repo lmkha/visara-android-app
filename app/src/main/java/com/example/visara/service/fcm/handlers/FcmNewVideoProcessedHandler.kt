@@ -1,4 +1,4 @@
-package com.example.visara.service.fcm.handler
+package com.example.visara.service.fcm.handlers
 
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -8,10 +8,10 @@ import com.example.visara.MainActivity
 import com.example.visara.data.repository.VideoRepository
 import com.example.visara.di.gson
 import com.example.visara.notification.NotificationHelper
-import com.example.visara.service.fcm.dto.NewVideoProcessedFcmDto
+import com.example.visara.service.fcm.dto.FcmContent
+import com.example.visara.service.fcm.dto.FcmNewVideoProcessedData
 import com.example.visara.ui.navigation.Destination
 import com.example.visara.ui.screens.studio.StudioSelectedTag
-import com.google.gson.JsonObject
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,10 +25,10 @@ class FcmNewVideoProcessedHandler @Inject constructor(
     private val videoRepository: VideoRepository,
     private val notificationManager: NotificationManager,
     private val notificationHelper: NotificationHelper,
-) : IFcmMessageHandler {
-    override fun handle(dataJson: JsonObject) {
+) : IHandleFcmMessageStrategy {
+    override fun handle(content: FcmContent) {
         CoroutineScope(Dispatchers.IO).launch {
-            val newVideoProcessedDto: NewVideoProcessedFcmDto = gson.fromJson(dataJson, NewVideoProcessedFcmDto::class.java)
+            val newVideoProcessedDto: FcmNewVideoProcessedData = gson.fromJson(content.dataJsonObject, FcmNewVideoProcessedData::class.java)
 
             val localVideoEntity = videoRepository.getLocalVideoEntityByTitle(newVideoProcessedDto.videoTitle)
 

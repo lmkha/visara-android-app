@@ -34,7 +34,7 @@ class ProfileViewModel @Inject constructor(
 ) : ViewModel() {
     private val _uiState: MutableStateFlow<ProfileScreenUiState> = MutableStateFlow(ProfileScreenUiState(isLoading = true))
     val uiState: StateFlow<ProfileScreenUiState> = _uiState.asStateFlow()
-    private val _eventChannel: Channel<ProfileEvent> = Channel<ProfileEvent>()
+    private val _eventChannel = Channel<ProfileEvent>()
     val eventFlow: Flow<ProfileEvent> = _eventChannel.receiveAsFlow()
 
     init {
@@ -133,11 +133,9 @@ class ProfileViewModel @Inject constructor(
 
     fun follow() {
         viewModelScope.launch {
-            val username = _uiState.value.user?.username
-            if (username == null) return@launch
+            val username = _uiState.value.user?.username ?: return@launch
             if (_uiState.value.isFollowing) return@launch
-            val currentUser = userRepository.currentUser.first()
-            if (currentUser == null) return@launch
+            val currentUser = userRepository.currentUser.first() ?: return@launch
 
             _uiState.value.user?.let { user ->
                 val newUser = user.copy(followerCount = user.followerCount + 1)
@@ -155,11 +153,9 @@ class ProfileViewModel @Inject constructor(
 
     fun unfollow() {
         viewModelScope.launch {
-            val username = _uiState.value.user?.username
-            if (username == null) return@launch
-            if (_uiState.value.isFollowing == false) return@launch
-            val currentUser = userRepository.currentUser.first()
-            if (currentUser == null) return@launch
+            val username = _uiState.value.user?.username ?: return@launch
+            if (!_uiState.value.isFollowing) return@launch
+            val currentUser = userRepository.currentUser.first() ?: return@launch
 
             _uiState.value.user?.let { user ->
                 val newUser = user.copy(followerCount = user.followerCount - 1)
@@ -211,10 +207,10 @@ class ProfileViewModel @Inject constructor(
 }
 
 sealed class ProfileEvent {
-    object CreatePlaylistSuccess : ProfileEvent()
-    object CreatePlaylistFailure : ProfileEvent()
-    object AddVideoToPlaylistsSuccess: ProfileEvent()
-    object AddVideoToPlaylistsFailure: ProfileEvent()
+    data object CreatePlaylistSuccess : ProfileEvent()
+    data object CreatePlaylistFailure : ProfileEvent()
+    data object AddVideoToPlaylistsSuccess: ProfileEvent()
+    data object AddVideoToPlaylistsFailure: ProfileEvent()
 }
 
 data class ProfileScreenUiState(

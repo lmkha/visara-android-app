@@ -39,7 +39,7 @@ class AppViewModel @Inject constructor(
 ) : ViewModel() {
     private val _appState = MutableStateFlow(AppState())
     val appState: StateFlow<AppState> = _appState.asStateFlow()
-    private val _eventChannel: Channel<AppEvent> = Channel<AppEvent>()
+    private val _eventChannel = Channel<AppEvent>()
     val eventFlow = _eventChannel.receiveAsFlow()
     private var wasOfflineBefore = false
 
@@ -167,7 +167,7 @@ class AppViewModel @Inject constructor(
                         else -> {}
                     }
                 } catch (e : Exception) {
-                    Log.e("CHECK_VAR", "request navigate: ${e.toString()}")
+                    Log.e("CHECK_VAR", "request navigate: $e")
                 }
                 if (destination != null) {
                     _eventChannel.send(AppEvent.NavigateToScreen(destination))

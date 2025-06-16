@@ -36,9 +36,9 @@ class VideoDetailViewModel @Inject constructor(
     val player: StateFlow<MediaController?> = playerManager.mediaControllerFlow
     private val _uiState: MutableStateFlow<VideoDetailScreenUiState> = MutableStateFlow(VideoDetailScreenUiState())
     val uiState: StateFlow<VideoDetailScreenUiState> = _uiState.asStateFlow()
-    private val _eventChannel: Channel<VideoDetailScreenEvent> = Channel<VideoDetailScreenEvent>()
+    private val _eventChannel = Channel<VideoDetailScreenEvent>()
     val eventFlow: Flow<VideoDetailScreenEvent> = _eventChannel.receiveAsFlow()
-    var likeCommentJobMap: MutableMap<String, Job> = mutableMapOf<String, Job>()
+    private var likeCommentJobMap = mutableMapOf<String, Job>()
     private var changeVideoLikeJob: Job? = null
     private var followAuthorJob: Job? = null
     private var unfollowAuthorJob: Job? = null
@@ -182,13 +182,13 @@ class VideoDetailViewModel @Inject constructor(
 
         val job = viewModelScope.launch {
             delay(500)
-            var result: Boolean = if (current == true) {
+            val result: Boolean = if (current) {
                 commentRepository.unlikeComment(commentId)
             } else {
                 commentRepository.likeComment(commentId)
             }
             likeCommentJobMap.remove(commentId)
-            if (result == false) { onFailure() }
+            if (!result) { onFailure() }
         }
 
         likeCommentJobMap[commentId] = job
@@ -335,7 +335,7 @@ class VideoDetailViewModel @Inject constructor(
             delay(500)
             val videoId = _uiState.value.video?.id
             if (videoId != null) {
-                val result = if (current == true) {
+                val result = if (current) {
                     videoRepository.unlikeVideo(videoId)
                 } else {
                     videoRepository.likeVideo(videoId)
@@ -391,7 +391,7 @@ class VideoDetailViewModel @Inject constructor(
 }
 
 sealed class VideoDetailScreenEvent {
-    object RequireReloadPlayer: VideoDetailScreenEvent()
+    data object RequireReloadPlayer: VideoDetailScreenEvent()
 }
 
 data class VideoDetailScreenUiState(

@@ -24,7 +24,7 @@ class HomeViewModel @Inject constructor(
 ) : ViewModel() {
     private val _uiState: MutableStateFlow<HomeScreenUiState> = MutableStateFlow(HomeScreenUiState())
     val uiState: StateFlow<HomeScreenUiState> = _uiState.asStateFlow()
-    var shouldReFetchWhenOnline: Boolean = false
+    private var shouldReFetchWhenOnline: Boolean = false
 
     init {
         observerNetworkState()

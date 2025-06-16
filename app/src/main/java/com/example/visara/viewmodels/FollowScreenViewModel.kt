@@ -23,7 +23,7 @@ class FollowScreenViewModel @Inject constructor(
 ) : ViewModel() {
     private val _uiState: MutableStateFlow<FollowScreenUiState> = MutableStateFlow(FollowScreenUiState())
     val uiState: StateFlow<FollowScreenUiState> = _uiState.asStateFlow()
-    private var followJobMap: MutableMap<String, Job> = mutableMapOf<String, Job>()
+    private var followJobMap = mutableMapOf<String, Job>()
     private var filterFollowingsJob: Job? = null
     private var filterFollowersJob: Job? = null
 

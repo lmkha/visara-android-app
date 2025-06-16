@@ -1,23 +1,19 @@
 package com.example.visara.viewmodels
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.visara.data.model.chat.ChatMessageModel
-import com.example.visara.data.repository.InboxRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ChatInboxViewModel @Inject constructor(
-    private val inboxRepository: InboxRepository,
 ) : ViewModel() {
     private val _uiState: MutableStateFlow<ChatInboxScreenUiState> = MutableStateFlow(ChatInboxScreenUiState())
     val uiState: StateFlow<ChatInboxScreenUiState> = _uiState.asStateFlow()
@@ -28,7 +24,7 @@ class ChatInboxViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true) }
             delay(500)
             _uiState.update {
-                val messages = listOf<IMessageListItem>(
+                val messages: List<IMessageListItem> = listOf(
                     MessageItem(data = ChatMessageModel(content = "Kịp không v tr", senderUsername = "lmkha")),
                     MessageItem(data = ChatMessageModel(content = "Đã đông mà tg còn ít nữa vz", senderUsername = "lmkha")),
                     MessageItem(data = ChatMessageModel(content = "Lên chưa á Thương", senderUsername = "lmkha")),
@@ -77,22 +73,16 @@ class ChatInboxViewModel @Inject constructor(
 
     private fun observerNewMessage() {
         viewModelScope.launch {
-            inboxRepository.newMessage.collectLatest {
-                Log.i("CHECK_VAR", "collect in viewmodel, new message: $it")
-            }
         }
     }
 
     fun setPartnerUsername(username: String) {
         viewModelScope.launch {
-            inboxRepository.setActiveChatPartner(username)
-            _uiState.update { it.copy(partnerUsername = username) }
         }
     }
 
     fun clearPartnerUsername() {
         viewModelScope.launch {
-            inboxRepository.clearActiveChatPartner()
         }
     }
 

@@ -44,7 +44,7 @@ class AddNewVideoViewModel @Inject constructor(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AddNewVideoScreenUiState())
     val uiState = _uiState.asStateFlow()
-    private val _eventChannel: Channel<AddNewVideoScreenEvent> = Channel<AddNewVideoScreenEvent>()
+    private val _eventChannel = Channel<AddNewVideoScreenEvent>()
     val eventFlow: Flow<AddNewVideoScreenEvent> = _eventChannel.receiveAsFlow()
     val mediaController: StateFlow<MediaController?> = playerManager.mediaControllerFlow
 
@@ -163,10 +163,10 @@ data class AddNewVideoScreenUiState(
 )
 
 sealed class AddNewVideoScreenEvent {
-    object UploadNewVideoMetaDataSuccess: AddNewVideoScreenEvent()
-    object UploadNewVideoMetaDataFailure: AddNewVideoScreenEvent()
-    object DraftVideoPostSuccess: AddNewVideoScreenEvent()
-    object DraftVideoPostFailure: AddNewVideoScreenEvent()
+    data object UploadNewVideoMetaDataSuccess: AddNewVideoScreenEvent()
+    data object UploadNewVideoMetaDataFailure: AddNewVideoScreenEvent()
+    data object DraftVideoPostSuccess: AddNewVideoScreenEvent()
+    data object DraftVideoPostFailure: AddNewVideoScreenEvent()
 }
 
 data class AddVideoSubmitData(

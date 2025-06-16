@@ -263,7 +263,7 @@ fun App(
                             val route: Destination.Main.AddNewVideo = backStackEntry.toRoute()
                             val postFromDraft = route.isPostDraft && route.localDraftVideoId != null
                             if (postFromDraft) {
-                                viewModel.prepareDraftData(route.localDraftVideoId)
+                                route.localDraftVideoId?.let { viewModel.prepareDraftData(it) }
                             }
 
                             AddNewVideoScreen(
@@ -372,7 +372,7 @@ fun App(
                                         Destination.Settings
                                     )
                                 },
-                                onNavigateToAddNewVideoScreen = { navController.navigate(Destination.Main.AddNewVideo) },
+                                onNavigateToAddNewVideoScreen = { navController.navigate(Destination.Main.AddNewVideo()) },
                                 onNavigateToStudioScreen = { navController.navigate(Destination.Studio()) },
                                 onNavigateToQRCodeScreen = {},
                                 onNavigateToEditVideoScreen = { video ->
