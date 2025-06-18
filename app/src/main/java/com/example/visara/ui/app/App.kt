@@ -334,13 +334,19 @@ fun App(
                                 )
                             }
                             composable<Destination.Main.Inbox.NewFollowersInbox> {
-                                NewFollowersInboxScreen()
+                                NewFollowersInboxScreen(
+                                    onBack = { navController.popBackStack() }
+                                )
                             }
                             composable<Destination.Main.Inbox.ActivityInbox> {
-                                ActivityInboxScreen()
+                                ActivityInboxScreen(
+                                    onBack = { navController.popBackStack() }
+                                )
                             }
                             composable<Destination.Main.Inbox.Studio> {
-                                StudioInboxScreen()
+                                StudioInboxScreen(
+                                    onBack = { navController.popBackStack() }
+                                )
                             }
                             composable<Destination.Main.Inbox.SystemNotificationInbox> {
                                 SystemNotificationInboxScreen()
