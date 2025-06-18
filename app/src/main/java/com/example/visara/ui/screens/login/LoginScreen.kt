@@ -40,8 +40,12 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.visara.R
+import com.example.visara.viewmodels.LoginScreenUiEvent
 import com.example.visara.viewmodels.LoginViewModel
 
 @Composable
@@ -51,9 +55,15 @@ fun LoginScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(uiState.isLogged) {
-        if (uiState.isLogged) {
-            onAuthenticated()
+    val lifeCycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(lifeCycleOwner.lifecycle) {
+        lifeCycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            viewModel.eventFlow.collect { event ->
+                when (event) {
+                    is LoginScreenUiEvent.LoginFailure -> {}
+                    LoginScreenUiEvent.LoginSuccess -> onAuthenticated()
+                }
+            }
         }
     }
 
@@ -75,8 +85,7 @@ fun LoginScreen(
 
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .size(300.dp)
+                modifier = Modifier.size(300.dp)
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
@@ -117,6 +126,12 @@ fun LoginScreen(
                 },
                 value = password,
                 onValueChange = { password = it },
+                isError = uiState.errorMessage.isNotBlank(),
+                supportingText = {
+                    if (uiState.errorMessage.isNotBlank()) {
+                        Text(uiState.errorMessage)
+                    }
+                },
                 colors = TextFieldDefaults.colors(
                     unfocusedIndicatorColor = Color.Transparent,
                     focusedIndicatorColor = Color.Transparent,
@@ -126,6 +141,7 @@ fun LoginScreen(
                     .width(350.dp)
                     .clip(RoundedCornerShape(20.dp))
             )
+
 
             Button(
                 onClick = {
@@ -158,6 +174,7 @@ fun LoginScreen(
             }
         }
 
+        // Sign up new account button
         OutlinedButton(
             onClick = {},
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),

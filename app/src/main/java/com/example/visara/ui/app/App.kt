@@ -303,9 +303,6 @@ fun App(
                         navigation<Destination.Main.Inbox>(startDestination = Destination.Main.Inbox.InboxList) {
                             composable<Destination.Main.Inbox.InboxList> {
                                 InboxListScreen(
-                                    onOpenChatInbox = { username->
-                                        navController.navigate(Destination.Main.Inbox.ChatInbox(username = username))
-                                    },
                                     onOpenActivityInbox = { navController.navigate(Destination.Main.Inbox.ActivityInbox) },
                                     onOpenNewFollowersInbox = { navController.navigate(Destination.Main.Inbox.NewFollowersInbox) },
                                     onOpenSystemNotificationInbox = { navController.navigate(Destination.Main.Inbox.SystemNotificationInbox) },

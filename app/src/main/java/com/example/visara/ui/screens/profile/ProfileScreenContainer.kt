@@ -2,7 +2,6 @@ package com.example.visara.ui.screens.profile
 
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -88,7 +87,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 @SuppressLint("ConfigurationScreenWidthHeight")
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreenContainer(
     modifier: Modifier = Modifier,
@@ -111,9 +110,9 @@ fun ProfileScreenContainer(
 ) {
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
     var showBottomSheet by remember { mutableStateOf(false) }
-    var mainScrollState = rememberLazyListState()
-    var videoScrollState = rememberLazyListState()
-    var playlistScrollState = rememberLazyListState()
+    val mainScrollState = rememberLazyListState()
+    val videoScrollState = rememberLazyListState()
+    val playlistScrollState = rememberLazyListState()
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val showTitle by remember {
         derivedStateOf {
@@ -154,7 +153,7 @@ fun ProfileScreenContainer(
             }
         }
     }
-    var bottomSheetType by remember { mutableStateOf<SheetType>(SheetType.SETTINGS) }
+    var bottomSheetType by remember { mutableStateOf(SheetType.SETTINGS) }
     var showMoreActionBottomSheet by remember { mutableStateOf(false) }
     var showAddNewPlaylistDialog by remember { mutableStateOf(false) }
     var selectedMoreActionItem by remember { mutableStateOf<VideoModel?>(null) }

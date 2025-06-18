@@ -45,7 +45,7 @@ class UserRepository @Inject constructor(
         _currentUser.update { user }
     }
 
-    suspend fun saveUser(userModel: UserModel) {
+    private suspend fun saveUser(userModel: UserModel) {
         userLocalDataSource.saveUser(userModel)
     }
 

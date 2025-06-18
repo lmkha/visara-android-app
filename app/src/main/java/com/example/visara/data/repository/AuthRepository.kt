@@ -1,5 +1,6 @@
 package com.example.visara.data.repository
 
+import android.util.Log
 import com.example.visara.data.local.datasource.AuthLocalDataSource
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.datasource.AuthRemoteDataSource
@@ -23,27 +24,28 @@ class AuthRepository @Inject constructor(
         refreshAuthenticationState()
     }
 
-    suspend fun login(username: String, password: String): Boolean {
-        val loginResult = authRemoteDataSource.login(username, password)
-
-        if (loginResult !is ApiResult.Success) return false
-
-        // Must set current username before saving token — token key depends on it.
-        authLocalDataSource.setCurrentUsername(username)
-        val accessToken = loginResult.data.accessToken
-        val refreshToken = loginResult.data.refreshToken
-        authLocalDataSource.saveAccessToken(accessToken)
-        authLocalDataSource.saveRefreshToken(refreshToken)
-        _isAuthenticated.update { true }
-        val fcmToken = appSettingsRepository.getFcmToken()
-        if (fcmToken != null) {
-            authRemoteDataSource.addFcmTokenForAccount(
-                username = username,
-                fcmToken = fcmToken
-            )
+    suspend fun login(username: String, password: String): Result<Unit> {
+        return when (val loginResult = authRemoteDataSource.login(username, password)) {
+            is ApiResult.Error -> {
+                Result.failure(Throwable(message = loginResult.exception.message))
+            }
+            is ApiResult.Failure -> {
+                Result.failure(Throwable(message = loginResult.error.message))
+            }
+            is ApiResult.Success -> {
+                // Must set current username before saving token — token key depends on it.
+                authLocalDataSource.setCurrentUsername(username)
+                val accessToken = loginResult.data.accessToken
+                val refreshToken = loginResult.data.refreshToken
+                authLocalDataSource.saveAccessToken(accessToken)
+                authLocalDataSource.saveRefreshToken(refreshToken)
+                _isAuthenticated.update { true }
+                appSettingsRepository.getFcmToken()?.let { fcmToken ->
+                    authRemoteDataSource.addFcmTokenForAccount(username = username, fcmToken = fcmToken)
+                }
+                Result.success(Unit)
+            }
         }
-
-        return true
     }
 
     suspend fun logout() {
@@ -51,17 +53,21 @@ class AuthRepository @Inject constructor(
         val currentUsername = authLocalDataSource.getCurrentUsername()
         val currentFcmToken = appSettingsRepository.getFcmToken()
         if (currentUsername != null && currentFcmToken != null) {
-            authRemoteDataSource.removeFcmTokenForAccount(
+            val result = authRemoteDataSource.removeFcmTokenForAccount(
                 fcmToken = currentFcmToken,
                 username = currentUsername
             )
+            Log.i("CHECK_VAR", "remove fcmToken result $result")
+
+            if (result is ApiResult.Success) {
+                authLocalDataSource.clearToken()
+                authLocalDataSource.clearCurrentUsername()
+                _isAuthenticated.update { false }
+            }
         }
-        authLocalDataSource.clearToken()
-        authLocalDataSource.clearCurrentUsername()
-        _isAuthenticated.update { false }
     }
 
-    fun refreshAuthenticationState() {
+    private fun refreshAuthenticationState() {
         val hasToken = !authLocalDataSource.getAccessToken().isNullOrEmpty()
         _isAuthenticated.value = hasToken
     }

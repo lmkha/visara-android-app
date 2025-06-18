@@ -24,33 +24,23 @@ class AuthRemoteDataSource @Inject constructor(
                 val response = authApi.login(username, password)
                 val responseBody = response.body?.string()
 
-                if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                    val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                    val dataJson = gson.toJson(jsonObject["data"])
-                    val loginDto = gson.fromJson(dataJson, LoginDto::class.java)
+                if (!response.isSuccessful || responseBody.isNullOrEmpty()) {
+                    val error = gson.fromJson(responseBody, ApiError::class.java)
+                    return@withContext ApiResult.Failure(error)
+                }
 
-                    if (loginDto.refreshToken.isNotBlank() && loginDto.accessToken.isNotBlank())
-                        ApiResult.Success(loginDto)
-                    else ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = "EMPTY_TOKEN",
-                            message = "Token not found.",
-                            rawBody = responseBody
-                        )
-                    )
-                } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
+                val jsonObject = gson.fromJson(responseBody, Map::class.java)
+                val dataJson = gson.toJson(jsonObject["data"])
+                val loginDto = gson.fromJson(dataJson, LoginDto::class.java)
+
+                if (loginDto.refreshToken.isNotBlank() && loginDto.accessToken.isNotBlank())
+                    return@withContext ApiResult.Success(loginDto)
+                else {
+                    val error = gson.fromJson(responseBody, ApiError::class.java)
+                    return@withContext ApiResult.Failure(error)
                 }
             } catch (e: Exception) {
-                ApiResult.Error(e)
+                return@withContext ApiResult.Error(e)
             }
         }
     }

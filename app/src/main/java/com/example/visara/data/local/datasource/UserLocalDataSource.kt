@@ -26,4 +26,8 @@ class UserLocalDataSource @Inject constructor(
         val userEntity = userModel.toEntity()
         userDao.insertUser(userEntity)
     }
+
+    fun getCurrentUsername() : String? {
+        return userSessionManager.getCurrentUsername()
+    }
 }

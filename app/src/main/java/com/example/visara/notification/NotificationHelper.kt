@@ -18,7 +18,11 @@ import androidx.core.graphics.drawable.IconCompat
 import coil3.Bitmap
 import com.example.visara.MainActivity
 import com.example.visara.R
-import com.example.visara.data.model.fcm.FcmNewMessageModel
+import com.example.visara.data.remote.dto.CommentLikeNotificationData
+import com.example.visara.data.remote.dto.CommentOnVideoNotificationData
+import com.example.visara.data.remote.dto.DecodedNotificationDto
+import com.example.visara.data.remote.dto.NewChatMessageNotificationData
+import com.example.visara.data.remote.dto.VideoLikeNotificationData
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.net.HttpURLConnection
 import java.net.URL
@@ -30,7 +34,7 @@ class NotificationHelper @Inject constructor(
     @ApplicationContext private val appContext: Context,
 ) {
     fun createVideoProcessedNotificationBuilder(title: String, thumbnailUrl: String) : NotificationCompat.Builder {
-        val thumbnailBitmap = getBitmapFromURL(thumbnailUrl)
+        val thumbnailBitmap = getCircleBitmapFromURL(thumbnailUrl)
         return NotificationCompat.Builder(appContext, NotificationChannelInfo.Message.id)
             .setContentTitle("Your video was processed successfully.")
             .setContentText(title)
@@ -41,9 +45,9 @@ class NotificationHelper @Inject constructor(
             .setAutoCancel(true)
     }
 
-    fun createMessageNotification(messageDto: FcmNewMessageModel) : Notification {
+    fun createMessageNotification(messageDto: NewChatMessageNotificationData) : Notification {
         // Create person
-        val bitmap = getBitmapFromURL(messageDto.senderAvatar)
+        val bitmap = getCircleBitmapFromURL(messageDto.senderAvatar)
         val icon = bitmap?.let { IconCompat.createWithBitmap(it) }
         val person = Person.Builder()
             .setName(messageDto.senderUsername)
@@ -157,26 +161,78 @@ class NotificationHelper @Inject constructor(
         return notificationBuilder
     }
 
-    private fun getBitmapFromURL(src: String): Bitmap? {
-        fun Bitmap.toCircleBitmap(): Bitmap {
-            val size = minOf(width, height)
-            val output = createBitmap(size, size)
+    fun createNewFollowerNotificationBuilder(decodedNotificationDto: DecodedNotificationDto) : NotificationCompat.Builder {
+        val thumbnailBitmap = decodedNotificationDto.senderAvatarUrl?.let { getCircleBitmapFromURL(it) }
+        return NotificationCompat.Builder(appContext, NotificationChannelInfo.Message.id)
+            .setContentTitle("New follower")
+            .setContentText(decodedNotificationDto.message)
+            .setSmallIcon(R.drawable.app_logo)
+            .setLargeIcon(thumbnailBitmap)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setAutoCancel(true)
+    }
 
-            val canvas = Canvas(output)
-            val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    fun createVideoLikeNotificationBuilder(decodedNotificationDto: DecodedNotificationDto) : NotificationCompat.Builder {
+        val notificationData = decodedNotificationDto.data as VideoLikeNotificationData
+        val thumbnailBitmap = getBitmapFromURL(notificationData.thumbnailUrl)
+        return NotificationCompat.Builder(appContext, NotificationChannelInfo.Message.id)
+            .setContentTitle(decodedNotificationDto.message)
+            .setContentText(notificationData.videoTitle)
+            .setSmallIcon(R.drawable.app_logo)
+            .setLargeIcon(thumbnailBitmap)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setAutoCancel(true)
+    }
 
-            val rect = RectF(0f, 0f, size.toFloat(), size.toFloat())
-            val path = Path().apply {
-                addOval(rect, Path.Direction.CCW)
-            }
+    fun createMyCommentLikedNotificationBuilder(decodedNotificationDto: DecodedNotificationDto) : NotificationCompat.Builder {
+        val notificationData = decodedNotificationDto.data as CommentLikeNotificationData
+        val thumbnailBitmap = getCircleBitmapFromURL(notificationData.thumbnailUrl)
+        return NotificationCompat.Builder(appContext, NotificationChannelInfo.Message.id)
+            .setContentTitle(decodedNotificationDto.message)
+            .setContentText(notificationData.commentContent)
+            .setSmallIcon(R.drawable.app_logo)
+            .setLargeIcon(thumbnailBitmap)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setAutoCancel(true)
+    }
 
-            canvas.clipPath(path)
-            val left = (size - width) / 2f
-            val top = (size - height) / 2f
-            canvas.drawBitmap(this, left, top, paint)
+    fun createNewCommentOnMyVideoNotificationBuilder(decodedNotificationDto: DecodedNotificationDto) : NotificationCompat.Builder {
+        val notificationData = decodedNotificationDto.data as CommentOnVideoNotificationData
+        val thumbnailBitmap = getCircleBitmapFromURL(notificationData.thumbnailUrl)
+        return NotificationCompat.Builder(appContext, NotificationChannelInfo.Message.id)
+            .setContentTitle(decodedNotificationDto.message)
+            .setContentText(notificationData.commentContent)
+            .setSmallIcon(R.drawable.app_logo)
+            .setLargeIcon(thumbnailBitmap)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setAutoCancel(true)
+    }
 
-            return output
+    private fun Bitmap.toCircleBitmap(): Bitmap {
+        val size = minOf(width, height)
+        val output = createBitmap(size, size)
+
+        val canvas = Canvas(output)
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+
+        val rect = RectF(0f, 0f, size.toFloat(), size.toFloat())
+        val path = Path().apply {
+            addOval(rect, Path.Direction.CCW)
         }
+
+        canvas.clipPath(path)
+        val left = (size - width) / 2f
+        val top = (size - height) / 2f
+        canvas.drawBitmap(this, left, top, paint)
+
+        return output
+    }
+
+    private fun getCircleBitmapFromURL(src: String): Bitmap? {
         return try {
             val url = URL(src)
             val connection: HttpURLConnection = url.openConnection() as HttpURLConnection
@@ -184,6 +240,20 @@ class NotificationHelper @Inject constructor(
             connection.connect()
             val inputStream = connection.inputStream
             BitmapFactory.decodeStream(inputStream).toCircleBitmap()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    private fun getBitmapFromURL(src: String): Bitmap? {
+        return try {
+            val url = URL(src)
+            val connection: HttpURLConnection = url.openConnection() as HttpURLConnection
+            connection.doInput = true
+            connection.connect()
+            val inputStream = connection.inputStream
+            BitmapFactory.decodeStream(inputStream)
         } catch (e: Exception) {
             e.printStackTrace()
             null

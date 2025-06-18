@@ -5,11 +5,12 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import com.example.visara.MainActivity
+import com.example.visara.data.remote.dto.DecodedNotificationDto
+import com.example.visara.data.remote.dto.NewVideoProcessedNotificationData
+import com.example.visara.data.remote.dto.NotificationDto
 import com.example.visara.data.repository.VideoRepository
 import com.example.visara.di.gson
 import com.example.visara.notification.NotificationHelper
-import com.example.visara.service.fcm.dto.FcmContent
-import com.example.visara.service.fcm.dto.FcmNewVideoProcessedData
 import com.example.visara.ui.navigation.Destination
 import com.example.visara.ui.screens.studio.StudioSelectedTag
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -25,39 +26,41 @@ class FcmNewVideoProcessedHandler @Inject constructor(
     private val videoRepository: VideoRepository,
     private val notificationManager: NotificationManager,
     private val notificationHelper: NotificationHelper,
-) : IHandleFcmMessageStrategy {
-    override fun handle(content: FcmContent) {
+) : HandleFcmMessageStrategy() {
+
+    override fun handle(content: NotificationDto) {
         CoroutineScope(Dispatchers.IO).launch {
-            val newVideoProcessedDto: FcmNewVideoProcessedData = gson.fromJson(content.dataJsonObject, FcmNewVideoProcessedData::class.java)
-
+            val newVideoProcessedDto: NewVideoProcessedNotificationData = gson.fromJson(content.dataJsonObject, NewVideoProcessedNotificationData::class.java)
             val localVideoEntity = videoRepository.getLocalVideoEntityByTitle(newVideoProcessedDto.videoTitle)
-
             localVideoEntity?.let { videoRepository.deleteLocalVideoEntity(it) }
-
-            val successIntent = Intent(appContext, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                putExtra("request-type", "navigation")
-                putExtra("route", "studio")
-                putExtra(
-                    "destination",
-                    gson.toJson(Destination.Studio(selectedTagIndex = StudioSelectedTag.ACTIVE.ordinal))
-                )
-            }
-            val successPendingIntent: PendingIntent = PendingIntent.getActivity(
-                appContext,
-                0,
-                successIntent,
-                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-            )
-            val notification = notificationHelper
-                .createVideoProcessedNotificationBuilder(
-                    title = newVideoProcessedDto.videoTitle,
-                    thumbnailUrl = newVideoProcessedDto.thumbnailUrl,
-                )
-                .setContentIntent(successPendingIntent)
-                .build()
-
-            notificationManager.notify(234, notification)
         }
+    }
+
+    override fun showNotification(decodedNotificationDto: DecodedNotificationDto) {
+        val notificationData = decodedNotificationDto.data as NewVideoProcessedNotificationData
+        val successIntent = Intent(appContext, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra("request-type", "navigation")
+            putExtra("route", "studio")
+            putExtra(
+                "destination",
+                gson.toJson(Destination.Studio(selectedTagIndex = StudioSelectedTag.ACTIVE.ordinal))
+            )
+        }
+        val successPendingIntent: PendingIntent = PendingIntent.getActivity(
+            appContext,
+            0,
+            successIntent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        val notification = notificationHelper
+            .createVideoProcessedNotificationBuilder(
+                title = notificationData.videoTitle,
+                thumbnailUrl = notificationData.thumbnailUrl,
+            )
+            .setContentIntent(successPendingIntent)
+            .build()
+
+        notificationManager.notify(decodedNotificationDto.id.hashCode(), notification)
     }
 }

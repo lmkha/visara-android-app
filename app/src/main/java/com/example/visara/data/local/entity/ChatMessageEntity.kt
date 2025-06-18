@@ -4,9 +4,9 @@ import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.Relation
-import com.example.visara.data.model.chat.ChatMessageModel
-import com.example.visara.data.model.chat.ReactionModel
-import com.example.visara.data.model.chat.UserReaction
+import com.example.visara.data.model.ChatMessageModel
+import com.example.visara.data.model.ReactionModel
+import com.example.visara.data.model.UserReaction
 
 @Entity(tableName = "messages")
 data class ChatMessageEntity(

@@ -20,7 +20,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
-import com.example.visara.data.model.chat.ChatMessageModel
+import com.example.visara.data.model.ChatMessageModel
 import com.example.visara.ui.components.UserAvatar
 
 @Composable

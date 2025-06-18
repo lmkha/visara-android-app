@@ -1,0 +1,63 @@
+{
+  "follow": {
+    "createdAt": "2025-06-17T13:13:19.131838208Z",
+    "updatedAt": "2025-06-17T13:13:19.131838208Z",
+    "id": "685169efedd3440ac311b259",
+    "fromUsername": "hansi",
+    "fromUserProfilePic": "http://res.cloudinary.com/drnufn5sf/image/upload/v1749637631/videoplatform/profile/252.jpg",
+    "toUsername": "lmkha",
+    "message": "hansi starts following you",
+    "type": "FOLLOW",
+    "isRead": false
+  },
+  "video like": {
+    "createdAt": "2025-06-18T02:58:50.487356300Z",
+    "updatedAt": "2025-06-18T02:58:50.487356300Z",
+    "id": "68522b6a56caa65677d1bc4f",
+    "fromUsername": "fcbarcelona",
+    "fromUserProfilePic": "http://res.cloudinary.com/drnufn5sf/image/upload/v1742437855/videoplatform/profile/102.png",
+    "toUsername": "lmkha",
+    "message": "fcbarcelona liked your video: SƠN TÙNG M-TP | CHÚNG TA CỦA TƯƠNG LAI | OFFICIAL MUSIC VIDEO",
+    "type": "LIKE_VIDEO",
+    "notiMetadata": {
+      "videoId": "67e42a68bb79412ece6f6399",
+      "videoTitle": "SƠN TÙNG M-TP | CHÚNG TA CỦA TƯƠNG LAI | OFFICIAL MUSIC VIDEO",
+      "thumbnailUrl": "http://res.cloudinary.com/drnufn5sf/image/upload/v1743006316/videoplatform/thumbnail/67e42a68bb79412ece6f6399.jpg"
+    },
+    "isRead": false
+  },
+  "comment like": {
+    "createdAt": "2025-06-18T03:00:52.969094900Z",
+    "updatedAt": "2025-06-18T03:00:52.969094900Z",
+    "id": "68522be456caa65677d1bc50",
+    "fromUsername": "lmkha",
+    "fromUserProfilePic": "http://res.cloudinary.com/drnufn5sf/image/upload/v1742437855/videoplatform/profile/102.png",
+    "message": "fcbarcelona liked your commentĐỉnh chưa ae oi!",
+    "type": "LIKE_COMMENT",
+    "notiMetadata": {
+      "videoId": "67e42a68bb79412ece6f6399",
+      "videoTitle": "SƠN TÙNG M-TP | CHÚNG TA CỦA TƯƠNG LAI | OFFICIAL MUSIC VIDEO",
+      "thumbnailUrl": "http://res.cloudinary.com/drnufn5sf/image/upload/v1743006316/videoplatform/thumbnail/67e42a68bb79412ece6f6399.jpg",
+      "commentId": "67e43187bb79412ece6f63a0",
+      "comment": "Đỉnh chưa ae oi!"
+    },
+    "isRead": false
+  },
+  "comment on video": {
+    "createdAt": "2025-06-18T03:03:45.210575200Z",
+    "updatedAt": "2025-06-18T03:03:45.210575200Z",
+    "id": "68522c9156caa65677d1bc51",
+    "fromUsername": "fcbarcelona",
+    "toUsername": "lmkha",
+    "message": "fcbarcelona commented on your video: Nghe từ một năm trước tới giờ vẫn cảm xúc như ngày nào hihi",
+    "type": "COMMENT_ON_VIDEO",
+    "notiMetadata": {
+      "videoId": "67e42a68bb79412ece6f6399",
+      "videoTitle": "SƠN TÙNG M-TP | CHÚNG TA CỦA TƯƠNG LAI | OFFICIAL MUSIC VIDEO",
+      "thumbnailUrl": "http://res.cloudinary.com/drnufn5sf/image/upload/v1743006316/videoplatform/thumbnail/67e42a68bb79412ece6f6399.jpg",
+      "commentId": "68522c9162681d420ade472c",
+      "comment": "Nghe từ một năm trước tới giờ vẫn cảm xúc như ngày nào hihi"
+    },
+    "isRead": false
+  }
+}

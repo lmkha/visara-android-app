@@ -6,8 +6,9 @@ sealed class ApiResult<out T> {
     data class Error(val exception: Exception) : ApiResult<Nothing>()
 }
 data class ApiError(
-    val code: Int,
+    val code: Int?,
+    val message: String?,
+    val success: Boolean = false,
     val errorCode: String? = null,
-    val message: String,
-    val rawBody: String? = null
+    val rawBody: String? = null,
 )

@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -49,7 +48,6 @@ fun InboxListScreen(
    onOpenNewFollowersInbox: () -> Unit,
    openStudioInbox: () -> Unit,
    onOpenSystemNotificationInbox: () -> Unit,
-   onOpenChatInbox: (username: String) -> Unit,
 ) {
 
    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -131,6 +129,7 @@ fun InboxListScreen(
          // New Followers
          item {
             NewFollowerInboxListItem(
+               notifications = uiState.newFollowersNotifications,
                modifier = Modifier
                   .fillMaxWidth()
                   .height(70.dp)
@@ -142,6 +141,7 @@ fun InboxListScreen(
          // Activity
          item {
             ActivityInboxListItem(
+               notifications = uiState.activityNotifications,
                modifier = Modifier
                   .fillMaxWidth()
                   .height(70.dp)
@@ -153,6 +153,7 @@ fun InboxListScreen(
          // Studio
          item {
             StudioInboxListItem(
+               notifications = uiState.studioNotifications,
                modifier = Modifier
                   .fillMaxWidth()
                   .height(70.dp)
@@ -164,24 +165,13 @@ fun InboxListScreen(
          // System notification
          item {
             SystemNotificationInboxListItem(
+               notifications = uiState.systemNotifications,
                modifier = Modifier
                   .fillMaxWidth()
                   .height(70.dp)
                   .padding(horizontal = 8.dp)
                   .clip(RoundedCornerShape(30.dp))
                   .clickable { onOpenSystemNotificationInbox() }
-            )
-         }
-         // Chats Item
-         items(uiState.chats) {
-            ChatInboxListItem(
-               username = it,
-               modifier = Modifier
-                  .fillMaxWidth()
-                  .height(70.dp)
-                  .padding(horizontal = 8.dp)
-                  .clip(RoundedCornerShape(30.dp))
-                  .clickable { onOpenChatInbox(it) }
             )
          }
       }

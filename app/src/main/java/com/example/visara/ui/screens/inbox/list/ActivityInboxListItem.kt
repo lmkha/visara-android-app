@@ -24,10 +24,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.example.visara.data.model.NotificationModel
 
 @Composable
 fun ActivityInboxListItem(
     modifier: Modifier = Modifier,
+    notifications: List<NotificationModel>,
 ) {
     Row(
         modifier = modifier,

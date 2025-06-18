@@ -25,9 +25,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.visara.R
+import com.example.visara.data.model.NotificationModel
 
 @Composable
 fun StudioInboxListItem(
+    notifications: List<NotificationModel>,
     modifier: Modifier = Modifier,
 ) {
     Row(

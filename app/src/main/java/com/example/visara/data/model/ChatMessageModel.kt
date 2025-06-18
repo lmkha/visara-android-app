@@ -1,4 +1,4 @@
-package com.example.visara.data.model.chat
+package com.example.visara.data.model
 
 
 data class ChatMessageModel(
@@ -14,4 +14,9 @@ data class ChatMessageModel(
 data class UserReaction(
     val username: String = "",
     val reaction: ReactionModel = ReactionModel(),
+)
+
+data class ReactionModel(
+    val label: String = "",
+    val code: String = "",
 )
