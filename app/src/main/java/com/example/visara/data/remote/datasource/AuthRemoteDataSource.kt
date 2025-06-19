@@ -5,6 +5,7 @@ import com.example.visara.data.remote.common.ApiError
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.api.AuthApi
 import com.example.visara.data.remote.dto.LoginDto
+import com.example.visara.data.remote.dto.UserDto
 import com.example.visara.data.remote.dto.UsernameAvailabilityDto
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
@@ -41,6 +42,33 @@ class AuthRemoteDataSource @Inject constructor(
                 }
             } catch (e: Exception) {
                 return@withContext ApiResult.Error(e)
+            }
+        }
+    }
+
+    suspend fun changeIsPrivateStatus(isPrivate: Boolean) : ApiResult<UserDto> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = authApi.changeIsPrivateStatus(isPrivate)
+                val responseBody = response.body?.string()
+
+                if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
+                    val jsonObject = gson.fromJson(responseBody, Map::class.java)
+                    val dataJson = gson.toJson(jsonObject["data"])
+                    val userDto: UserDto = gson.fromJson(dataJson, UserDto::class.java)
+                    ApiResult.Success(userDto)
+                } else {
+                    ApiResult.Failure(
+                        ApiError(
+                            code = response.code,
+                            errorCode = response.code.toString(),
+                            message = response.message,
+                            rawBody = responseBody
+                        )
+                    )
+                }
+            } catch (e: Exception) {
+                ApiResult.Error(e)
             }
         }
     }

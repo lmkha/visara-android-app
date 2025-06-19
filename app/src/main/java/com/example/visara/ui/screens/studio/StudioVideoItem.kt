@@ -96,7 +96,7 @@ fun StudioVideoItem(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = getVideoDurationFormatted(context, video.localVideoUri),
+                        text = if (video.duration != 0L) com.example.visara.utils.formatDuration(video.duration) else getVideoDurationFormatted(context, video.localVideoUri),
                         color = Color.White,
                         maxLines = 1,
                         modifier = Modifier.wrapContentWidth(),

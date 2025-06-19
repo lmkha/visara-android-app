@@ -26,12 +26,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.visara.ui.screens.settings.components.AccountSettings
 import com.example.visara.ui.screens.settings.components.AccountSettingsSection
 import com.example.visara.ui.screens.settings.components.ContentAndDisplaySettingsSection
 import com.example.visara.ui.screens.settings.components.ContentDisplaySettings
+import com.example.visara.ui.screens.settings.components.LanguageSettingScreen
 import com.example.visara.ui.screens.settings.components.LoginSettings
 import com.example.visara.ui.screens.settings.components.LoginSettingsSection
 import com.example.visara.ui.screens.settings.components.LogoutBottomSheet
+import com.example.visara.ui.screens.settings.components.PrivacySettingScreen
 import com.example.visara.ui.screens.settings.components.SettingItem
 import com.example.visara.ui.screens.settings.components.ThemeSettingScreen
 import com.example.visara.viewmodels.SettingsViewModel
@@ -86,7 +89,7 @@ fun SettingsScreen(
             ) {
                 if (uiState.isAuthenticated) {
                     AccountSettingsSection(
-                        onItemSelected = {}
+                        onItemSelected = {selectedItem = it }
                     )
                 }
 
@@ -103,6 +106,13 @@ fun SettingsScreen(
             }
         }
 
+        PrivacySettingScreen(
+            onBack = { selectedItem = null },
+            isOpen = selectedItem == AccountSettings.Privacy,
+            isPrivate = uiState.currentUser?.isPrivate == true,
+            onIsPrivateChange = { viewModel.changePrivacy(it) },
+        )
+
         ThemeSettingScreen(
             onBack = { selectedItem = null },
             isOpen = selectedItem == ContentDisplaySettings.Theme,
@@ -110,6 +120,14 @@ fun SettingsScreen(
             onSelected = { theme ->
                 viewModel.setTheme(theme)
             },
+        )
+
+
+        LanguageSettingScreen(
+            onBack = { selectedItem = null },
+            isOpen = selectedItem == ContentDisplaySettings.Language,
+            currentLanguage = "vn",
+            allLanguages = listOf("vn", "eng")
         )
 
         LogoutBottomSheet(

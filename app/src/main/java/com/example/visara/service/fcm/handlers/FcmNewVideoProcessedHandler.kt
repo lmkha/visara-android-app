@@ -4,6 +4,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import com.example.visara.MainActivity
 import com.example.visara.data.remote.dto.DecodedNotificationDto
 import com.example.visara.data.remote.dto.NewVideoProcessedNotificationData
@@ -30,8 +31,10 @@ class FcmNewVideoProcessedHandler @Inject constructor(
 
     override fun handle(content: NotificationDto) {
         CoroutineScope(Dispatchers.IO).launch {
+            Log.d("CHECK_VAR", "Handle video processed")
             val newVideoProcessedDto: NewVideoProcessedNotificationData = gson.fromJson(content.dataJsonObject, NewVideoProcessedNotificationData::class.java)
             val localVideoEntity = videoRepository.getLocalVideoEntityByTitle(newVideoProcessedDto.videoTitle)
+            Log.d("CHECK_VAR", "video entity: ${localVideoEntity.toString()}")
             localVideoEntity?.let { videoRepository.deleteLocalVideoEntity(it) }
         }
     }

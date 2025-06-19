@@ -322,4 +322,18 @@ class VideoApi @Inject constructor(
 
         return authorizedOkHttpClient.newCall(request).execute()
     }
+
+    fun deleteVideo(videoId: String) : Response {
+        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+            .addPathSegment("videos")
+            .addPathSegment(videoId)
+            .build()
+
+        val request: Request = Request.Builder()
+            .url(url)
+            .delete()
+            .build()
+
+        return authorizedOkHttpClient.newCall(request).execute()
+    }
 }

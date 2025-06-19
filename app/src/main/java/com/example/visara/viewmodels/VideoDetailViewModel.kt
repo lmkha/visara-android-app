@@ -173,6 +173,18 @@ class VideoDetailViewModel @Inject constructor(
         }
     }
 
+    fun minimizeDescriptionSection() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isOpenExpandedDescriptionSection = false) }
+        }
+    }
+
+    fun expandDescriptionSection() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isOpenExpandedDescriptionSection = true) }
+        }
+    }
+
     fun changeCommentLike(
         commentId: String,
         current: Boolean = false,
@@ -402,6 +414,7 @@ data class VideoDetailScreenUiState(
     val commentList: List<CommentWithReplies> = emptyList(),
     val isLoading: Boolean = true,
     val isOpenExpandedCommentSection: Boolean = false,
+    val isOpenExpandedDescriptionSection: Boolean = false,
     val currentUser: UserModel? = null,
     val author: UserModel? = null,
     val isFollowing: Boolean = false,

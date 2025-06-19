@@ -31,6 +31,7 @@ fun VideoMoreActionBottomSheet(
     onDismissRequest: () -> Unit,
     onSelectAddVideoToPlaylist: () -> Unit,
     onSelectEditVideo: () -> Unit,
+    onSelectDeleteVideo: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState()
     ModalBottomSheet(
@@ -56,6 +57,7 @@ fun VideoMoreActionBottomSheet(
             Item(
                 text = "Delete",
                 iconResId = R.drawable.inbox_delete,
+                onClick = onSelectDeleteVideo
             )
         }
     }

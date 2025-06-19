@@ -204,6 +204,29 @@ class ProfileViewModel @Inject constructor(
             }
         }
     }
+
+    fun deleteVideo(video: VideoModel) {
+        viewModelScope.launch {
+            val result = videoRepository.deleteVideo(video.id)
+            if (result.isSuccess) {
+                val videos = uiState.value.user?.id?.let {
+                    videoRepository.getAllVideoByUserId(it)
+                } ?: uiState.value.videos
+                val playlists: List<PlaylistModel> = uiState.value.user?.id?.let {
+                    playlistRepository.getAllPlaylistByUserId(it)
+                } ?: uiState.value.playlists
+                _uiState.update {
+                    it.copy(
+                        videos = videos,
+                        playlists = playlists,
+                    )
+                }
+                _eventChannel.send(ProfileEvent.DeleteVideoSuccess)
+            } else {
+                _eventChannel.send(ProfileEvent.DeleteVideoFailure)
+            }
+        }
+    }
 }
 
 sealed class ProfileEvent {
@@ -211,6 +234,8 @@ sealed class ProfileEvent {
     data object CreatePlaylistFailure : ProfileEvent()
     data object AddVideoToPlaylistsSuccess: ProfileEvent()
     data object AddVideoToPlaylistsFailure: ProfileEvent()
+    data object DeleteVideoSuccess : ProfileEvent()
+    data object DeleteVideoFailure : ProfileEvent()
 }
 
 data class ProfileScreenUiState(

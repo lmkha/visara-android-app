@@ -48,6 +48,7 @@ fun ProfileScreen(
                 onVideoSelected = viewModel::selectVideo,
                 follow = viewModel::follow,
                 unfollow = viewModel::unfollow,
+                deleteVideo = viewModel::deleteVideo,
                 onAddNewPlaylist = viewModel::addNewPlaylist,
                 onAddVideoToPlaylists = viewModel::addVideoToPlaylists,
             )

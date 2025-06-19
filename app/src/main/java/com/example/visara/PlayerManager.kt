@@ -63,7 +63,7 @@ class PlayerManager @Inject constructor(
         }
     }
 
-    fun playDash(url: String, videoModel: VideoModel, playWhenReady: Boolean = true) {
+    private fun playDash(url: String, videoModel: VideoModel, playWhenReady: Boolean = true) {
         _mediaControllerFlow.value?.stop()
         _mediaControllerFlow.value?.clearMediaItems()
 

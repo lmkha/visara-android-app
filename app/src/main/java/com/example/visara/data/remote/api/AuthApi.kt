@@ -66,6 +66,25 @@ class AuthApi @Inject constructor(
         return unauthorizedOkHttpClient.newCall(request).execute()
     }
 
+    fun changeIsPrivateStatus(isPrivate: Boolean) : Response {
+        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+            .addPathSegments("users/")
+            .build()
+
+        val payload = gson.toJson(
+            mapOf(
+                "isPrivate" to isPrivate
+            )
+        ).toRequestBody("application/json".toMediaTypeOrNull())
+
+        val request: Request = Request.Builder()
+            .url(url)
+            .put(payload)
+            .build()
+
+        return authorizedOkHttpClient.newCall(request).execute()
+    }
+
     fun registerAccount(
         username: String,
         password: String,

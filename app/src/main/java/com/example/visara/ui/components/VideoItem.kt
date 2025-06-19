@@ -76,7 +76,7 @@ fun VideoItem(
                 ) {
                     Text(
                         text = formatDuration(state.duration),
-                        color = MaterialTheme.colorScheme.onBackground,
+                        color = Color.White,
                     )
                 }
             }

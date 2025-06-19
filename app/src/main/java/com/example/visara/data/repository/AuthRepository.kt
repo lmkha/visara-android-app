@@ -2,6 +2,7 @@ package com.example.visara.data.repository
 
 import android.util.Log
 import com.example.visara.data.local.datasource.AuthLocalDataSource
+import com.example.visara.data.model.UserModel
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.datasource.AuthRemoteDataSource
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,6 +46,14 @@ class AuthRepository @Inject constructor(
                 }
                 Result.success(Unit)
             }
+        }
+    }
+
+    suspend fun changeIsPrivateStatus(isPrivate: Boolean) : Result<UserModel> {
+        return when (val apiResult = authRemoteDataSource.changeIsPrivateStatus(isPrivate)) {
+            is ApiResult.Error -> Result.failure(apiResult.exception)
+            is ApiResult.Failure -> Result.failure(Throwable(apiResult.error.message))
+            is ApiResult.Success -> Result.success(apiResult.data.toUserModel())
         }
     }
 

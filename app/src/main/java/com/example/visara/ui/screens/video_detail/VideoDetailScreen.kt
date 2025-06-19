@@ -44,6 +44,7 @@ import com.example.visara.ui.components.rememberLoginRequestDialogState
 import com.example.visara.ui.screens.video_detail.components.ActionsSection
 import com.example.visara.ui.screens.video_detail.components.AuthorAccountInfoSection
 import com.example.visara.ui.screens.video_detail.components.ExpandedCommentSection
+import com.example.visara.ui.screens.video_detail.components.ExpandedDescriptionSection
 import com.example.visara.ui.screens.video_detail.components.MinimizedCommentSection
 import com.example.visara.ui.screens.video_detail.components.MinimizedModeControl
 import com.example.visara.ui.screens.video_detail.components.VideoHeaderSection
@@ -74,7 +75,11 @@ fun VideoDetailScreen(
     val loginRequestDialogState = rememberLoginRequestDialogState()
     var reloadKey by remember { mutableIntStateOf(0) }
 
-    if (uiState.isOpenExpandedCommentSection) {
+    if (uiState.isOpenExpandedDescriptionSection) {
+        BackHandler {
+            viewModel.minimizeDescriptionSection()
+        }
+    } else if (uiState.isOpenExpandedCommentSection) {
         BackHandler {
             viewModel.minimizeCommentSection()
         }
@@ -84,7 +89,7 @@ fun VideoDetailScreen(
         viewModel.eventFlow.collect { event ->
             when (event) {
                 is VideoDetailScreenEvent.RequireReloadPlayer -> {
-                    reloadKey = reloadKey + 1
+                    reloadKey += 1
                 }
             }
         }
@@ -145,7 +150,9 @@ fun VideoDetailScreen(
                         VideoHeaderSection(
                             title = uiState.video?.title ?: "",
                             createdAt = uiState.video?.createdAt ?: "",
+                            hashtags = uiState.video?.hashtags ?: emptyList(),
                             viewsCount = uiState.video?.viewsCount ?: 0L,
+                            onClick = { viewModel.expandDescriptionSection() }
                         )
                     }
                     // Author account info, follow button
@@ -227,6 +234,32 @@ fun VideoDetailScreen(
                 // Expanded Comment section: Wrap content in column to use slideInVertically and slideOutVertically
                 Column(modifier = Modifier.background(color = Color.Transparent)) {
                     AnimatedVisibility(
+                        visible = uiState.isOpenExpandedDescriptionSection,
+                        enter = slideInVertically(
+                            initialOffsetY = { fullHeight -> fullHeight },
+                        ),
+                        exit = slideOutVertically(
+                            targetOffsetY = { fullHeight -> fullHeight },
+                            animationSpec = tween(durationMillis = 200)
+                        ),
+                    ) {
+                        ExpandedDescriptionSection(
+                            video = uiState.video,
+                            modifier = Modifier
+                                .height(remainingHeight)
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                                .padding(8.dp)
+                                .background(color = LocalVisaraCustomColors.current.expandedCommentSectionBackground)
+                                // Prevent unexpected drag down
+                                .draggable(
+                                    state = rememberDraggableState { },
+                                    orientation = Orientation.Vertical,
+                                )
+                        )
+                    }
+
+                    AnimatedVisibility(
                         visible = uiState.isOpenExpandedCommentSection,
                         enter = slideInVertically(
                             initialOffsetY = { fullHeight -> fullHeight },
@@ -238,6 +271,7 @@ fun VideoDetailScreen(
                     ) {
                         ExpandedCommentSection(
                             commentList = uiState.commentList,
+                            commentCount = uiState.video?.commentsCount ?: 0L,
                             currentUser = uiState.currentUser,
                             onClose = { viewModel.minimizeCommentSection() },
                             onFetchReplies = { parentIndex ->

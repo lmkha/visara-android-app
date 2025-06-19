@@ -9,10 +9,12 @@ import com.example.visara.data.repository.UserRepository
 import com.example.visara.ui.theme.AppTheme
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -25,6 +27,8 @@ class SettingsViewModel @Inject constructor(
 ) : ViewModel() {
     private val _uiState: MutableStateFlow<SettingsScreenUiState> = MutableStateFlow(SettingsScreenUiState())
     val uiState: StateFlow<SettingsScreenUiState> = _uiState.asStateFlow()
+    private val _eventChannel = Channel<SettingsScreenEvent>()
+    val eventFlow = _eventChannel.receiveAsFlow()
 
     init {
         observerThemeSettingsState()
@@ -65,6 +69,23 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    fun changePrivacy(isPrivate: Boolean) {
+        viewModelScope.launch {
+            val result = authRepository.changeIsPrivateStatus(isPrivate)
+            if (result.isSuccess) {
+                userRepository.syncCurrentUser()
+                result.getOrNull()?.let { currentUpdatedUser ->
+                    _uiState.update {
+                        it.copy(currentUser = currentUpdatedUser)
+                    }
+                    _eventChannel.send(SettingsScreenEvent.ChangePrivacySuccess)
+                }
+            } else {
+                _eventChannel.send(SettingsScreenEvent.ChangePrivacyFailure)
+            }
+        }
+    }
+
     fun logout() {
         viewModelScope.launch(Dispatchers.IO) {
             authRepository.logout()
@@ -78,3 +99,9 @@ data class SettingsScreenUiState (
     val isAuthenticated: Boolean = false,
     val currentUser: UserModel? = null,
 )
+
+sealed class SettingsScreenEvent {
+    data object ChangePrivacySuccess : SettingsScreenEvent()
+
+    data object ChangePrivacyFailure : SettingsScreenEvent()
+}

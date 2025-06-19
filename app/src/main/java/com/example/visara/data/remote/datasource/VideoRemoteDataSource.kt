@@ -263,7 +263,7 @@ class VideoRemoteDataSource @Inject constructor(
                 val successValue = jsonObject["success"]
                 val success = successValue is Boolean && successValue == true
 
-                if (response.isSuccessful && success == true) {
+                if (response.isSuccessful && success) {
                     ApiResult.Success(Unit)
                 } else {
                     ApiResult.Failure(
@@ -290,7 +290,7 @@ class VideoRemoteDataSource @Inject constructor(
                 val successValue = jsonObject["success"]
                 val success = successValue is Boolean && successValue == true
 
-                if (response.isSuccessful && success == true) {
+                if (response.isSuccessful && success) {
                     ApiResult.Success(Unit)
                 } else {
                     ApiResult.Failure(
@@ -461,6 +461,33 @@ class VideoRemoteDataSource @Inject constructor(
                     )
                 }
             } catch (e: Exception) {
+                ApiResult.Error(e)
+            }
+        }
+    }
+
+    suspend fun deleteVideo(videoId: String) : ApiResult<Unit> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = videoApi.deleteVideo(videoId)
+                val responseBody = response.body?.string()
+                val jsonObject = gson.fromJson(responseBody, Map::class.java)
+                val successValue = jsonObject["success"]
+                val success = successValue is Boolean && successValue == true
+
+                if (response.isSuccessful && success) {
+                    ApiResult.Success(Unit)
+                } else {
+                    ApiResult.Failure(
+                        ApiError(
+                            code = response.code,
+                            errorCode = response.code.toString(),
+                            message = response.message,
+                            rawBody = responseBody
+                        )
+                    )
+                }
+            } catch (e : Exception) {
                 ApiResult.Error(e)
             }
         }

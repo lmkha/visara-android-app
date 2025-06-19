@@ -24,12 +24,10 @@ fun VideoHeaderSection(
     createdAt: String,
     viewsCount: Long,
     hashtags: List<String> = emptyList(),
+    onClick: () -> Unit,
 ) {
     Column(
-        modifier = Modifier
-            .clickable {
-
-            }
+        modifier = Modifier.clickable {onClick()}
         ,
     ) {
         Text(
@@ -46,7 +44,9 @@ fun VideoHeaderSection(
         ) {
             Text(text = formatViews(viewsCount), color = MaterialTheme.colorScheme.onBackground)
             Text(text = createdAt.toTimeAgo(), color = MaterialTheme.colorScheme.onBackground)
-            Text(text = "#BLVAnhQuan", color = MaterialTheme.colorScheme.onBackground)
+            hashtags.firstOrNull()?.let {
+                Text(text = it, color = MaterialTheme.colorScheme.onBackground)
+            }
             Text(text = "...more", color = MaterialTheme.colorScheme.onBackground)
         }
 

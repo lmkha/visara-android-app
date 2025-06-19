@@ -303,7 +303,7 @@ class VideoRepository @Inject constructor(
 
     suspend fun isVideoLiked(videoId: String) : Boolean {
         val apiResult = videoRemoteDataSource.isVideoLiked(videoId)
-        return apiResult is ApiResult.Success && apiResult.data == true
+        return apiResult is ApiResult.Success && apiResult.data
     }
 
     suspend fun searchVideo(type: String, pattern: String, count: Long) : List<VideoModel> {
@@ -380,5 +380,14 @@ class VideoRepository @Inject constructor(
         return videoDao.getLocalVideoByTitle(title)
             .distinctUntilChanged()
             .first()
+    }
+
+    suspend fun deleteVideo(videoId: String) : Result<Unit> {
+        if (videoId.isBlank()) return Result.failure(Throwable("VideoId is blank"))
+        return when(val apiResult = videoRemoteDataSource.deleteVideo(videoId)) {
+            is ApiResult.Error -> Result.failure(apiResult.exception)
+            is ApiResult.Failure -> Result.failure(Throwable(apiResult.error.message))
+            is ApiResult.Success-> Result.success(Unit)
+        }
     }
 }

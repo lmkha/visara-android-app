@@ -73,6 +73,7 @@ import com.example.visara.ui.screens.profile.components.ActionButton
 import com.example.visara.ui.screens.profile.components.AddNewPlaylistDialog
 import com.example.visara.ui.screens.profile.components.AddVideoToPlaylistBottomSheet
 import com.example.visara.ui.screens.profile.components.BottomSheet
+import com.example.visara.ui.screens.profile.components.DeleteVideoBottomSheet
 import com.example.visara.ui.screens.profile.components.MetricItem
 import com.example.visara.ui.screens.profile.components.SheetResult
 import com.example.visara.ui.screens.profile.components.SheetType
@@ -97,6 +98,7 @@ fun ProfileScreenContainer(
     onBack: () -> Unit,
     follow: () -> Unit,
     unfollow: () -> Unit,
+    deleteVideo: (video: VideoModel) -> Unit,
     onNavigateToFollowScreen: (startedTabIndex: Int) -> Unit,
     onNavigateToSettingsScreen: () -> Unit,
     onNavigateToStudioScreen: () -> Unit,
@@ -157,6 +159,7 @@ fun ProfileScreenContainer(
     var showMoreActionBottomSheet by remember { mutableStateOf(false) }
     var showAddNewPlaylistDialog by remember { mutableStateOf(false) }
     var selectedMoreActionItem by remember { mutableStateOf<VideoModel?>(null) }
+    var selectedDeleteVideo by remember { mutableStateOf<VideoModel?>(null) }
     var showAddVideoToPlaylistBottomSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
@@ -174,6 +177,8 @@ fun ProfileScreenContainer(
                 is ProfileEvent.AddVideoToPlaylistsFailure -> {
                     showAddVideoToPlaylistBottomSheet = false
                 }
+                ProfileEvent.DeleteVideoFailure -> { selectedDeleteVideo = null }
+                ProfileEvent.DeleteVideoSuccess -> { selectedDeleteVideo = null }
 //                else -> {}
             }
         }
@@ -205,7 +210,7 @@ fun ProfileScreenContainer(
                                     modifier = Modifier.size(24.dp),
                                 )
                                 Text(
-                                    text = stringResource(id = R.string.app_name).drop(2),
+                                    text = stringResource(id = R.string.app_name).drop(1),
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 20.sp
                                 )
@@ -334,11 +339,6 @@ fun ProfileScreenContainer(
                                             onNavigateToFollowScreen(1)
                                         }
                                     }
-                            )
-                            MetricItem(
-                                label = "Like",
-                                count = "0",
-                                modifier = Modifier.width(100.dp)
                             )
                         }
                     }
@@ -673,6 +673,10 @@ fun ProfileScreenContainer(
                     },
                     onSelectEditVideo = {
                         selectedMoreActionItem?.let { onNavigateToEditVideoScreen(it) }
+                    },
+                    onSelectDeleteVideo = {
+                        showMoreActionBottomSheet = false
+                        selectedDeleteVideo = selectedMoreActionItem
                     }
                 )
             }
@@ -697,6 +701,17 @@ fun ProfileScreenContainer(
                 AddNewPlaylistDialog(
                     onSubmit = onAddNewPlaylist,
                     onDismissRequest = { showAddNewPlaylistDialog = false }
+                )
+            }
+
+            if (selectedDeleteVideo != null) {
+                DeleteVideoBottomSheet(
+                    video = selectedDeleteVideo!!,
+                    onDismiss = { selectedDeleteVideo = null },
+                    onSubmit = {
+                        selectedDeleteVideo?.let { deleteVideo(it) }
+                    },
+                    modifier = Modifier
                 )
             }
         }

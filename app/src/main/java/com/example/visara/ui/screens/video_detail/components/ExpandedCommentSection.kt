@@ -28,6 +28,7 @@ import com.example.visara.viewmodels.CommentWithReplies
 fun ExpandedCommentSection(
     modifier: Modifier = Modifier,
     currentUser: UserModel?,
+    commentCount: Long,
     commentList: List<CommentWithReplies>,
     onFetchReplies: (parentIndex: Int) -> Unit,
     onLikeComment: (
@@ -57,7 +58,7 @@ fun ExpandedCommentSection(
         ) {
             Text(
                 modifier = Modifier.align(Alignment.Center),
-                text = "6.778 comments",
+                text = "$commentCount comments",
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onBackground,
             )
