@@ -145,7 +145,7 @@ fun StudioPendingReUploadVideoItem(
                             containerColor = Color.Green,
                         )
                     ) {
-                        Text(text = "Re-upload")
+                        Text(text = "Post")
                     }
                 }
             }

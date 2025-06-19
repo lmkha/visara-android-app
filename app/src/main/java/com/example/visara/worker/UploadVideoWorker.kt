@@ -81,11 +81,13 @@ class UploadVideoWorker @AssistedInject constructor(
 
             when (uploadResult) {
                 is ApiResult.Success<*> -> {
-
                     val localVideoEntity = videoMetaData.localId?.let { videoRepository.getLocalVideoEntityById(it) }
                     localVideoEntity?.let {
                         videoRepository.updateLocalVideoEntity(
-                            it.copy(statusCode = LocalVideoStatus.PROCESSING.code)
+                            it.copy(
+                                remoteId = videoMetaData.id,
+                                statusCode = LocalVideoStatus.PROCESSING.code,
+                            )
                         )
                     }
 

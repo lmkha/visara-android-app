@@ -383,6 +383,9 @@ class VideoRepository @Inject constructor(
     }
 
     suspend fun deleteVideo(videoId: String) : Result<Unit> {
+        videoDao.getVideoByRemoteId(videoId).distinctUntilChanged().first()?.let {
+            deleteLocalVideoEntity(it)
+        }
         if (videoId.isBlank()) return Result.failure(Throwable("VideoId is blank"))
         return when(val apiResult = videoRemoteDataSource.deleteVideo(videoId)) {
             is ApiResult.Error -> Result.failure(apiResult.exception)

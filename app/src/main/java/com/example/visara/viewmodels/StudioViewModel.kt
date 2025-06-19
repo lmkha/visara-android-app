@@ -71,6 +71,8 @@ class StudioViewModel @Inject constructor(
 
     fun deletePendingReUploadVideo(localId: Long) {
         viewModelScope.launch {
+            val videoEntity = videoRepository.getLocalVideoEntityById(localId)
+            videoEntity?.remoteId?.let { videoRepository.deleteVideo(it) }
             videoRepository.deleteLocalVideoEntityByLocalId(localId)
         }
     }
