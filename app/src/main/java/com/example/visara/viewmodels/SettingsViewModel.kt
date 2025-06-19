@@ -71,7 +71,7 @@ class SettingsViewModel @Inject constructor(
 
     fun changePrivacy(isPrivate: Boolean) {
         viewModelScope.launch {
-            val result = authRepository.changeIsPrivateStatus(isPrivate)
+            val result = authRepository.updateUser(isPrivate = isPrivate)
             if (result.isSuccess) {
                 userRepository.syncCurrentUser()
                 result.getOrNull()?.let { currentUpdatedUser ->

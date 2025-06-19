@@ -68,6 +68,7 @@ import com.example.visara.ui.components.rememberLoginRequestDialogState
 import com.example.visara.ui.navigation.Destination
 import com.example.visara.ui.screens.add_new_video.AddNewVideoScreen
 import com.example.visara.ui.screens.add_new_video.AddNewVideoStep
+import com.example.visara.ui.screens.edit_profile.EditProfileScreen
 import com.example.visara.ui.screens.edit_video.EditVideoScreen
 import com.example.visara.ui.screens.follow.FollowScreen
 import com.example.visara.ui.screens.following_feed.FollowingFeedScreen
@@ -384,6 +385,9 @@ fun App(
                                         navController.navigate(Destination.EditVideo(videoJson = videoJson))
                                     }
                                 },
+                                onNavigateToEditProfileScreen = {
+                                    navController.navigate(Destination.EditProfile)
+                                },
                                 bottomNavBar = {
                                     BottomNavBar(
                                         activeDestination = Destination.Main.Profile(),
@@ -504,6 +508,12 @@ fun App(
                         viewModel.setVideo(video)
                         EditVideoScreen(
                             viewModel = viewModel,
+                            onBack = { navController.popBackStack() },
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                    composable<Destination.EditProfile> {
+                        EditProfileScreen(
                             onBack = { navController.popBackStack() },
                             modifier = Modifier.fillMaxSize()
                         )

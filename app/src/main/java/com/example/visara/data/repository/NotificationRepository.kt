@@ -23,14 +23,12 @@ class NotificationRepository @Inject constructor(
     }
 
     suspend fun getAllNotifications(page: Int, size: Int) : Result<List<NotificationModel>> {
-        Log.d("CHECK_VAR", "")
         val result = userLocalDataSource.getCurrentUsername()?.let {
             val apiResult = notificationRemoteDataSource.getNotifications(
                 username = it,
                 page = page,
                 size = size
             )
-            Log.d("CHECK_VAR", "api result: $apiResult")
             apiResult
         }
         if (result == null) return Result.failure(Throwable("Current user is null."))

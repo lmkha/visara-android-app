@@ -205,8 +205,6 @@ class VideoRemoteDataSource @Inject constructor(
             try {
                 val response = videoApi.uploadVideoFile(videoId, videoFile, progressListener)
                 val responseBody = response.body?.string()
-                Log.i("CHECK_VAR", "upload video rp: $response")
-                Log.i("CHECK_VAR", "upload video rp body: ${responseBody.toString()}")
 
                 if (response.isSuccessful) {
                     ApiResult.Success(Unit)
@@ -442,7 +440,6 @@ class VideoRemoteDataSource @Inject constructor(
             try {
                 val response = videoApi.getFollowingVideos(count)
                 val responseBody = response.body?.string()
-                Log.d("CHECK_VAR", "following videos: $responseBody")
 
                 if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
                     val jsonObject = gson.fromJson(responseBody, Map::class.java)

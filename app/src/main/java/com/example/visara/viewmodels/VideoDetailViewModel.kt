@@ -2,14 +2,13 @@ package com.example.visara.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.media3.session.MediaController
+import com.example.visara.PlayerManager
 import com.example.visara.data.model.CommentModel
 import com.example.visara.data.model.UserModel
 import com.example.visara.data.model.VideoModel
 import com.example.visara.data.repository.AuthRepository
 import com.example.visara.data.repository.CommentRepository
 import com.example.visara.data.repository.UserRepository
-import com.example.visara.PlayerManager
 import com.example.visara.data.repository.VideoRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -31,9 +30,8 @@ class VideoDetailViewModel @Inject constructor(
     private val commentRepository: CommentRepository,
     private val userRepository: UserRepository,
     private val videoRepository: VideoRepository,
-    private val playerManager: PlayerManager,
+    val playerManager: PlayerManager,
 ) : ViewModel() {
-    val player: StateFlow<MediaController?> = playerManager.mediaControllerFlow
     private val _uiState: MutableStateFlow<VideoDetailScreenUiState> = MutableStateFlow(VideoDetailScreenUiState())
     val uiState: StateFlow<VideoDetailScreenUiState> = _uiState.asStateFlow()
     private val _eventChannel = Channel<VideoDetailScreenEvent>()

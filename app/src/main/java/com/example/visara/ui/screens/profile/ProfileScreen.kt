@@ -20,6 +20,7 @@ fun ProfileScreen(
     onNavigateToQRCodeScreen: () -> Unit,
     onNavigateToAddNewVideoScreen: () -> Unit,
     onNavigateToEditVideoScreen: (video: VideoModel) -> Unit,
+    onNavigateToEditProfileScreen: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -45,6 +46,7 @@ fun ProfileScreen(
                 onNavigateToLoginScreen = onNavigateToLoginScreen,
                 onNavigateToAddNewVideoScreen = onNavigateToAddNewVideoScreen,
                 onNavigateToEditVideoScreen = onNavigateToEditVideoScreen,
+                onNavigateToEditProfileScreen = onNavigateToEditProfileScreen,
                 onVideoSelected = viewModel::selectVideo,
                 follow = viewModel::follow,
                 unfollow = viewModel::unfollow,

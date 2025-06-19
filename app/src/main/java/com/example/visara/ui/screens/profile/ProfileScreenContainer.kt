@@ -21,19 +21,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
@@ -109,6 +106,7 @@ fun ProfileScreenContainer(
     onAddNewPlaylist: (title: String) -> Unit,
     onAddVideoToPlaylists: (videoId: String, playlistIds: List<String>) -> Unit,
     onNavigateToEditVideoScreen: (video: VideoModel) -> Unit,
+    onNavigateToEditProfileScreen: () -> Unit,
 ) {
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
     var showBottomSheet by remember { mutableStateOf(false) }
@@ -360,7 +358,7 @@ fun ProfileScreenContainer(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 if (uiState.isMyProfile) {
-                                    ActionButton(onClick = {}) {
+                                    ActionButton(onClick = onNavigateToEditProfileScreen) {
                                         Text(
                                             text = "Edit profile",
                                             modifier = Modifier.padding(8.dp),
@@ -518,51 +516,6 @@ fun ProfileScreenContainer(
                                     .height(screenHeight)
                                     .nestedScroll(insideScrollConnection)
                             ) {
-                                item {
-                                    var selectedFilterIndex by remember { mutableIntStateOf(0) }
-
-                                    @Composable
-                                    fun CustomFilterChip(
-                                        label: String,
-                                        onClick: () -> Unit,
-                                        selected: Boolean,
-                                    ) {
-                                        Box(
-                                            modifier = Modifier
-                                                .clip(RoundedCornerShape(8.dp))
-                                                .background(color = if (selected) Color.White else Color.DarkGray)
-                                                .clickable(onClick = onClick)
-                                        ) {
-                                            Text(
-                                                text = label,
-                                                color = if (selected) Color.Black else Color.White,
-                                                modifier = Modifier.padding(8.dp)
-                                            )
-                                        }
-                                    }
-
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                    ) {
-                                        CustomFilterChip(
-                                            label = "Newest",
-                                            selected = selectedFilterIndex == 0,
-                                            onClick = { selectedFilterIndex = 0 }
-                                        )
-                                        CustomFilterChip(
-                                            label = "Popular",
-                                            selected = selectedFilterIndex == 1,
-                                            onClick = { selectedFilterIndex = 1 }
-                                        )
-                                        CustomFilterChip(
-                                            label = "Oldest",
-                                            selected = selectedFilterIndex == 2,
-                                            onClick = { selectedFilterIndex = 2 }
-                                        )
-                                    }
-                                }
-
                                 items(uiState.videos) { video ->
                                     TabVideoItem(
                                         video = video,
@@ -583,40 +536,6 @@ fun ProfileScreenContainer(
                                     .height(screenHeight)
                                     .nestedScroll(insideScrollConnection),
                             ) {
-                                item {
-                                    Row(
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                    ) {
-                                        Icon(
-                                            painter = painterResource(id = R.drawable.sort_24px),
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.onBackground,
-                                        )
-                                        Text(
-                                            text = "Sort by",
-                                            color = Color.White,
-                                            modifier = Modifier.padding(8.dp)
-                                        )
-                                        Icon(
-                                            imageVector = Icons.Default.KeyboardArrowDown,
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.onBackground,
-                                        )
-
-                                        if (uiState.isMyProfile) {
-                                            OutlinedButton(
-                                                onClick = { showAddNewPlaylistDialog = true },
-                                                colors = ButtonDefaults.outlinedButtonColors(
-                                                    contentColor = MaterialTheme.colorScheme.onBackground,
-                                                ),
-                                            ) {
-                                                Text("Add playlist +")
-                                            }
-                                        }
-                                    }
-                                }
-
                                 items(uiState.playlists) { playlist ->
                                     TabPlaylistItem(
                                         playlist = playlist

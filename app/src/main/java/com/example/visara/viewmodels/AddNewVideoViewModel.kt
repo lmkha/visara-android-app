@@ -39,14 +39,13 @@ class AddNewVideoViewModel @Inject constructor(
     private val videoRepository: VideoRepository,
     private val userRepository: UserRepository,
     private val playlistRepository: PlaylistRepository,
-    private val playerManager: PlayerManager,
     private val gson: Gson,
+    val playerManager: PlayerManager,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AddNewVideoScreenUiState())
     val uiState = _uiState.asStateFlow()
     private val _eventChannel = Channel<AddNewVideoScreenEvent>()
     val eventFlow: Flow<AddNewVideoScreenEvent> = _eventChannel.receiveAsFlow()
-    val mediaController: StateFlow<MediaController?> = playerManager.mediaControllerFlow
 
     init {
         observerNetworkState()

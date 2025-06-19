@@ -1,5 +1,6 @@
 package com.example.visara.viewmodels
 
+import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -17,6 +18,7 @@ import com.example.visara.ui.theme.AppTheme
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,6 +33,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AppViewModel @Inject constructor(
+    @ApplicationContext appContext: Context,
     private val authRepository: AuthRepository,
     private val appSettingsRepository: AppSettingsRepository,
     private val userRepository: UserRepository,
@@ -44,6 +47,7 @@ class AppViewModel @Inject constructor(
     private var wasOfflineBefore = false
 
     init {
+        Log.d("CHECK_VAR", "init app view model")
         observerTheme()
         observerAuthenticationState()
         observerCurrentUser()

@@ -1,5 +1,6 @@
 package com.example.visara.ui.screens.video_detail
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -64,7 +65,6 @@ fun VideoDetailScreen(
     onNavigateToLoginScreen: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val currentMediaController by viewModel.player.collectAsStateWithLifecycle()
     var liked by remember(uiState.isVideoLiked) {
         mutableStateOf(uiState.isVideoLiked)
     }
@@ -95,6 +95,10 @@ fun VideoDetailScreen(
         }
     }
 
+    LaunchedEffect(viewModel.playerManager.mediaController) {
+        Log.d("CHECK_VAR", "observer player in video detail, ${viewModel.playerManager.mediaController}")
+    }
+
     BoxWithConstraints(modifier = modifier.background(color = Color.Black)) {
         val screenHeight = this.maxHeight
         val screenWidth = this.maxWidth
@@ -102,7 +106,7 @@ fun VideoDetailScreen(
         val remainingHeight = screenHeight - playerHeight
         Column(modifier = Modifier.fillMaxSize()) {
             // Video
-            if (currentMediaController != null) {
+            if (viewModel.playerManager.mediaController != null) {
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
@@ -111,15 +115,15 @@ fun VideoDetailScreen(
                         .aspectRatio(16f / 9f)
                 ) {
                     key(reloadKey) {
-                        VisaraVideoPlayer(
-                            mediaController = currentMediaController!!,
-                            showControls = uiState.isFullScreenMode,
-                            requireLandscapeMode = requireLandscapeMode,
-                            requirePortraitMode = requirePortraitMode,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .aspectRatio(16f / 9f)
-                        )
+                            VisaraVideoPlayer(
+                                mediaController =viewModel.playerManager.mediaController!!,
+                                showControls = uiState.isFullScreenMode,
+                                requireLandscapeMode = requireLandscapeMode,
+                                requirePortraitMode = requirePortraitMode,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .aspectRatio(16f / 9f)
+                            )
                     }
                     if (!isFullScreenMode) {
                         MinimizedModeControl(

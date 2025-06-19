@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
@@ -20,11 +19,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -42,8 +38,8 @@ fun TabPlaylistItem(
         modifier = modifier
             .height(120.dp)
             .fillMaxWidth()
+            .padding(horizontal = 4.dp)
     ) {
-        val cloudinaryImageUrl1 = "http://res.cloudinary.com/drnufn5sf/image/upload/v1743006316/videoplatform/thumbnail/67e42a68bb79412ece6f6399.jpg"
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.fillMaxSize(),
@@ -52,64 +48,39 @@ fun TabPlaylistItem(
                 modifier = Modifier
                     .height(120.dp)
                     .weight(1f)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color.Black)
             ) {
-                Box(
-                    modifier = Modifier
-                        .height(90.dp)
-                        .width(190.dp)
-                        .align(Alignment.TopCenter)
-                ) {
+                if (playlist.thumbnail.isNotBlank()) {
                     AsyncImage(
-                        model = cloudinaryImageUrl1,
+                        model = playlist.thumbnail,
+                        contentDescription = null
+                    )
+                } else {
+                    Icon(
+                        painter = painterResource(id = R.drawable.playlist_tab_24px),
                         contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .blur(40.dp)
+                        tint = Color.White,
+                        modifier = Modifier.fillMaxSize()
                     )
                 }
-                Box(
-                    modifier = Modifier
-                        .height(110.dp)
-                        .fillMaxWidth()
-                        .shadow(8.dp)
-                        .align(Alignment.BottomCenter)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.padding(2.dp).align(Alignment.BottomEnd)
                 ) {
-                    AsyncImage(
-                        model = cloudinaryImageUrl1,
+                    Icon(
+                        painter = painterResource(id = R.drawable.playlist_play_24px),
                         contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.clip(RoundedCornerShape(8.dp))
+                        tint = Color.White,
                     )
-
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(
-                                end = 8.dp,
-                                bottom = 8.dp,
-                            )
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(color = Color.Black.copy(alpha = 0.7f))
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            modifier = Modifier.padding(2.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.playlist_play_24px),
-                                contentDescription = null,
-                                tint = Color.White,
-                            )
-                            Text(
-                                text = playlist.videoIds.size.toString(),
-                                color = Color.White,
-                            )
-                        }
-                    }
+                    Text(
+                        text = playlist.videoIds.size.toString(),
+                        color = Color.White,
+                    )
                 }
             }
+
             Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Text(
@@ -133,14 +104,7 @@ fun TabPlaylistItem(
                     }
                 }
                 Text(
-                    text = "H2O Remix - Danh sách phát",
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    fontSize = 13.sp,
-                    color = Color.Gray,
-                )
-                Text(
-                    text = "Cập nhật hôm nay",
+                    text = playlist.description,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     fontSize = 13.sp,

@@ -49,8 +49,12 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    suspend fun changeIsPrivateStatus(isPrivate: Boolean) : Result<UserModel> {
-        return when (val apiResult = authRemoteDataSource.changeIsPrivateStatus(isPrivate)) {
+    suspend fun updateUser(
+        isPrivate: Boolean? = null,
+        fullName: String? = null,
+        bio: String? = null,
+    ) : Result<UserModel> {
+        return when (val apiResult = authRemoteDataSource.updateUser(isPrivate = isPrivate, fullName = fullName, bio = bio)) {
             is ApiResult.Error -> Result.failure(apiResult.exception)
             is ApiResult.Failure -> Result.failure(Throwable(apiResult.error.message))
             is ApiResult.Success -> Result.success(apiResult.data.toUserModel())

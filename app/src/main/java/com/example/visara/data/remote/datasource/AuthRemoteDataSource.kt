@@ -46,10 +46,18 @@ class AuthRemoteDataSource @Inject constructor(
         }
     }
 
-    suspend fun changeIsPrivateStatus(isPrivate: Boolean) : ApiResult<UserDto> {
+    suspend fun updateUser(
+        isPrivate: Boolean? = null,
+        fullName: String? = null,
+        bio: String? = null,
+    ) : ApiResult<UserDto> {
         return withContext(Dispatchers.IO) {
             try {
-                val response = authApi.changeIsPrivateStatus(isPrivate)
+                val response = authApi.updateUser(
+                    isPrivate = isPrivate,
+                    bio = bio,
+                    fullName = fullName,
+                )
                 val responseBody = response.body?.string()
 
                 if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
@@ -108,7 +116,6 @@ class AuthRemoteDataSource @Inject constructor(
         return withContext(Dispatchers.IO) {
             try {
                 val response = authApi.addFcmToken(token = fcmToken, username = username)
-                Log.d("CHECK_VAR", "add fcm token to account: $response")
                 val responseBody = response.body?.string()
                 val jsonObject = gson.fromJson(responseBody, Map::class.java)
                 val success = jsonObject["success"]?.let { it is Boolean && it == true }
@@ -135,7 +142,6 @@ class AuthRemoteDataSource @Inject constructor(
         return withContext(Dispatchers.IO) {
             try {
                 val response = authApi.removeFcmToken(token = fcmToken, username = username)
-                Log.d("CHECK_VAR", "remove fcm token to account: $response")
                 val responseBody = response.body?.string()
                 val jsonObject = gson.fromJson(responseBody, Map::class.java)
                 val success = jsonObject["success"]?.let { it is Boolean && it == true }

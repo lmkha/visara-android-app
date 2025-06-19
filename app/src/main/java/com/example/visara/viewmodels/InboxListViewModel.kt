@@ -27,7 +27,6 @@ class InboxListViewModel @Inject constructor(
             if (result.isSuccess) {
                 result.getOrNull()?.let {
                     updateUiState(it)
-                    Log.d("CHECK_VAR", "NewFollower: ${uiState.value.newFollowersNotifications.take(5)}\nActivity: ${uiState.value.activityNotifications.take(5)}\nStudio: ${uiState.value.studioNotifications.take(5)}")
                 }
             }
         }

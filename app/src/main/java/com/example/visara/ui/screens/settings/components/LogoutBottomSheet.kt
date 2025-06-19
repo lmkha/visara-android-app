@@ -98,19 +98,6 @@ fun LogoutBottomSheet(
                         textAlign = TextAlign.Center
                     )
 
-                    Box(
-                        modifier = Modifier
-                            .height(70.dp)
-                            .fillMaxWidth()
-                            .clickable(onClick = onSwitchAccountSelected)
-                    ) {
-                        Text(
-                            text = "Switch account",
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onBackground,
-                            modifier = Modifier.align(Alignment.Center)
-                        )
-                    }
                     HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f), thickness = 1.dp)
                     Box(
                         modifier = Modifier

@@ -31,10 +31,8 @@ class FcmNewVideoProcessedHandler @Inject constructor(
 
     override fun handle(content: NotificationDto) {
         CoroutineScope(Dispatchers.IO).launch {
-            Log.d("CHECK_VAR", "Handle video processed")
             val newVideoProcessedDto: NewVideoProcessedNotificationData = gson.fromJson(content.dataJsonObject, NewVideoProcessedNotificationData::class.java)
             val localVideoEntity = videoRepository.getLocalVideoEntityByTitle(newVideoProcessedDto.videoTitle)
-            Log.d("CHECK_VAR", "video entity: ${localVideoEntity.toString()}")
             localVideoEntity?.let { videoRepository.deleteLocalVideoEntity(it) }
         }
     }

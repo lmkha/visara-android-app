@@ -34,6 +34,7 @@ sealed class Destination(val name: String) {
             val shouldNavigateToMyProfile: Boolean = false,
         ) : Destination("Main.Profile")
     }
+    @Serializable data object EditProfile: Destination("EditProfile")
     @Serializable data class Follow(val startedTabIndex: Int = 0): Destination("Follow")
     @Serializable
     data object Settings: Destination("Settings")
