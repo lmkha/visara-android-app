@@ -76,7 +76,10 @@ fun AddNewVideoScreen(
     }
 
     DisposableEffect(Unit) {
-        onDispose { viewModel.playerManager.mediaController?.stop() }
+        onDispose {
+            viewModel.playerManager.mediaController?.stop()
+            viewModel.playerManager.mediaController?.clearMediaItems()
+        }
     }
 
     if (step != AddNewVideoStep.entries.first()) {

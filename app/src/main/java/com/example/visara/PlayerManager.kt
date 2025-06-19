@@ -39,7 +39,6 @@ class PlayerManager @Inject constructor(
         val controllerFuture = MediaController.Builder(appContext, sessionToken).buildAsync()
         controllerFuture.addListener({
             this.mediaController = controllerFuture.get().apply {
-//            this._mediaControllerFlow.value = controllerFuture.get().apply {
                 this.addListener(object : Player.Listener {
                     override fun onIsPlayingChanged(isPlayingNow: Boolean) {
                         _videoDetail.update { it.copy(isPlaying = isPlayingNow) }
@@ -64,8 +63,6 @@ class PlayerManager @Inject constructor(
     }
 
     private fun playDash(url: String, videoModel: VideoModel, playWhenReady: Boolean = true) {
-//        _mediaControllerFlow.value?.stop()
-//        _mediaControllerFlow.value?.clearMediaItems()
         mediaController?.stop()
         mediaController?.clearMediaItems()
 
@@ -81,17 +78,12 @@ class PlayerManager @Inject constructor(
             )
             .build()
 
-//        _mediaControllerFlow.value?.setMediaItem(mediaItem)
-//        _mediaControllerFlow.value?.playWhenReady = playWhenReady
-//        _mediaControllerFlow.value?.prepare()
         mediaController?.setMediaItem(mediaItem)
         mediaController?.playWhenReady = playWhenReady
         mediaController?.prepare()
     }
 
     fun playUri(uri: Uri, playWhenReady: Boolean = true) {
-//        _mediaControllerFlow.value?.stop()
-//        _mediaControllerFlow.value?.stop()
         mediaController?.clearMediaItems()
         mediaController?.clearMediaItems()
 
@@ -99,9 +91,6 @@ class PlayerManager @Inject constructor(
             .setUri(uri)
             .build()
 
-//        _mediaControllerFlow.value?.setMediaItem(mediaItem)
-//        _mediaControllerFlow.value?.playWhenReady = playWhenReady
-//        _mediaControllerFlow.value?.prepare()
         mediaController?.setMediaItem(mediaItem)
         mediaController?.playWhenReady = playWhenReady
         mediaController?.prepare()
@@ -109,7 +98,6 @@ class PlayerManager @Inject constructor(
 
     fun saveCurrentPlaybackState() {
         mediaController.let { mediaController ->
-//        _mediaControllerFlow.value?.let { mediaController ->
             val currentItem = mediaController?.currentMediaItem
             if (currentItem != null && mediaController.playbackState != Player.STATE_IDLE) {
                 if (mediaController.isPlaying) {
@@ -129,7 +117,6 @@ class PlayerManager @Inject constructor(
     }
 
     fun restoreStoredPlaybackState() {
-//        _mediaControllerFlow.value?.let { mediaController ->
         mediaController.let { mediaController ->
             storedPlaybackState?.let { snapshot ->
                 mediaController?.stop()
@@ -154,8 +141,6 @@ class PlayerManager @Inject constructor(
 
     fun close() {
         _videoDetail.update {
-//            mediaControllerFlow.value?.stop()
-//            mediaControllerFlow.value?.clearMediaItems()
             mediaController?.stop()
             mediaController?.clearMediaItems()
             it.copy(
@@ -175,12 +160,10 @@ class PlayerManager @Inject constructor(
     }
 
     fun play() {
-//        _mediaControllerFlow.value?.play()
         mediaController?.play()
     }
 
     fun pause() {
-//        _mediaControllerFlow.value?.pause()
         mediaController?.pause()
     }
 }
