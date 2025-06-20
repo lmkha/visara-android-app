@@ -33,7 +33,7 @@ class NotificationRepository @Inject constructor(
         if (result == null) return Result.failure(Throwable("Current user is null."))
         if (result !is ApiResult.Success) return Result.failure(Throwable("Fail to get notifications."))
         return try {
-            Result.success(result.data.map { it.decode().toNotificationModel() })
+            Result.success(result.data.map { it.deserialize().toNotificationModel() })
         } catch (e: Exception) {
             Result.failure(e)
         }

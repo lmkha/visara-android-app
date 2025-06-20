@@ -10,7 +10,9 @@ import com.example.visara.data.remote.dto.NotificationDto
 import com.example.visara.notification.NotificationHelper
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class FcmCommentOnVideoHandler @Inject constructor(
     @ApplicationContext private val appContext: Context,
     private val notificationHelper: NotificationHelper,

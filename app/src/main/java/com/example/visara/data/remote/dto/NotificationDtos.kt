@@ -2,7 +2,6 @@ package com.example.visara.data.remote.dto
 
 import com.example.visara.data.model.NotificationModel
 import com.example.visara.di.gson
-import com.example.visara.service.fcm.NotificationProcessor
 import com.example.visara.service.fcm.RemoteNotificationType
 import com.google.gson.JsonObject
 import com.google.gson.annotations.SerializedName
@@ -25,7 +24,7 @@ data class NotificationDto(
         return type ?: RemoteNotificationType.UNKNOWN
     }
 
-    fun decode() : DecodedNotificationDto {
+    fun deserialize() : DecodedNotificationDto {
         val type = determineType(type)
         val data: NotificationData? = when (type) {
             RemoteNotificationType.VIDEO_UPLOAD_PROCESSED -> gson.fromJson(dataJsonObject, NewVideoProcessedNotificationData::class.java)

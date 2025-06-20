@@ -9,7 +9,9 @@ import com.example.visara.data.remote.dto.DecodedNotificationDto
 import com.example.visara.notification.NotificationHelper
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class FcmVideoLikeHandler @Inject constructor(
     @ApplicationContext private val appContext: Context,
     private val notificationHelper: NotificationHelper,
@@ -31,5 +33,4 @@ class FcmVideoLikeHandler @Inject constructor(
 
         notificationManager.notify(decodedNotificationDto.id.hashCode(), notification)
     }
-
 }

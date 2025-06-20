@@ -3,13 +3,6 @@ package com.example.visara.service.fcm
 import com.example.visara.data.remote.dto.NotificationDto
 import com.example.visara.data.repository.NotificationRepository
 import com.example.visara.di.gson
-import com.example.visara.service.fcm.handlers.FcmCommentLikeHandler
-import com.example.visara.service.fcm.handlers.FcmCommentOnVideoHandler
-import com.example.visara.service.fcm.handlers.FcmNewChatMessageHandler
-import com.example.visara.service.fcm.handlers.FcmNewFollowerHandler
-import com.example.visara.service.fcm.handlers.FcmNewVideoProcessedHandler
-import com.example.visara.service.fcm.handlers.FcmUnknownTypeHandler
-import com.example.visara.service.fcm.handlers.FcmVideoLikeHandler
 import com.example.visara.service.fcm.handlers.HandleFcmMessageStrategy
 import com.google.firebase.messaging.RemoteMessage
 import javax.inject.Inject
@@ -17,39 +10,21 @@ import javax.inject.Singleton
 
 @Singleton
 class NotificationProcessor @Inject constructor(
-    fcmNewVideoProcessedHandler: FcmNewVideoProcessedHandler,
-    fcmNewFollowerHandler: FcmNewFollowerHandler,
-    fcmVideoLikeHandler: FcmVideoLikeHandler,
-    fcmCommentLikeHandler: FcmCommentLikeHandler,
-    fcmCommentOnVideoHandler: FcmCommentOnVideoHandler,
-    fcmNewChatMessageHandler: FcmNewChatMessageHandler,
-    fcmUnknownTypeHandler: FcmUnknownTypeHandler,
     private val notificationRepository: NotificationRepository,
+    private val handlerMap: Map<RemoteNotificationType, @JvmSuppressWildcards HandleFcmMessageStrategy>,
 ) {
-
-    private val handlerMap: Map<RemoteNotificationType, HandleFcmMessageStrategy> = mapOf(
-        RemoteNotificationType.VIDEO_UPLOAD_PROCESSED to fcmNewVideoProcessedHandler,
-        RemoteNotificationType.NEW_FOLLOWER to fcmNewFollowerHandler,
-        RemoteNotificationType.VIDEO_LIKED to fcmVideoLikeHandler,
-        RemoteNotificationType.COMMENT_LIKED to fcmCommentLikeHandler,
-        RemoteNotificationType.COMMENT_ON_VIDEO to fcmCommentOnVideoHandler,
-        RemoteNotificationType.NEW_MESSAGE to fcmNewChatMessageHandler,
-        RemoteNotificationType.UNKNOWN to fcmUnknownTypeHandler,
-    )
-
     fun process(remoteMessage: RemoteMessage) {
         if (remoteMessage.data.isEmpty()) return
         try {
             val content: NotificationDto = gson.fromJson(remoteMessage.data["content"], NotificationDto::class.java)
             val type = determineType(content.type)
-            if (type == RemoteNotificationType.UNKNOWN) {
-                return
-            }
             val handler = getHandler(type) ?: return
             handler.handle(content)
-            val decodedContent = content.decode()
-            notificationRepository.saveNotification(decodedContent)
-            handler.showNotification(decodedContent)
+            if (type == RemoteNotificationType.UNKNOWN) return
+            content.deserialize().let {
+                notificationRepository.saveNotification(it)
+                handler.showNotification(it)
+            }
 
         } catch (e: Exception) {
             e.printStackTrace()
