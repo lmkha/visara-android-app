@@ -2,16 +2,17 @@ package com.example.visara.service.fcm
 
 import com.example.visara.data.remote.dto.NotificationDto
 import com.example.visara.data.repository.NotificationRepository
-import com.example.visara.di.gson
 import com.example.visara.service.fcm.handlers.HandleFcmMessageStrategy
 import com.google.firebase.messaging.RemoteMessage
+import com.google.gson.Gson
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class NotificationProcessor @Inject constructor(
     private val notificationRepository: NotificationRepository,
-    private val handlerMap: Map<RemoteNotificationType, @JvmSuppressWildcards HandleFcmMessageStrategy>,
+    private val handlerMap: Map<RemoteNotificationType, @JvmSuppressWildcards HandleFcmMessageStrategy?>,
+    private val gson: Gson,
 ) {
     fun process(remoteMessage: RemoteMessage) {
         if (remoteMessage.data.isEmpty()) return
@@ -21,7 +22,7 @@ class NotificationProcessor @Inject constructor(
             val handler = getHandler(type) ?: return
             handler.handle(content)
             if (type == RemoteNotificationType.UNKNOWN) return
-            content.deserialize().let {
+            notificationRepository.deserializeNotificationDto(content).let {
                 notificationRepository.saveNotification(it)
                 handler.showNotification(it)
             }

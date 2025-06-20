@@ -41,10 +41,18 @@ class StudioViewModel @Inject constructor(
 
                         allVideoEntity.forEach { videoEntity ->
                             when (videoEntity.statusCode) {
-                                LocalVideoStatus.PROCESSING.code -> { processingVideos.add(videoEntity.toVideoModel()) }
-                                LocalVideoStatus.UPLOADING.code -> { uploadingVideos.add(videoEntity.toVideoModel()) }
-                                LocalVideoStatus.DRAFT.code -> { draftVideos.add(videoEntity.toVideoModel()) }
-                                LocalVideoStatus.PENDING_RE_UPLOAD.code -> { pendingReUploadVideos.add(videoEntity.toVideoModel()) }
+                                LocalVideoStatus.PROCESSING.code -> {
+                                    processingVideos.add(videoRepository.convertVideoEntityToModel(videoEntity))
+                                }
+                                LocalVideoStatus.UPLOADING.code -> {
+                                    uploadingVideos.add(videoRepository.convertVideoEntityToModel(videoEntity))
+                                }
+                                LocalVideoStatus.DRAFT.code -> {
+                                    draftVideos.add(videoRepository.convertVideoEntityToModel(videoEntity))
+                                }
+                                LocalVideoStatus.PENDING_RE_UPLOAD.code -> {
+                                    pendingReUploadVideos.add(videoRepository.convertVideoEntityToModel(videoEntity))
+                                }
                             }
                         }
                         val activeVideos = activeVideoDeferred.await()

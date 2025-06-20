@@ -9,12 +9,12 @@ import com.example.visara.data.repository.AuthRepository
 import com.example.visara.data.repository.UserRepository
 import com.example.visara.PlayerManager
 import com.example.visara.VideoDetailState
-import com.example.visara.di.gson
 import com.example.visara.utils.NetworkMonitor
 import com.example.visara.ui.navigation.Destination
 import com.example.visara.ui.theme.AppTheme
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
+import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -35,6 +35,7 @@ class AppViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val playerManager: PlayerManager,
     private val networkMonitor: NetworkMonitor,
+    private val gson: Gson,
 ) : ViewModel() {
     private val _appState = MutableStateFlow(AppState())
     val appState: StateFlow<AppState> = _appState.asStateFlow()

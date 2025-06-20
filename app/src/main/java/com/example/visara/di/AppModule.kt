@@ -35,8 +35,3 @@ object AppModule {
     @Singleton
     fun provideNavHostController(@ApplicationContext appContext: Context) : NavHostController = NavHostController(appContext)
 }
-
-val gson: Gson = GsonBuilder()
-        .setLenient()
-        .setPrettyPrinting()
-        .create()

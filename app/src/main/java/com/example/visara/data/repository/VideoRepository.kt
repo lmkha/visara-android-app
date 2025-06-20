@@ -3,6 +3,7 @@ package com.example.visara.data.repository
 import android.content.Context
 import android.net.Uri
 import android.webkit.MimeTypeMap
+import androidx.core.net.toUri
 import com.example.visara.data.local.dao.VideoDao
 import com.example.visara.data.local.entity.LocalVideoEntity
 import com.example.visara.data.local.entity.LocalVideoStatus
@@ -12,8 +13,10 @@ import com.example.visara.data.model.VideoModel
 import com.example.visara.data.model.VideoPrivacy
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.datasource.VideoRemoteDataSource
-import com.example.visara.di.gson
+import com.example.visara.ui.screens.add_new_video.components.enter_video_info.PrivacyState
 import com.example.visara.viewmodels.AddVideoSubmitData
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -29,6 +32,7 @@ class VideoRepository @Inject constructor(
     private val videoRemoteDataSource: VideoRemoteDataSource,
     private val videoDao: VideoDao,
     @ApplicationContext private val appContext: Context,
+    private val gson: Gson,
 ) {
     suspend fun uploadVideoMetaData(
         title: String,
@@ -78,7 +82,7 @@ class VideoRepository @Inject constructor(
             return videoDao.getVideoByRemoteId(uploadVideoMetaDataResult.data.id)
                 .distinctUntilChanged()
                 .first()
-                ?.toVideoModel()
+                ?.let { convertVideoEntityToModel(it) }
         }
 
         videoDao.updateVideo(videoEntity.copy(localId = draftId))
@@ -349,8 +353,49 @@ class VideoRepository @Inject constructor(
 
     suspend fun getDraftVideoByLocalId(localDraftVideoId: Long) : AddVideoSubmitData? {
         val videoEntity = videoDao.getVideoByLocalId(localDraftVideoId)
-        val draftData = videoEntity.first()?.toAddVideoSubmitData()
+        val draftData = videoEntity.first()?.let { convertVideoEntityToSubmitData(it) }
         return draftData
+    }
+
+    private fun convertVideoEntityToSubmitData(entity: LocalVideoEntity) : AddVideoSubmitData {
+        with(entity) {
+            val playlistsType = object : TypeToken<List<PlaylistModel>>() {}.type
+            val hashtagsType = object : TypeToken<List<String>>() {}.type
+            val playlists: List<PlaylistModel> = gson.fromJson(this.playlistsJson, playlistsType)
+            val hashtags: List<String> = gson.fromJson(this.hashtagsJson, hashtagsType)
+
+            return AddVideoSubmitData(
+                localId = localId,
+                title = title,
+                description = description,
+                playlists = playlists,
+                hashtags = hashtags,
+                privacy = PrivacyState.ALL,
+                isAllowComment = !isCommentOff,
+                thumbnailUri = localThumbnailUriString?.toUri(),
+                videoUri = localVideoUriString?.toUri(),
+            )
+        }
+    }
+
+    fun convertVideoEntityToModel(entity: LocalVideoEntity) : VideoModel {
+        with(entity) {
+            return VideoModel(
+                id = remoteId,
+                localId = localId,
+                username = username,
+                userId = userId,
+                userProfilePic = userProfilePic,
+                userFullName = userFullName,
+                title = title,
+                description = description,
+                duration = duration,
+                isPrivate = isPrivate,
+                isCommentOff = isCommentOff,
+                localVideoUri = localVideoUriString?.toUri(),
+                localThumbnailUri = localThumbnailUriString?.toUri()
+            )
+        }
     }
 
     suspend fun getLocalVideoEntityById(localId: Long) : LocalVideoEntity? {

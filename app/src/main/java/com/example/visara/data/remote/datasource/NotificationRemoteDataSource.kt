@@ -4,7 +4,7 @@ import com.example.visara.data.remote.api.NotificationApi
 import com.example.visara.data.remote.common.ApiError
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.dto.NotificationDto
-import com.example.visara.di.gson
+import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -14,6 +14,7 @@ import javax.inject.Singleton
 @Singleton
 class NotificationRemoteDataSource @Inject constructor(
     private val notificationApi: NotificationApi,
+    private val gson: Gson,
 ) {
     suspend fun getNotifications(username: String, page: Int, size: Int) : ApiResult<List<NotificationDto>> {
         return withContext(Dispatchers.IO) {
