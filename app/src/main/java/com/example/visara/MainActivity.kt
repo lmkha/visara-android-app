@@ -8,7 +8,6 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -33,7 +32,6 @@ class MainActivity : ComponentActivity() {
         askNotificationPermission()
 
         appViewModel.handleNewIntent(intent)
-        Log.d("CHECK_VAR", "onCreate, extra: ${intent.extras.toString()}")
 
         enableEdgeToEdge()
         val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
@@ -77,13 +75,12 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent, caller: ComponentCaller) {
         super.onNewIntent(intent, caller)
         setIntent(intent)
-        Log.d("CHECK_VAR", "onNewIntent, extra: ${intent.extras.toString()}")
         appViewModel.handleNewIntent(intent)
     }
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
-    ) { isGranted: Boolean ->
+    ) { _: Boolean ->
         /*
         if (isGranted) {
             // FCM SDK (and your app) can post notifications.

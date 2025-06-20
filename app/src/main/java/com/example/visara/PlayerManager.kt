@@ -3,7 +3,6 @@ package com.example.visara
 import android.content.ComponentName
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
@@ -34,7 +33,6 @@ class PlayerManager @Inject constructor(
     private var storedPlaybackState: PlaybackStateSnapshot? = null
 
     init {
-        Log.i("CHECK_VAR", "Init player manager")
         val sessionToken = SessionToken(appContext, ComponentName(appContext, PlaybackService::class.java))
         val controllerFuture = MediaController.Builder(appContext, sessionToken).buildAsync()
         controllerFuture.addListener({

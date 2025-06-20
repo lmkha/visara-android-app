@@ -1,6 +1,5 @@
 package com.example.visara.service.fcm
 
-import android.util.Log
 import com.example.visara.data.repository.AppSettingsRepository
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
@@ -24,7 +23,6 @@ class FCMService : FirebaseMessagingService() {
     }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
-        Log.i("CHECK_VAR", "received fcm message, data = : ${remoteMessage.data}")
         notificationProcessor.process(remoteMessage)
     }
 }

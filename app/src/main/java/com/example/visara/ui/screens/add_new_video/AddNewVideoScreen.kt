@@ -1,7 +1,6 @@
 package com.example.visara.ui.screens.add_new_video
 
 import android.content.Intent
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -49,7 +48,7 @@ fun AddNewVideoScreen(
                 step = AddNewVideoStep.REVIEW_VIDEO
 
             } catch (e : Exception) {
-                Log.e("DraftVideo", "Error: Cannot get persistable permission for video URI: ${e.message}")
+                e.printStackTrace()
             }
         }
     }

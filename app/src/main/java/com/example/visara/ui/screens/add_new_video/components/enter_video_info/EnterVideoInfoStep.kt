@@ -2,7 +2,6 @@ package com.example.visara.ui.screens.add_new_video.components.enter_video_info
 
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -85,7 +84,7 @@ fun EnterVideoInfoStep(
                 context.contentResolver.takePersistableUriPermission(it, Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 thumbnailUri = it
             } catch (e: Exception) {
-                Log.e("DraftVideo", "Error: Cannot get persistable permission for video URI: ${e.message}")
+                e.printStackTrace()
             }
         }
     }

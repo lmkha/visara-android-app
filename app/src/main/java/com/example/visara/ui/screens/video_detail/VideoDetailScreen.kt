@@ -1,6 +1,5 @@
 package com.example.visara.ui.screens.video_detail
 
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -93,10 +92,6 @@ fun VideoDetailScreen(
                 }
             }
         }
-    }
-
-    LaunchedEffect(viewModel.playerManager.mediaController) {
-        Log.d("CHECK_VAR", "observer player in video detail, ${viewModel.playerManager.mediaController}")
     }
 
     BoxWithConstraints(modifier = modifier.background(color = Color.Black)) {

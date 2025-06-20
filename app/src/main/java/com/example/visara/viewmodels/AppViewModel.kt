@@ -1,8 +1,6 @@
 package com.example.visara.viewmodels
 
-import android.content.Context
 import android.content.Intent
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.visara.data.model.UserModel
@@ -18,7 +16,6 @@ import com.example.visara.ui.theme.AppTheme
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,7 +30,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AppViewModel @Inject constructor(
-    @ApplicationContext appContext: Context,
     private val authRepository: AuthRepository,
     private val appSettingsRepository: AppSettingsRepository,
     private val userRepository: UserRepository,
@@ -47,7 +43,6 @@ class AppViewModel @Inject constructor(
     private var wasOfflineBefore = false
 
     init {
-        Log.d("CHECK_VAR", "init app view model")
         observerTheme()
         observerAuthenticationState()
         observerCurrentUser()
@@ -56,13 +51,8 @@ class AppViewModel @Inject constructor(
 
         FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
             if (!task.isSuccessful) {
-                Log.w("CHECK_VAR", "Fetching FCM registration failed!", task.exception)
                 return@OnCompleteListener
             }
-
-            val token = task.result
-
-            Log.d("CHECK_VAR", "FCM token: $token")
         })
     }
 
@@ -171,7 +161,7 @@ class AppViewModel @Inject constructor(
                         else -> {}
                     }
                 } catch (e : Exception) {
-                    Log.e("CHECK_VAR", "request navigate: $e")
+                    e.printStackTrace()
                 }
                 if (destination != null) {
                     _eventChannel.send(AppEvent.NavigateToScreen(destination))

@@ -1,6 +1,5 @@
 package com.example.visara.data.repository
 
-import android.util.Log
 import com.example.visara.data.local.datasource.UserLocalDataSource
 import com.example.visara.data.model.FollowUserModel
 import com.example.visara.data.model.UserModel
@@ -25,7 +24,6 @@ class UserRepository @Inject constructor(
     val currentUser: StateFlow<UserModel?> = _currentUser.asStateFlow()
 
     init {
-        Log.i("CHECK_VAR", "init user repository")
         CoroutineScope(Dispatchers.IO).launch {
             refreshCurrentUser()
         }

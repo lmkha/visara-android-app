@@ -1,6 +1,5 @@
 package com.example.visara.data.remote.datasource
 
-import android.util.Log
 import com.example.visara.data.remote.api.PlaylistApi
 import com.example.visara.data.remote.common.ApiError
 import com.example.visara.data.remote.common.ApiResult
@@ -22,7 +21,6 @@ class PlaylistRemoteDatasource @Inject constructor(
         return withContext(Dispatchers.IO) {
             try {
                 val response = playlistApi.createPlaylist(name, description, videoIdsList)
-                Log.d("CHECK_VAR", "add new playlist response: $response")
                 val responseBody = response.body?.string()
 
                 if (response.isSuccessful && !responseBody.isNullOrEmpty()) {

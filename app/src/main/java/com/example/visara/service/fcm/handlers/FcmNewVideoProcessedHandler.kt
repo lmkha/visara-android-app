@@ -4,7 +4,6 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import com.example.visara.MainActivity
 import com.example.visara.data.remote.dto.DecodedNotificationDto
 import com.example.visara.data.remote.dto.NewVideoProcessedNotificationData

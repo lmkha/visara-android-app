@@ -1,6 +1,5 @@
 package com.example.visara.service.fcm
 
-import android.util.Log
 import com.example.visara.data.remote.dto.NotificationDto
 import com.example.visara.data.repository.NotificationRepository
 import com.example.visara.di.gson
@@ -44,7 +43,6 @@ class NotificationProcessor @Inject constructor(
             val content: NotificationDto = gson.fromJson(remoteMessage.data["content"], NotificationDto::class.java)
             val type = determineType(content.type)
             if (type == RemoteNotificationType.UNKNOWN) {
-                Log.e("CHECK_VAR", "Received unknown type fcm message.")
                 return
             }
             val handler = getHandler(type) ?: return
@@ -54,7 +52,7 @@ class NotificationProcessor @Inject constructor(
             handler.showNotification(decodedContent)
 
         } catch (e: Exception) {
-            Log.e("CHECK_VAR", "error when process fcm message, error = $e")
+            e.printStackTrace()
         }
     }
 

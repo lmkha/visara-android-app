@@ -1,6 +1,5 @@
 package com.example.visara.data.repository
 
-import android.util.Log
 import com.example.visara.data.local.datasource.AuthLocalDataSource
 import com.example.visara.data.model.UserModel
 import com.example.visara.data.remote.common.ApiResult
@@ -70,7 +69,6 @@ class AuthRepository @Inject constructor(
                 fcmToken = currentFcmToken,
                 username = currentUsername
             )
-            Log.i("CHECK_VAR", "remove fcmToken result $result")
 
             if (result is ApiResult.Success) {
                 authLocalDataSource.clearToken()

@@ -2,7 +2,6 @@ package com.example.visara.data.repository
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import android.webkit.MimeTypeMap
 import com.example.visara.data.local.dao.VideoDao
 import com.example.visara.data.local.entity.LocalVideoEntity
@@ -174,7 +173,7 @@ class VideoRepository @Inject constructor(
                 videoRemoteDataSource.uploadThumbnailFile(
                     videoId = videoId,
                     thumbnailFile = thumbnailFile,
-                    progressListener = { progress-> Log.i("CHECK_VAR", "upload thumbnail progress: $progress %") }
+                    progressListener = {}
                 )
             } finally {
                 thumbnailFile.delete()

@@ -1,6 +1,5 @@
 package com.example.visara.data.repository
 
-import android.util.Log
 import com.example.visara.data.local.datasource.NotificationLocalDataSource
 import com.example.visara.data.local.datasource.UserLocalDataSource
 import com.example.visara.data.model.NotificationModel

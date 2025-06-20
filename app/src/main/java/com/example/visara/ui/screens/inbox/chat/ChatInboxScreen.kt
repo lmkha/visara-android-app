@@ -1,7 +1,6 @@
 package com.example.visara.ui.screens.inbox.chat
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -223,10 +222,6 @@ fun ChatInboxScreen(
                                                 val itemInfo =
                                                     lazyListState.layoutInfo.visibleItemsInfo.find { it.index == index }
                                                 if (itemInfo != null) {
-                                                    Log.i(
-                                                        "CHECK_VAR",
-                                                        "offset: ${itemInfo.offset}"
-                                                    )
                                                     reactionVisibleItemIntOffset = itemInfo.offset
                                                 }
                                                 reactionVisibleItemIndex = index
