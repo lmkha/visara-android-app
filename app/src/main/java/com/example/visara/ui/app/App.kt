@@ -137,16 +137,14 @@ fun App(
         key1 = appState.appTheme,
         key2 = appState.videoDetailState.isFullScreenMode,
     ) {
-        when(appState.appTheme) {
-            AppTheme.LIGHT -> {
-                if (appState.videoDetailState.isFullScreenMode) {
-                    onRequireAppearanceDarkStatusBars()
-                } else {
-                    onRequireAppearanceLightStatusBars()
-                }
+        if (appState.videoDetailState.isFullScreenMode) {
+            onRequireAppearanceDarkStatusBars()
+        } else {
+            when(appState.appTheme) {
+                AppTheme.LIGHT -> onRequireAppearanceLightStatusBars()
+                AppTheme.DARK -> onRequireAppearanceDarkStatusBars()
+                AppTheme.SYSTEM -> onRequireAppearanceDefaultStatusBars()
             }
-            AppTheme.DARK -> onRequireAppearanceDarkStatusBars()
-            AppTheme.SYSTEM -> onRequireAppearanceDefaultStatusBars()
         }
     }
 

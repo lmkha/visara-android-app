@@ -2,7 +2,7 @@ package com.example.visara.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.visara.data.local.entity.LocalVideoStatus
+import com.example.visara.data.local.entity.VideoStatus
 import com.example.visara.data.model.VideoModel
 import com.example.visara.data.repository.UserRepository
 import com.example.visara.data.repository.VideoRepository
@@ -41,16 +41,16 @@ class StudioViewModel @Inject constructor(
 
                         allVideoEntity.forEach { videoEntity ->
                             when (videoEntity.statusCode) {
-                                LocalVideoStatus.PROCESSING.code -> {
+                                VideoStatus.PROCESSING.code -> {
                                     processingVideos.add(videoRepository.convertVideoEntityToModel(videoEntity))
                                 }
-                                LocalVideoStatus.UPLOADING.code -> {
+                                VideoStatus.UPLOADING.code -> {
                                     uploadingVideos.add(videoRepository.convertVideoEntityToModel(videoEntity))
                                 }
-                                LocalVideoStatus.DRAFT.code -> {
+                                VideoStatus.DRAFT.code -> {
                                     draftVideos.add(videoRepository.convertVideoEntityToModel(videoEntity))
                                 }
-                                LocalVideoStatus.PENDING_RE_UPLOAD.code -> {
+                                VideoStatus.PENDING_RE_UPLOAD.code -> {
                                     pendingReUploadVideos.add(videoRepository.convertVideoEntityToModel(videoEntity))
                                 }
                             }

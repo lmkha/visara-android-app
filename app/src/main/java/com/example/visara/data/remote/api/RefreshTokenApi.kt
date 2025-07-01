@@ -19,7 +19,7 @@ class RefreshTokenApi @Inject constructor(
     private val gson: Gson,
 ) {
     fun refreshToken(refreshToken: String, username: String) : Response {
-        val url = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("auth/refresh")
             .build()
 

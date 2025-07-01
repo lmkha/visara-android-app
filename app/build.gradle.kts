@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -23,8 +25,25 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
+        val localProperties = Properties().apply {
+            val localPropertiesFile = rootProject.file("local.properties")
+            if (localPropertiesFile.exists()) {
+                load(localPropertiesFile.inputStream())
+            }
+        }
+
+        val backendUrlDebug = localProperties["BACKEND_URL_DEBUG"] as String?
+        val backendUrlRelease = localProperties["BACKEND_URL_RELEASE"] as String?
+        val apiVersion = localProperties["API_VERSION"] as String? ?: "v1"
+
+        val apiPath = "/api/$apiVersion"
+
+        val apiUrlDebug = backendUrlDebug?.removeSuffix("/") + apiPath
+        val apiUrlRelease = backendUrlRelease?.removeSuffix("/") + apiPath
+
         debug {
-            buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8080/api/v1\"")
+            buildConfigField("String", "API_URL", "\"$apiUrlDebug\"")
+            buildConfigField("String", "BACKEND_URL", "\"$backendUrlDebug\"")
         }
         release {
             isMinifyEnabled = false
@@ -32,14 +51,14 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8080/api/v1\"")
+            buildConfigField("String", "API_URL", "\"$apiUrlRelease\"")
+            buildConfigField("String", "BACKEND_URL", "\"$backendUrlRelease\"")
         }
     }
-
     buildFeatures {
         buildConfig = true
+        compose = true
     }
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -47,13 +66,17 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
-    buildFeatures {
-        compose = true
-    }
     packaging {
         resources {
             excludes += "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
         }
+    }
+    androidResources {
+        generateLocaleConfig = true
+        localeFilters += listOf(
+            "vi-rVN",
+            "en-rUS"
+        )
     }
 }
 dependencies {

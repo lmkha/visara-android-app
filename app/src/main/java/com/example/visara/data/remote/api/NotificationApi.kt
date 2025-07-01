@@ -15,7 +15,7 @@ class NotificationApi @Inject constructor(
     @AuthorizedOkHttpClient private val authorizedOkHttpClient: OkHttpClient,
 ) {
     fun getAllNotifications(username: String, page: Int, size: Int) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("notifications/messages")
             .addQueryParameter("page", page.toString())
             .addQueryParameter("size", size.toString())

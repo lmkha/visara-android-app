@@ -37,7 +37,6 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -65,6 +64,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.example.visara.R
 import com.example.visara.data.model.VideoModel
+import com.example.visara.ui.components.ObserverAsEvents
 import com.example.visara.ui.components.UserAvatar
 import com.example.visara.ui.screens.profile.components.ActionButton
 import com.example.visara.ui.screens.profile.components.AddNewPlaylistDialog
@@ -160,25 +160,22 @@ fun ProfileScreenContainer(
     var selectedDeleteVideo by remember { mutableStateOf<VideoModel?>(null) }
     var showAddVideoToPlaylistBottomSheet by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        uiEvent.collect { event ->
-            when (event) {
-                is ProfileEvent.CreatePlaylistSuccess -> {
-                    showAddNewPlaylistDialog = false
-                }
-                is ProfileEvent.CreatePlaylistFailure -> {
-                    showAddNewPlaylistDialog = false
-                }
-                is ProfileEvent.AddVideoToPlaylistsSuccess -> {
-                    showAddVideoToPlaylistBottomSheet = false
-                }
-                is ProfileEvent.AddVideoToPlaylistsFailure -> {
-                    showAddVideoToPlaylistBottomSheet = false
-                }
-                ProfileEvent.DeleteVideoFailure -> { selectedDeleteVideo = null }
-                ProfileEvent.DeleteVideoSuccess -> { selectedDeleteVideo = null }
-//                else -> {}
+    ObserverAsEvents(uiEvent) { event ->
+        when (event) {
+            is ProfileEvent.CreatePlaylistSuccess -> {
+                showAddNewPlaylistDialog = false
             }
+            is ProfileEvent.CreatePlaylistFailure -> {
+                showAddNewPlaylistDialog = false
+            }
+            is ProfileEvent.AddVideoToPlaylistsSuccess -> {
+                showAddVideoToPlaylistBottomSheet = false
+            }
+            is ProfileEvent.AddVideoToPlaylistsFailure -> {
+                showAddVideoToPlaylistBottomSheet = false
+            }
+            ProfileEvent.DeleteVideoFailure -> { selectedDeleteVideo = null }
+            ProfileEvent.DeleteVideoSuccess -> { selectedDeleteVideo = null }
         }
     }
 

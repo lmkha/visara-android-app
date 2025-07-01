@@ -25,11 +25,11 @@ class PlaylistApi @Inject constructor(
     private val gson: Gson,
 ) {
     fun createPlaylist(name: String, description: String, videoIdsList: List<String>) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("playlists/")
             .build()
 
-        val payload = mapOf<String, Any>(
+        val payload = mapOf(
             "name" to name,
             "description" to description,
             "videoIdsList" to videoIdsList
@@ -47,7 +47,7 @@ class PlaylistApi @Inject constructor(
     }
 
     fun uploadThumbnailForPlaylist(playlistId: String, thumbnailFile: File) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("playlists/${playlistId}/thumbnail")
             .build()
 
@@ -77,7 +77,7 @@ class PlaylistApi @Inject constructor(
     }
 
     fun getPlaylistById(playlistId: String) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegment("playlists")
             .addPathSegment(playlistId)
             .build()
@@ -91,7 +91,7 @@ class PlaylistApi @Inject constructor(
     }
 
     fun addVideoToPlaylist(playlistId: String, videoId: String) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegment("playlists")
             .addPathSegment(playlistId)
             .addPathSegment("add")
@@ -107,7 +107,7 @@ class PlaylistApi @Inject constructor(
     }
 
     fun removeVideoFromPlaylist(playlistId: String, videoId: String) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegment("playlists")
             .addPathSegment(playlistId)
             .addPathSegment("remove")
@@ -123,7 +123,7 @@ class PlaylistApi @Inject constructor(
     }
 
     fun getAllPlaylistByUserId(userId: Long) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegment("playlists")
             .addPathSegment("user")
             .addPathSegment(userId.toString())

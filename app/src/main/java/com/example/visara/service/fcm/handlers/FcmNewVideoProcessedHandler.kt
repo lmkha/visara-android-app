@@ -5,8 +5,9 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import com.example.visara.MainActivity
-import com.example.visara.data.remote.dto.DeserializedNotificationDto
-import com.example.visara.data.remote.dto.NewVideoProcessedNotificationData
+import com.example.visara.data.mapper.NotificationMapper
+import com.example.visara.data.model.NewVideoProcessedNotificationData
+import com.example.visara.data.model.NotificationModel
 import com.example.visara.data.remote.dto.NotificationDto
 import com.example.visara.data.repository.VideoRepository
 import com.example.visara.notification.NotificationHelper
@@ -27,18 +28,20 @@ class FcmNewVideoProcessedHandler @Inject constructor(
     private val notificationManager: NotificationManager,
     private val notificationHelper: NotificationHelper,
     private val gson: Gson,
+    private val notificationMapper: NotificationMapper,
 ) : HandleFcmMessageStrategy() {
 
     override fun handle(content: NotificationDto) {
         CoroutineScope(Dispatchers.IO).launch {
-            val newVideoProcessedDto: NewVideoProcessedNotificationData = gson.fromJson(content.dataJsonObject, NewVideoProcessedNotificationData::class.java)
-            val localVideoEntity = videoRepository.getLocalVideoEntityByTitle(newVideoProcessedDto.videoTitle)
+            val model = notificationMapper.toModel(content)
+            val notificationData = model.data as NewVideoProcessedNotificationData
+            val localVideoEntity = videoRepository.getLocalVideoEntityByTitle(notificationData.videoTitle)
             localVideoEntity?.let { videoRepository.deleteLocalVideoEntity(it) }
         }
     }
 
-    override fun showNotification(decodedNotificationDto: DeserializedNotificationDto) {
-        val notificationData = decodedNotificationDto.data as NewVideoProcessedNotificationData
+    override fun showNotification(model: NotificationModel) {
+        val notificationData = model.data as NewVideoProcessedNotificationData
         val successIntent = Intent(appContext, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             putExtra("request-type", "navigation")
@@ -62,6 +65,6 @@ class FcmNewVideoProcessedHandler @Inject constructor(
             .setContentIntent(successPendingIntent)
             .build()
 
-        notificationManager.notify(decodedNotificationDto.id.hashCode(), notification)
+        notificationManager.notify(model.remoteId.hashCode(), notification)
     }
 }

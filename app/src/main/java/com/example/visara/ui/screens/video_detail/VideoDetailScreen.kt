@@ -101,7 +101,7 @@ fun VideoDetailScreen(
         val remainingHeight = screenHeight - playerHeight
         Column(modifier = Modifier.fillMaxSize()) {
             // Video
-            if (viewModel.playerManager.mediaController != null) {
+            viewModel.playerManager.mediaBrowser?.let { mediaBrowser ->
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
@@ -110,15 +110,15 @@ fun VideoDetailScreen(
                         .aspectRatio(16f / 9f)
                 ) {
                     key(reloadKey) {
-                            VisaraVideoPlayer(
-                                mediaController =viewModel.playerManager.mediaController!!,
-                                showControls = uiState.isFullScreenMode,
-                                requireLandscapeMode = requireLandscapeMode,
-                                requirePortraitMode = requirePortraitMode,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .aspectRatio(16f / 9f)
-                            )
+                        VisaraVideoPlayer(
+                            mediaBrowser = mediaBrowser,
+                            showControls = uiState.isFullScreenMode,
+                            requireLandscapeMode = requireLandscapeMode,
+                            requirePortraitMode = requirePortraitMode,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .aspectRatio(16f / 9f)
+                        )
                     }
                     if (!isFullScreenMode) {
                         MinimizedModeControl(

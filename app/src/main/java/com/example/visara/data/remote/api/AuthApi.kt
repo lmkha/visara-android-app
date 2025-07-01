@@ -22,7 +22,7 @@ class AuthApi @Inject constructor(
     private val gson: Gson,
 ) {
     fun login(username: String, password: String): Response {
-        val url = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("auth/sign-in")
             .build()
 
@@ -39,7 +39,7 @@ class AuthApi @Inject constructor(
     }
 
     fun checkUsernameAvailability(username: String): Response {
-        val url = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("users/checkUsernameAvailability")
             .addQueryParameter("username", username)
             .build()
@@ -53,7 +53,7 @@ class AuthApi @Inject constructor(
     }
 
     fun checkEmailAvailability(email: String): Response {
-        val url = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("users/checkEmailAvailability")
             .addQueryParameter("email", email)
             .build()
@@ -71,7 +71,7 @@ class AuthApi @Inject constructor(
         fullName: String? = null,
         bio: String? = null,
     ) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("users/")
             .build()
 
@@ -99,7 +99,7 @@ class AuthApi @Inject constructor(
         isPrivate: Boolean,
         dateOfBirth: String
     ): Response {
-        val url = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("auth/register")
             .build()
 
@@ -123,7 +123,7 @@ class AuthApi @Inject constructor(
     }
 
     fun addFcmToken(token: String, username: String) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("notifications/token")
             .build()
 
@@ -138,7 +138,7 @@ class AuthApi @Inject constructor(
     }
 
     fun removeFcmToken(token: String, username: String) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("notifications/token")
             .build()
 

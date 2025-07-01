@@ -23,7 +23,7 @@ class CommentApi @Inject constructor(
 ) {
 
     fun addComment(videoId: String, replyTo: String?, content: String) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("comments/")
             .build()
 
@@ -46,7 +46,7 @@ class CommentApi @Inject constructor(
     }
 
     fun getCommentById(commentId: String) : Response  {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegment("comments")
             .addPathSegment(commentId)
             .build()
@@ -66,7 +66,7 @@ class CommentApi @Inject constructor(
         page: Int = 0,
         size: Int = 10,
     ) : Response {
-        val urlBuilder: HttpUrl.Builder = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val urlBuilder: HttpUrl.Builder = BuildConfig.API_URL.toHttpUrl().newBuilder()
 
         if (needAuthenticate) {
             urlBuilder.addPathSegments("comments/video/parent/authenticated")
@@ -97,7 +97,7 @@ class CommentApi @Inject constructor(
         page: Int = 0,
         size: Int = 10,
     ) : Response {
-        val urlBuilder= BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val urlBuilder= BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegment("comments")
             .addPathSegment(parentId)
 
@@ -123,7 +123,7 @@ class CommentApi @Inject constructor(
     }
 
     fun likeComment(commentId: String) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("comments/like")
             .addPathSegment(commentId)
             .build()
@@ -137,7 +137,7 @@ class CommentApi @Inject constructor(
     }
 
     fun unlikeComment(commentId: String) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("comments/like")
             .addPathSegment(commentId)
             .build()
@@ -151,7 +151,7 @@ class CommentApi @Inject constructor(
     }
 
     fun checkCommentLike(commentId: String) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("comments/like")
             .addPathSegment(commentId)
             .build()
@@ -165,7 +165,7 @@ class CommentApi @Inject constructor(
     }
 
     fun deleteComment(commentId: String) : Response {
-        val url: HttpUrl  = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl  = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegment("comments")
             .addPathSegment(commentId)
             .build()
@@ -179,7 +179,7 @@ class CommentApi @Inject constructor(
     }
 
     fun updateComment(commentId: String, content: String) : Response {
-        val url: HttpUrl  = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl  = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegment("comments")
             .build()
 

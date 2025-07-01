@@ -26,7 +26,7 @@ class VideoApi @Inject constructor(
     private val gson: Gson,
 ) {
     fun getVideoById(videoId: String) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegment("videos")
             .addPathSegment(videoId)
             .build()
@@ -40,7 +40,7 @@ class VideoApi @Inject constructor(
     }
 
     fun getRandomVideos(numOfVideos: Int = 10) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("videos/random")
             .addQueryParameter("count", numOfVideos.toString())
             .build()
@@ -54,7 +54,7 @@ class VideoApi @Inject constructor(
     }
 
     fun getAllVideoByUserId(userId: Long) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("videos/user")
             .addPathSegment(userId.toString())
             .build()
@@ -72,7 +72,7 @@ class VideoApi @Inject constructor(
         videoFile: File,
         progressListener: (percent: Int) -> Unit = { },
     ) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("file/video/${videoId}")
             .build()
 
@@ -107,7 +107,7 @@ class VideoApi @Inject constructor(
         thumbnailFile: File,
         progressListener: (percent: Int) -> Unit = { },
     ) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("videos/${videoId}/thumbnail")
             .build()
 
@@ -144,7 +144,7 @@ class VideoApi @Inject constructor(
         isCommentOff: Boolean,
         playlistIds: List<String>,
     ) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("videos/new/")
             .build()
 
@@ -168,7 +168,7 @@ class VideoApi @Inject constructor(
     }
 
     fun likeVideo(videoId: String) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("videos/likes")
             .addPathSegment(videoId)
             .build()
@@ -182,7 +182,7 @@ class VideoApi @Inject constructor(
     }
 
     fun unlikeVideo(videoId: String) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("videos/likes")
             .addPathSegment(videoId)
             .build()
@@ -196,7 +196,7 @@ class VideoApi @Inject constructor(
     }
 
     fun getIsVideoLiked(videoId: String): Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("videos/likes")
             .addPathSegment(videoId)
             .build()
@@ -210,7 +210,7 @@ class VideoApi @Inject constructor(
     }
 
     fun searchVideo(type: String, pattern: String, count: Long) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("videos/search")
             .addQueryParameter("type", type)
             .addQueryParameter("pattern", pattern)
@@ -233,11 +233,11 @@ class VideoApi @Inject constructor(
         isCommentOff: Boolean,
         isPrivate: Boolean
     ): Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegment("videos")
             .build()
 
-        val payload = mapOf<String, Any>(
+        val payload = mapOf(
             "id" to videoId,
             "title" to title,
             "description" to description,
@@ -258,7 +258,7 @@ class VideoApi @Inject constructor(
     }
 
     fun increaseVideoView(videoId: String) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegment("videos")
             .addPathSegment(videoId)
             .addPathSegment("view")
@@ -282,12 +282,12 @@ class VideoApi @Inject constructor(
         viewerId: String,
         viewerUsername: String,
     ) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("videos/history")
             .build()
 
         val requestBody = gson.toJson(
-            mapOf<String, String>(
+            mapOf(
                 "videoId" to videoId,
                 "videoTitle" to videoTitle,
                 "thumbnailUrl" to thumbnailUrl,
@@ -310,7 +310,7 @@ class VideoApi @Inject constructor(
     }
 
     fun getFollowingVideos(count: Long) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("videos/following/random")
             .addQueryParameter("count", count.toString())
             .build()
@@ -324,7 +324,7 @@ class VideoApi @Inject constructor(
     }
 
     fun deleteVideo(videoId: String) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegment("videos")
             .addPathSegment(videoId)
             .build()

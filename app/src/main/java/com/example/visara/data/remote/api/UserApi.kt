@@ -3,7 +3,6 @@ package com.example.visara.data.remote.api
 import com.example.visara.BuildConfig
 import com.example.visara.di.AuthorizedOkHttpClient
 import com.example.visara.di.UnauthenticatedOkhttpClient
-import com.google.gson.Gson
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
@@ -17,10 +16,9 @@ import javax.inject.Singleton
 class UserApi @Inject constructor(
     @AuthorizedOkHttpClient private val authorizedOkHttpClient: OkHttpClient,
     @UnauthenticatedOkhttpClient private val unauthorizedOkHttpClient: OkHttpClient,
-    private val gson: Gson,
 ) {
     fun getCurrentUser(): Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("users/")
             .build()
 
@@ -33,7 +31,7 @@ class UserApi @Inject constructor(
     }
 
     fun getPublicUser(username: String) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegment("users")
             .addPathSegment(username)
             .addPathSegment("public-username")
@@ -48,7 +46,7 @@ class UserApi @Inject constructor(
     }
 
     fun searchUser(pattern: String) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("users/search")
             .addQueryParameter("pattern", pattern)
             .build()
@@ -62,7 +60,7 @@ class UserApi @Inject constructor(
     }
 
     fun followUser(username: String) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegment("users")
             .addPathSegment(username)
             .addPathSegment("follow")
@@ -77,7 +75,7 @@ class UserApi @Inject constructor(
     }
 
     fun unfollowUser(username: String) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegment("users")
             .addPathSegment(username)
             .addPathSegment("unfollow")
@@ -92,7 +90,7 @@ class UserApi @Inject constructor(
     }
 
     fun checkUserIsMyFollower(username: String) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegment("users")
             .addPathSegment(username)
             .addPathSegment("checkFollower")
@@ -107,7 +105,7 @@ class UserApi @Inject constructor(
     }
 
     fun checkIsFollowingThisUser(username: String) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegment("users")
             .addPathSegment(username)
             .addPathSegment("checkFollowing")
@@ -122,7 +120,7 @@ class UserApi @Inject constructor(
     }
 
     fun getAllFollower(page: Int, size: Long) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("users/followers")
             .addQueryParameter("page", page.toString())
             .addQueryParameter("size", size.toString())
@@ -137,7 +135,7 @@ class UserApi @Inject constructor(
     }
 
     fun getAllFollowing(page: Int, size: Long) : Response {
-        val url: HttpUrl = BuildConfig.BASE_URL.toHttpUrl().newBuilder()
+        val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("users/followings")
             .addQueryParameter("page", page.toString())
             .addQueryParameter("size", size.toString())

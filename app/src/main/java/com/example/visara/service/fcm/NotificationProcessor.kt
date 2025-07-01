@@ -1,5 +1,6 @@
 package com.example.visara.service.fcm
 
+import com.example.visara.data.mapper.NotificationMapper
 import com.example.visara.data.remote.dto.NotificationDto
 import com.example.visara.data.repository.NotificationRepository
 import com.example.visara.service.fcm.handlers.HandleFcmMessageStrategy
@@ -12,6 +13,7 @@ import javax.inject.Singleton
 class NotificationProcessor @Inject constructor(
     private val notificationRepository: NotificationRepository,
     private val handlerMap: Map<RemoteNotificationType, @JvmSuppressWildcards HandleFcmMessageStrategy?>,
+    private val notificationMapper: NotificationMapper,
     private val gson: Gson,
 ) {
     fun process(remoteMessage: RemoteMessage) {
@@ -22,10 +24,9 @@ class NotificationProcessor @Inject constructor(
             val handler = getHandler(type) ?: return
             handler.handle(content)
             if (type == RemoteNotificationType.UNKNOWN) return
-            notificationRepository.deserializeNotificationDto(content).let {
-                notificationRepository.saveNotification(it)
-                handler.showNotification(it)
-            }
+            val notificationModel = notificationMapper.toModel(content)
+            notificationRepository.saveNotification(notificationModel)
+            handler.showNotification(notificationModel)
 
         } catch (e: Exception) {
             e.printStackTrace()

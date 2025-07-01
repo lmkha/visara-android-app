@@ -12,7 +12,7 @@ import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import com.example.visara.MainActivity
 import com.example.visara.R
-import com.example.visara.data.local.entity.LocalVideoStatus
+import com.example.visara.data.local.entity.VideoStatus
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.repository.VideoRepository
 import com.example.visara.notification.NotificationHelper
@@ -86,7 +86,7 @@ class UploadVideoWorker @AssistedInject constructor(
                         videoRepository.updateLocalVideoEntity(
                             it.copy(
                                 remoteId = videoMetaData.id,
-                                statusCode = LocalVideoStatus.PROCESSING.code,
+                                statusCode = VideoStatus.PROCESSING.code,
                             )
                         )
                     }
@@ -130,7 +130,7 @@ class UploadVideoWorker @AssistedInject constructor(
                     val localVideoEntity = videoMetaData.localId?.let { videoRepository.getLocalVideoEntityById(it) }
                     localVideoEntity?.let {
                         videoRepository.updateLocalVideoEntity(
-                            it.copy(statusCode = LocalVideoStatus.PENDING_RE_UPLOAD.code)
+                            it.copy(statusCode = VideoStatus.PENDING_RE_UPLOAD.code)
                         )
                     }
 

@@ -1,5 +1,6 @@
 package com.example.visara.ui.screens.settings.components
 
+import android.os.LocaleList
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
@@ -14,14 +15,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -29,15 +28,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LanguageSettingScreen(
     modifier: Modifier = Modifier,
-    currentLanguage: String,
-    allLanguages: List<String>,
+    appLocales: LocaleList?,
+    currentLocale: Locale?,
     isOpen: Boolean,
     onBack: () -> Unit,
+    onChangeLocale: (targetLocale: Locale) -> Unit,
 ) {
     AnimatedVisibility(
         visible = isOpen,
@@ -77,37 +78,27 @@ fun LanguageSettingScreen(
         ) { innerPadding->
             Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
                 Column(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = "Tiếng Việt",
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.weight(1f)
-                        )
+                    if (appLocales != null && !appLocales.isEmpty && currentLocale != null) {
+                        for (i in 0 until appLocales.size()) {
+                            val locale = appLocales.get(i)
+                            val displayLanguage = locale.getDisplayLanguage(locale)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = displayLanguage,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.weight(1f)
+                                )
 
-                        RadioButton(
-                            selected = true,
-                            onClick = {}
-                        )
-                    }
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = "English",
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.weight(1f)
-                        )
-
-                        RadioButton(
-                            selected = false,
-                            onClick = {}
-                        )
+                                RadioButton(
+                                    selected = locale.language == currentLocale.language,
+                                    onClick = { onChangeLocale(locale) }
+                                )
+                            }
+                        }
                     }
                 }
             }

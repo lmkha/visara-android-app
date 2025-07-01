@@ -4,9 +4,10 @@ import android.content.Context
 import android.net.Uri
 import android.webkit.MimeTypeMap
 import androidx.core.net.toUri
+import com.example.visara.BuildConfig
 import com.example.visara.data.local.dao.VideoDao
 import com.example.visara.data.local.entity.LocalVideoEntity
-import com.example.visara.data.local.entity.LocalVideoStatus
+import com.example.visara.data.local.entity.VideoStatus
 import com.example.visara.data.model.PlaylistModel
 import com.example.visara.data.model.UserModel
 import com.example.visara.data.model.VideoModel
@@ -74,7 +75,7 @@ class VideoRepository @Inject constructor(
             localThumbnailUriString = thumbnailUri.toString(),
             isPrivate = privacy == VideoPrivacy.ONLY_ME,
             isCommentOff = !isAllowComment,
-            statusCode = LocalVideoStatus.UPLOADING.code,
+            statusCode = VideoStatus.UPLOADING.code,
         )
 
         if (draftId == null) {
@@ -116,11 +117,11 @@ class VideoRepository @Inject constructor(
         val videoEntity = videoMetaData.localId?.let { getLocalVideoEntityById(it) }
         if (uploadVideoFileResult is ApiResult.Success) {
             videoEntity?.let {
-                videoDao.updateVideo(it.copy(statusCode = LocalVideoStatus.PROCESSING.code))
+                videoDao.updateVideo(it.copy(statusCode = VideoStatus.PROCESSING.code))
             }
         } else {
             videoEntity?.let {
-                videoDao.updateVideo(it.copy(statusCode = LocalVideoStatus.PENDING_RE_UPLOAD.code))
+                videoDao.updateVideo(it.copy(statusCode = VideoStatus.PENDING_RE_UPLOAD.code))
             }
         }
 
@@ -213,7 +214,7 @@ class VideoRepository @Inject constructor(
             localThumbnailUriString = thumbnailUri.toString(),
             isPrivate = privacy == VideoPrivacy.ONLY_ME,
             isCommentOff = !isAllowComment,
-            statusCode = LocalVideoStatus.DRAFT.code,
+            statusCode = VideoStatus.DRAFT.code,
         )
 
         if (draftId == null) {
@@ -259,8 +260,8 @@ class VideoRepository @Inject constructor(
         }
     }
 
-    fun getVideoUrl(videoId: String) : String {
-        return "http://10.0.2.2:8080/${videoId}/output.mpd"
+    fun getVideoUrl(videoId: String): String {
+        return "${BuildConfig.BACKEND_URL.removeSuffix("/")}/$videoId/output.mpd"
     }
 
     private fun uriToFile(context: Context, uri: Uri): File? {

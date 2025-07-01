@@ -28,15 +28,8 @@ fun BottomNavBar(
     appState: AppState,
     onNavigate: (Destination) -> Unit
 ) {
-    val botNavItems = listOf(
-        BottomNavigationItemData("Home", Icons.Filled.Home, Destination.Main.Home),
-        BottomNavigationItemData("Following", Icons.Filled.Star, Destination.Main.FollowingFeed),
-        BottomNavigationItemData("Add", Icons.Filled.AddCircle, Destination.Main.AddNewVideo()),
-        BottomNavigationItemData("Inbox", Icons.Filled.Email, Destination.Main.Inbox),
-        BottomNavigationItemData("Profile", Icons.Filled.AccountCircle, Destination.Main.Profile(shouldNavigateToMyProfile = true)),
-    )
     NavigationBar(containerColor = Color.Transparent) {
-        botNavItems.forEach { item ->
+        BotNavItems.items.forEach { item ->
             NavigationBarItem(
                 label = { Text(item.label) },
                 selected = item.destination.route == activeDestination.route,
@@ -59,6 +52,16 @@ fun BottomNavBar(
             )
         }
     }
+}
+
+private object BotNavItems {
+    val items: List<BottomNavigationItemData> = listOf(
+        BottomNavigationItemData("Home", Icons.Filled.Home, Destination.Main.Home),
+        BottomNavigationItemData("Following", Icons.Filled.Star, Destination.Main.FollowingFeed),
+        BottomNavigationItemData("Add", Icons.Filled.AddCircle, Destination.Main.AddNewVideo()),
+        BottomNavigationItemData("Inbox", Icons.Filled.Email, Destination.Main.Inbox),
+        BottomNavigationItemData("Profile", Icons.Filled.AccountCircle, Destination.Main.Profile(shouldNavigateToMyProfile = true)),
+    )
 }
 
 private data class BottomNavigationItemData (

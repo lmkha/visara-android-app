@@ -1,6 +1,8 @@
 package com.example.visara.ui.screens.settings
 
+import android.os.Build
 import androidx.activity.compose.BackHandler
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,12 +22,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.visara.R
+import com.example.visara.ui.components.ObserverAsEvents
 import com.example.visara.ui.screens.settings.components.AccountSettings
 import com.example.visara.ui.screens.settings.components.AccountSettingsSection
 import com.example.visara.ui.screens.settings.components.ContentAndDisplaySettingsSection
@@ -37,9 +43,11 @@ import com.example.visara.ui.screens.settings.components.LogoutBottomSheet
 import com.example.visara.ui.screens.settings.components.PrivacySettingScreen
 import com.example.visara.ui.screens.settings.components.SettingItem
 import com.example.visara.ui.screens.settings.components.ThemeSettingScreen
+import com.example.visara.viewmodels.SettingsScreenEvent
 import com.example.visara.viewmodels.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun SettingsScreen(
     modifier: Modifier = Modifier,
@@ -49,7 +57,17 @@ fun SettingsScreen(
     navigateAfterLogout: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var selectedItem by remember { mutableStateOf<SettingItem?>(null) }
+    var selectedItem by rememberSaveable { mutableStateOf<SettingItem?>(null) }
+    ObserverAsEvents(viewModel.eventFlow) { event ->
+        when(event) {
+            SettingsScreenEvent.ChangePrivacyFailure -> {}
+            SettingsScreenEvent.ChangePrivacySuccess -> {}
+            SettingsScreenEvent.LogoutFailure -> {}
+            SettingsScreenEvent.LogoutSuccess -> {
+                navigateAfterLogout()
+            }
+        }
+    }
 
     BackHandler(selectedItem != null) {
         selectedItem = null
@@ -70,7 +88,7 @@ fun SettingsScreen(
                     },
                     title = {
                         Text(
-                            text = "Settings and privacy",
+                            text = stringResource(R.string.settings_and_privacy),
                             fontWeight = FontWeight.Bold,
                         )
                     },
@@ -122,12 +140,12 @@ fun SettingsScreen(
             },
         )
 
-
         LanguageSettingScreen(
             onBack = { selectedItem = null },
             isOpen = selectedItem == ContentDisplaySettings.Language,
-            currentLanguage = "vn",
-            allLanguages = listOf("vn", "eng")
+            appLocales = uiState.appLocales,
+            currentLocale = uiState.currentLocale,
+            onChangeLocale = viewModel::changeLocale
         )
 
         LogoutBottomSheet(
@@ -135,7 +153,6 @@ fun SettingsScreen(
             onClose = { selectedItem = null },
             onLogoutSelected = {
                 viewModel.logout()
-                navigateAfterLogout()
             },
             onSwitchAccountSelected = {},
         )

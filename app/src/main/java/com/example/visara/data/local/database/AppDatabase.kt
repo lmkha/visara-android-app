@@ -16,6 +16,7 @@ import com.example.visara.data.local.entity.UserEntity
         LocalVideoEntity::class,
         NotificationEntity::class,
     ],
+    exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao() : UserDao

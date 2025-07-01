@@ -5,7 +5,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import com.example.visara.MainActivity
-import com.example.visara.data.remote.dto.DeserializedNotificationDto
+import com.example.visara.data.model.NotificationModel
 import com.example.visara.data.remote.dto.NotificationDto
 import com.example.visara.notification.NotificationHelper
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -22,7 +22,7 @@ class FcmCommentOnVideoHandler @Inject constructor(
 
     }
 
-    override fun showNotification(decodedNotificationDto: DeserializedNotificationDto) {
+    override fun showNotification(model: NotificationModel) {
         val successIntent = Intent(appContext, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
@@ -32,11 +32,11 @@ class FcmCommentOnVideoHandler @Inject constructor(
             successIntent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
-        val notification = notificationHelper.createNewCommentOnMyVideoNotificationBuilder(decodedNotificationDto)
+        val notification = notificationHelper.createNewCommentOnMyVideoNotificationBuilder(model)
             .setContentIntent(successPendingIntent)
             .build()
 
-        notificationManager.notify(decodedNotificationDto.id.hashCode(), notification)
+        notificationManager.notify(model.remoteId.hashCode(), notification)
     }
 
 }

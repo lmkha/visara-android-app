@@ -7,6 +7,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
+import javax.inject.Qualifier
 import javax.inject.Singleton
 
 @Module
@@ -33,3 +34,11 @@ object OkHttpClientModule {
             .build()
     }
 }
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class UnauthenticatedOkhttpClient
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class AuthorizedOkHttpClient

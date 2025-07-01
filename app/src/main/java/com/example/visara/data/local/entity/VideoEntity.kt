@@ -23,7 +23,7 @@ data class LocalVideoEntity(
     val statusCode: Int = 0,
 )
 
-enum class LocalVideoStatus(val code: Int) {
+enum class VideoStatus(val code: Int) {
     ACTIVE(code = 0),
     PROCESSING(code = 1),
     UPLOADING(code = 2),

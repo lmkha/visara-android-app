@@ -3,17 +3,17 @@ package com.example.visara
 import android.content.ComponentName
 import android.content.Context
 import android.net.Uri
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.Player
-import androidx.media3.session.MediaController
+import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
 import com.example.visara.data.model.VideoModel
 import com.example.visara.data.repository.VideoRepository
 import com.example.visara.service.play_back.PlaybackService
-import com.google.common.util.concurrent.MoreExecutors
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,23 +27,18 @@ class PlayerManager @Inject constructor(
     @ApplicationContext appContext: Context,
     private val videoRepository: VideoRepository,
 ) {
-    var mediaController: MediaController? = null
+    var mediaBrowser: MediaBrowser? = null
     private val _videoDetail: MutableStateFlow<VideoDetailState> = MutableStateFlow(VideoDetailState())
     val videoDetail: StateFlow<VideoDetailState> = _videoDetail.asStateFlow()
     private var storedPlaybackState: PlaybackStateSnapshot? = null
 
     init {
         val sessionToken = SessionToken(appContext, ComponentName(appContext, PlaybackService::class.java))
-        val controllerFuture = MediaController.Builder(appContext, sessionToken).buildAsync()
-        controllerFuture.addListener({
-            this.mediaController = controllerFuture.get().apply {
-                this.addListener(object : Player.Listener {
-                    override fun onIsPlayingChanged(isPlayingNow: Boolean) {
-                        _videoDetail.update { it.copy(isPlaying = isPlayingNow) }
-                    }
-                })
-            }
-        }, MoreExecutors.directExecutor())
+        MediaBrowser.Builder(appContext, sessionToken).buildAsync().apply {
+            addListener({
+                mediaBrowser = get()
+            }, ContextCompat.getMainExecutor(appContext))
+        }
     }
 
     fun setVideoDetail(video: VideoModel) {
@@ -61,8 +56,8 @@ class PlayerManager @Inject constructor(
     }
 
     private fun playDash(url: String, videoModel: VideoModel, playWhenReady: Boolean = true) {
-        mediaController?.stop()
-        mediaController?.clearMediaItems()
+        mediaBrowser?.stop()
+        mediaBrowser?.clearMediaItems()
 
         val mediaItem = MediaItem.Builder()
             .setUri(url)
@@ -76,26 +71,26 @@ class PlayerManager @Inject constructor(
             )
             .build()
 
-        mediaController?.setMediaItem(mediaItem)
-        mediaController?.playWhenReady = playWhenReady
-        mediaController?.prepare()
+        mediaBrowser?.setMediaItem(mediaItem)
+        mediaBrowser?.playWhenReady = playWhenReady
+        mediaBrowser?.prepare()
     }
 
     fun playUri(uri: Uri, playWhenReady: Boolean = true) {
-        mediaController?.clearMediaItems()
-        mediaController?.clearMediaItems()
+        mediaBrowser?.clearMediaItems()
+        mediaBrowser?.clearMediaItems()
 
         val mediaItem = MediaItem.Builder()
             .setUri(uri)
             .build()
 
-        mediaController?.setMediaItem(mediaItem)
-        mediaController?.playWhenReady = playWhenReady
-        mediaController?.prepare()
+        mediaBrowser?.setMediaItem(mediaItem)
+        mediaBrowser?.playWhenReady = playWhenReady
+        mediaBrowser?.prepare()
     }
 
     fun saveCurrentPlaybackState() {
-        mediaController.let { mediaController ->
+        mediaBrowser.let { mediaController ->
             val currentItem = mediaController?.currentMediaItem
             if (currentItem != null && mediaController.playbackState != Player.STATE_IDLE) {
                 if (mediaController.isPlaying) {
@@ -115,7 +110,7 @@ class PlayerManager @Inject constructor(
     }
 
     fun restoreStoredPlaybackState() {
-        mediaController.let { mediaController ->
+        mediaBrowser.let { mediaController ->
             storedPlaybackState?.let { snapshot ->
                 mediaController?.stop()
                 mediaController?.clearMediaItems()
@@ -139,8 +134,8 @@ class PlayerManager @Inject constructor(
 
     fun close() {
         _videoDetail.update {
-            mediaController?.stop()
-            mediaController?.clearMediaItems()
+            mediaBrowser?.stop()
+            mediaBrowser?.clearMediaItems()
             it.copy(
                 video = null,
                 isVisible = false,
@@ -158,11 +153,11 @@ class PlayerManager @Inject constructor(
     }
 
     fun play() {
-        mediaController?.play()
+        mediaBrowser?.play()
     }
 
     fun pause() {
-        mediaController?.pause()
+        mediaBrowser?.pause()
     }
 }
 

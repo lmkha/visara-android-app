@@ -48,6 +48,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.MediaBrowser
 import androidx.media3.session.MediaController
 import androidx.media3.ui.compose.PlayerSurface
 import androidx.media3.ui.compose.SURFACE_TYPE_SURFACE_VIEW
@@ -60,13 +61,13 @@ import kotlinx.coroutines.delay
 @Composable
 fun VisaraVideoPlayer(
     modifier: Modifier = Modifier,
-    mediaController: MediaController,
+    mediaBrowser: MediaBrowser,
     showControls: Boolean = true,
     requireLandscapeMode: () -> Unit,
     requirePortraitMode: () -> Unit,
 ) {
     var showControlsState by remember(showControls) { mutableStateOf(showControls) }
-    val presentationState = rememberPresentationState(mediaController)
+    val presentationState = rememberPresentationState(mediaBrowser)
     val scaledModifier = Modifier.resizeWithContentScale(
         contentScale = ContentScale.Fit,
         sourceSizeDp = presentationState.videoSizeDp
@@ -83,7 +84,7 @@ fun VisaraVideoPlayer(
 
     ) {
         PlayerSurface(
-            player = mediaController,
+            player = mediaBrowser,
             surfaceType = SURFACE_TYPE_SURFACE_VIEW,
             modifier = scaledModifier,
         )
@@ -100,13 +101,13 @@ fun VisaraVideoPlayer(
             modifier = Modifier.fillMaxSize()
         ) {
             PlayerControls(
-                player = mediaController,
+                player = mediaBrowser,
                 requireLandscapeMode = requireLandscapeMode,
                 requirePortraitMode = requirePortraitMode,
                 modifier = Modifier.fillMaxSize(),
             )
-            LaunchedEffect(showControlsState, mediaController.isPlaying) {
-                if (showControlsState && mediaController.isPlaying) {
+            LaunchedEffect(showControlsState, mediaBrowser.isPlaying) {
+                if (showControlsState && mediaBrowser.isPlaying) {
                     delay(2000)
                     showControlsState = false
                 }

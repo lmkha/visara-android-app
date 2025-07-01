@@ -20,13 +20,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.media3.session.MediaController
+import androidx.media3.session.MediaBrowser
 import com.example.visara.ui.components.VisaraVideoPlayer
 
 @Composable
 fun ReviewSectionStep(
     modifier: Modifier = Modifier,
-    mediaController: MediaController?,
+    mediaController: MediaBrowser?,
     onBack: () -> Unit,
     onGoNext: () -> Unit,
 ) {
@@ -74,9 +74,12 @@ fun ReviewSectionStep(
                 .align(Alignment.Center)
                 .background(color = Color.Black)
         ) {
-            if (mediaController != null) {
+            mediaController?.let {
+
+            }
+            mediaController?.let {
                 VisaraVideoPlayer(
-                    mediaController = mediaController,
+                    mediaBrowser = mediaController,
                     requireLandscapeMode = {},
                     requirePortraitMode = {},
                 )

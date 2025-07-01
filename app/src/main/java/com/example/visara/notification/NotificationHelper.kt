@@ -18,11 +18,11 @@ import androidx.core.graphics.drawable.IconCompat
 import coil3.Bitmap
 import com.example.visara.MainActivity
 import com.example.visara.R
-import com.example.visara.data.remote.dto.CommentLikeNotificationData
-import com.example.visara.data.remote.dto.CommentOnVideoNotificationData
-import com.example.visara.data.remote.dto.DeserializedNotificationDto
-import com.example.visara.data.remote.dto.NewChatMessageNotificationData
-import com.example.visara.data.remote.dto.VideoLikeNotificationData
+import com.example.visara.data.model.CommentLikeNotificationData
+import com.example.visara.data.model.CommentOnVideoNotificationData
+import com.example.visara.data.model.NewChatMessageNotificationData
+import com.example.visara.data.model.NotificationModel
+import com.example.visara.data.model.VideoLikeNotificationData
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.net.HttpURLConnection
 import java.net.URL
@@ -161,7 +161,7 @@ class NotificationHelper @Inject constructor(
         return notificationBuilder
     }
 
-    fun createNewFollowerNotificationBuilder(decodedNotificationDto: DeserializedNotificationDto) : NotificationCompat.Builder {
+    fun createNewFollowerNotificationBuilder(decodedNotificationDto: NotificationModel) : NotificationCompat.Builder {
         val thumbnailBitmap = decodedNotificationDto.senderAvatarUrl?.let { getCircleBitmapFromURL(it) }
         return NotificationCompat.Builder(appContext, NotificationChannelInfo.Message.id)
             .setContentTitle("New follower")
@@ -173,7 +173,7 @@ class NotificationHelper @Inject constructor(
             .setAutoCancel(true)
     }
 
-    fun createVideoLikeNotificationBuilder(decodedNotificationDto: DeserializedNotificationDto) : NotificationCompat.Builder {
+    fun createVideoLikeNotificationBuilder(decodedNotificationDto: NotificationModel) : NotificationCompat.Builder {
         val notificationData = decodedNotificationDto.data as VideoLikeNotificationData
         val thumbnailBitmap = getBitmapFromURL(notificationData.thumbnailUrl)
         return NotificationCompat.Builder(appContext, NotificationChannelInfo.Message.id)
@@ -186,7 +186,7 @@ class NotificationHelper @Inject constructor(
             .setAutoCancel(true)
     }
 
-    fun createMyCommentLikedNotificationBuilder(decodedNotificationDto: DeserializedNotificationDto) : NotificationCompat.Builder {
+    fun createMyCommentLikedNotificationBuilder(decodedNotificationDto: NotificationModel) : NotificationCompat.Builder {
         val notificationData = decodedNotificationDto.data as CommentLikeNotificationData
         val thumbnailBitmap = getCircleBitmapFromURL(notificationData.thumbnailUrl)
         return NotificationCompat.Builder(appContext, NotificationChannelInfo.Message.id)
@@ -199,7 +199,7 @@ class NotificationHelper @Inject constructor(
             .setAutoCancel(true)
     }
 
-    fun createNewCommentOnMyVideoNotificationBuilder(decodedNotificationDto: DeserializedNotificationDto) : NotificationCompat.Builder {
+    fun createNewCommentOnMyVideoNotificationBuilder(decodedNotificationDto: NotificationModel) : NotificationCompat.Builder {
         val notificationData = decodedNotificationDto.data as CommentOnVideoNotificationData
         val thumbnailBitmap = getCircleBitmapFromURL(notificationData.thumbnailUrl)
         return NotificationCompat.Builder(appContext, NotificationChannelInfo.Message.id)

@@ -37,7 +37,6 @@ fun AddNewVideoScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current.applicationContext
-//    val currentMediaController by viewModel.mediaController.collectAsStateWithLifecycle()
     var videoUri by remember(uiState.draftData.videoUri) { mutableStateOf(uiState.draftData.videoUri) }
     var step by remember(startingStep) { mutableStateOf(startingStep) }
     val pickMedia = rememberLauncherForActivityResult(PickVisualMedia()) { uri->
@@ -76,8 +75,10 @@ fun AddNewVideoScreen(
 
     DisposableEffect(Unit) {
         onDispose {
-            viewModel.playerManager.mediaController?.stop()
-            viewModel.playerManager.mediaController?.clearMediaItems()
+            viewModel.playerManager.mediaBrowser?.let { mediaBrowser ->
+                mediaBrowser.stop()
+                mediaBrowser.clearMediaItems()
+            }
         }
     }
 
@@ -104,7 +105,7 @@ fun AddNewVideoScreen(
             }
             AddNewVideoStep.REVIEW_VIDEO -> {
                 ReviewSectionStep(
-                    mediaController = viewModel.playerManager.mediaController,
+                    mediaController = viewModel.playerManager.mediaBrowser,
                     modifier = modifier,
                     onBack = { step = AddNewVideoStep.SELECT_VIDEO },
                     onGoNext = { step = AddNewVideoStep.ENTER_DATA_AND_POST },
