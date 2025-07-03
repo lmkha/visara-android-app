@@ -1,7 +1,6 @@
 package com.example.visara.data.remote.datasource
 
 import com.example.visara.data.remote.api.CommentApi
-import com.example.visara.data.remote.common.ApiError
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.dto.CommentDto
 import com.example.visara.data.remote.dto.LikeCommentDto
@@ -15,8 +14,8 @@ import javax.inject.Singleton
 @Singleton
 class CommentRemoteDataSource @Inject constructor(
     private val commentApi: CommentApi,
-    private val gson: Gson,
-) {
+    gson: Gson,
+) : RemoteDataSource(gson) {
     suspend fun addComment(videoId: String, replyTo: String?, content: String) : ApiResult<CommentDto> {
         return withContext(Dispatchers.IO) {
             try {
@@ -29,14 +28,7 @@ class CommentRemoteDataSource @Inject constructor(
                     val commentDto = gson.fromJson(dataJson, CommentDto::class.java)
                     ApiResult.Success(commentDto)
                 } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
+                    return@withContext parseFailureFromResponse(responseBody)
                 }
             } catch (e: Exception) {
                 ApiResult.Error(e)
@@ -56,14 +48,7 @@ class CommentRemoteDataSource @Inject constructor(
                     val commentDto = gson.fromJson(dataJson, CommentDto::class.java)
                     ApiResult.Success(commentDto)
                 } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
+                    parseFailureFromResponse(responseBody)
                 }
             } catch (e: Exception) {
                 ApiResult.Error(e)
@@ -90,14 +75,7 @@ class CommentRemoteDataSource @Inject constructor(
                     val commentDtoList: List<CommentDto> = gson.fromJson(dataJson, type)
                     ApiResult.Success(commentDtoList)
                 } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
+                    parseFailureFromResponse(responseBody)
                 }
             } catch (e: Exception) {
                 ApiResult.Error(e)
@@ -124,14 +102,7 @@ class CommentRemoteDataSource @Inject constructor(
                     val commentDtoList: List<CommentDto> = gson.fromJson(dataJson, type)
                     ApiResult.Success(commentDtoList)
                 } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody,
-                        )
-                    )
+                    parseFailureFromResponse(responseBody)
                 }
             } catch (e: Exception) {
                 ApiResult.Error(e)
@@ -151,14 +122,7 @@ class CommentRemoteDataSource @Inject constructor(
                     val likeCommentDto = gson.fromJson(dataJson, LikeCommentDto::class.java)
                     ApiResult.Success(likeCommentDto)
                 } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
+                    parseFailureFromResponse(responseBody)
                 }
             } catch (e: Exception) {
                 ApiResult.Error(e)
@@ -175,14 +139,7 @@ class CommentRemoteDataSource @Inject constructor(
                 if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
                     ApiResult.Success(Unit)
                 } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
+                    parseFailureFromResponse(responseBody)
                 }
             } catch (e: Exception) {
                 ApiResult.Error(e)
@@ -204,14 +161,7 @@ class CommentRemoteDataSource @Inject constructor(
                     }
                 }
 
-                return@withContext ApiResult.Failure(
-                    ApiError(
-                        code = response.code,
-                        errorCode = response.code.toString(),
-                        message = response.message,
-                        rawBody = responseBody
-                    )
-                )
+                return@withContext parseFailureFromResponse(responseBody)
             } catch (e: Exception) {
                 return@withContext ApiResult.Error(e)
             }
@@ -227,19 +177,12 @@ class CommentRemoteDataSource @Inject constructor(
                 if (response.isSuccessful) {
                     val jsonObject =  gson.fromJson(responseBody, Map::class.java)
                     val success = jsonObject["success"]
-                    if (success is Boolean && success == true) {
+                    if (success is Boolean && success) {
                         return@withContext ApiResult.Success(Unit)
                     }
                 }
 
-                return@withContext ApiResult.Failure(
-                    ApiError(
-                        code = response.code,
-                        errorCode = response.code.toString(),
-                        message = response.message,
-                        rawBody = responseBody
-                    )
-                )
+                return@withContext parseFailureFromResponse(responseBody)
             } catch (e: Exception) {
                 return@withContext ApiResult.Error(e)
             }
@@ -258,14 +201,7 @@ class CommentRemoteDataSource @Inject constructor(
                     val commentDto = gson.fromJson(dataJson, CommentDto::class.java)
                     ApiResult.Success(commentDto)
                 } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
+                    parseFailureFromResponse(responseBody)
                 }
             } catch (e: Exception) {
                 ApiResult.Error(e)

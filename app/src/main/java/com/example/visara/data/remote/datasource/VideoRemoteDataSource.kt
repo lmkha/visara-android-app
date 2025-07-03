@@ -1,7 +1,6 @@
 package com.example.visara.data.remote.datasource
 
 import com.example.visara.data.model.VideoModel
-import com.example.visara.data.remote.common.ApiError
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.api.VideoApi
 import com.example.visara.data.remote.dto.VideoDto
@@ -16,8 +15,8 @@ import javax.inject.Singleton
 @Singleton
 class VideoRemoteDataSource @Inject constructor(
     private val videoApi: VideoApi,
-    private val gson: Gson,
-) {
+    gson: Gson,
+) : RemoteDataSource(gson) {
     suspend fun getVideoById(videoId: String) : ApiResult<VideoModel> {
         return withContext(Dispatchers.IO) {
             try {
@@ -29,14 +28,7 @@ class VideoRemoteDataSource @Inject constructor(
                     val dataJson = gson.toJson(jsonObject["data"])
                     val videoModel = gson.fromJson(dataJson, VideoModel::class.java)
                     ApiResult.Success(videoModel)
-                } else  ApiResult.Failure(
-                    ApiError(
-                        code = response.code,
-                        errorCode = response.code.toString(),
-                        message = response.message,
-                        rawBody = responseBody
-                    )
-                )
+                } else parseFailureFromResponse(responseBody)
             } catch (e : Exception) {
                 ApiResult.Error(e)
             }
@@ -57,14 +49,7 @@ class VideoRemoteDataSource @Inject constructor(
 
                     ApiResult.Success(videoList)
 
-                } else ApiResult.Failure(
-                    ApiError(
-                        code = response.code,
-                        errorCode = response.code.toString(),
-                        message = response.message,
-                        rawBody = responseBody
-                    )
-                )
+                } else parseFailureFromResponse(responseBody)
             } catch (e: Exception) {
                 ApiResult.Error(e)
             }
@@ -98,14 +83,7 @@ class VideoRemoteDataSource @Inject constructor(
 
                     ApiResult.Success(videoDto)
 
-                } else ApiResult.Failure(
-                    ApiError(
-                        code = response.code,
-                        errorCode = response.code.toString(),
-                        message = response.message,
-                        rawBody = responseBody
-                    )
-                )
+                } else parseFailureFromResponse(responseBody)
             } catch (e: Exception) {
                 ApiResult.Error(e)
             }
@@ -139,14 +117,7 @@ class VideoRemoteDataSource @Inject constructor(
 
                     ApiResult.Success(videoDto)
 
-                } else ApiResult.Failure(
-                    ApiError(
-                        code = response.code,
-                        errorCode = response.code.toString(),
-                        message = response.message,
-                        rawBody = responseBody
-                    )
-                )
+                } else parseFailureFromResponse(responseBody)
             } catch (e: Exception) {
                 ApiResult.Error(e)
             }
@@ -170,24 +141,8 @@ class VideoRemoteDataSource @Inject constructor(
 
                     if (!thumbnailLink.isNullOrEmpty()) {
                         ApiResult.Success(thumbnailLink)
-                    } else {
-                        ApiResult.Failure(
-                            ApiError(
-                                code = response.code,
-                                errorCode = "EMPTY_THUMBNAIL_LINK",
-                                message = "Thumbnail link not found",
-                                rawBody = responseBody
-                            )
-                        )
-                    }
-                } else ApiResult.Failure(
-                    ApiError(
-                        code = response.code,
-                        errorCode = response.code.toString(),
-                        message = response.message,
-                        rawBody = responseBody
-                    )
-                )
+                    } else parseFailureFromResponse(responseBody)
+                } else parseFailureFromResponse(responseBody)
             } catch (e : Exception) {
                 ApiResult.Error(e)
             }
@@ -208,14 +163,7 @@ class VideoRemoteDataSource @Inject constructor(
                 if (response.isSuccessful) {
                     ApiResult.Success(Unit)
                 } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
+                    parseFailureFromResponse(responseBody)
                 }
             } catch (e : Exception) {
                 ApiResult.Error(e)
@@ -236,14 +184,7 @@ class VideoRemoteDataSource @Inject constructor(
                     val videoDtoList: List<VideoDto> = gson.fromJson(dataJson, type)
                     ApiResult.Success(videoDtoList)
                 } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
+                    parseFailureFromResponse(responseBody)
                 }
             } catch (e : Exception) {
                 ApiResult.Error(e)
@@ -258,19 +199,12 @@ class VideoRemoteDataSource @Inject constructor(
                 val responseBody = response.body?.string()
                 val jsonObject = gson.fromJson(responseBody, Map::class.java)
                 val successValue = jsonObject["success"]
-                val success = successValue is Boolean && successValue == true
+                val success = successValue is Boolean && successValue
 
                 if (response.isSuccessful && success) {
                     ApiResult.Success(Unit)
                 } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
+                    parseFailureFromResponse(responseBody)
                 }
             } catch (e : Exception) {
                 ApiResult.Error(e)
@@ -285,19 +219,12 @@ class VideoRemoteDataSource @Inject constructor(
                 val responseBody = response.body?.string()
                 val jsonObject = gson.fromJson(responseBody, Map::class.java)
                 val successValue = jsonObject["success"]
-                val success = successValue is Boolean && successValue == true
+                val success = successValue is Boolean && successValue
 
                 if (response.isSuccessful && success) {
                     ApiResult.Success(Unit)
                 } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
+                    parseFailureFromResponse(responseBody)
                 }
             } catch (e : Exception) {
                 ApiResult.Error(e)
@@ -317,14 +244,7 @@ class VideoRemoteDataSource @Inject constructor(
                 if (response.isSuccessful) {
                     ApiResult.Success(liked)
                 } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
+                    parseFailureFromResponse(responseBody)
                 }
             } catch (e : Exception) {
                 ApiResult.Error(e)
@@ -345,14 +265,7 @@ class VideoRemoteDataSource @Inject constructor(
                     val videoDtoList: List<VideoDto> = gson.fromJson(dataJson, type)
                     ApiResult.Success(videoDtoList)
                 } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
+                    parseFailureFromResponse(responseBody)
                 }
             } catch (e: Exception) {
                 ApiResult.Error(e)
@@ -374,14 +287,7 @@ class VideoRemoteDataSource @Inject constructor(
                 if (response.isSuccessful) {
                     ApiResult.Success(videoViewCount)
                 } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
+                    parseFailureFromResponse(responseBody)
                 }
             } catch (e: Exception) {
                 ApiResult.Error(e)
@@ -414,19 +320,12 @@ class VideoRemoteDataSource @Inject constructor(
                 val responseBody = response.body?.string()
                 val jsonObject = gson.fromJson(responseBody, Map::class.java)
                 val successValue = jsonObject["success"]
-                val success = successValue is Boolean && successValue == true
+                val success = successValue is Boolean && successValue
 
                 if (response.isSuccessful && success) {
                     ApiResult.Success(Unit)
                 } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
+                    parseFailureFromResponse(responseBody)
                 }
             } catch (e: Exception) {
                 ApiResult.Error(e)
@@ -447,14 +346,7 @@ class VideoRemoteDataSource @Inject constructor(
                     val videoDtoList: List<VideoDto> = gson.fromJson(dataJson, type)
                     ApiResult.Success(videoDtoList)
                 } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
+                    parseFailureFromResponse(responseBody)
                 }
             } catch (e: Exception) {
                 ApiResult.Error(e)
@@ -469,19 +361,12 @@ class VideoRemoteDataSource @Inject constructor(
                 val responseBody = response.body?.string()
                 val jsonObject = gson.fromJson(responseBody, Map::class.java)
                 val successValue = jsonObject["success"]
-                val success = successValue is Boolean && successValue == true
+                val success = successValue is Boolean && successValue
 
                 if (response.isSuccessful && success) {
                     ApiResult.Success(Unit)
                 } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
+                    parseFailureFromResponse(responseBody)
                 }
             } catch (e : Exception) {
                 ApiResult.Error(e)

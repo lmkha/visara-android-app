@@ -30,7 +30,7 @@ class AuthRepository @Inject constructor(
                 Result.failure(Throwable(message = loginResult.exception.message))
             }
             is ApiResult.Failure -> {
-                Result.failure(Throwable(message = loginResult.error.message))
+                Result.failure(Throwable(message = loginResult.message))
             }
             is ApiResult.Success -> {
                 // Must set current username before saving token — token key depends on it.
@@ -55,7 +55,7 @@ class AuthRepository @Inject constructor(
     ) : Result<UserModel> {
         return when (val apiResult = authRemoteDataSource.updateUser(isPrivate = isPrivate, fullName = fullName, bio = bio)) {
             is ApiResult.Error -> Result.failure(apiResult.exception)
-            is ApiResult.Failure -> Result.failure(Throwable(apiResult.error.message))
+            is ApiResult.Failure -> Result.failure(Throwable(apiResult.message))
             is ApiResult.Success -> Result.success(apiResult.data.toUserModel())
         }
     }

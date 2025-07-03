@@ -1,7 +1,6 @@
 package com.example.visara.data.remote.datasource
 
 import com.example.visara.data.remote.api.NotificationApi
-import com.example.visara.data.remote.common.ApiError
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.dto.NotificationDto
 import com.google.gson.Gson
@@ -14,8 +13,8 @@ import javax.inject.Singleton
 @Singleton
 class NotificationRemoteDataSource @Inject constructor(
     private val notificationApi: NotificationApi,
-    private val gson: Gson,
-) {
+    gson: Gson,
+) : RemoteDataSource(gson) {
     suspend fun getNotifications(username: String, page: Int, size: Int) : ApiResult<List<NotificationDto>> {
         return withContext(Dispatchers.IO) {
             try {
@@ -29,14 +28,7 @@ class NotificationRemoteDataSource @Inject constructor(
                     val notificationDtoList: List<NotificationDto> = gson.fromJson(dataJson, type)
                     ApiResult.Success(notificationDtoList)
                 } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
+                    parseFailureFromResponse(responseBody)
                 }
             } catch (e: Exception) {
                 ApiResult.Error(e)

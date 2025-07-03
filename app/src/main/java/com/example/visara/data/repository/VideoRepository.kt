@@ -434,7 +434,7 @@ class VideoRepository @Inject constructor(
         if (videoId.isBlank()) return Result.failure(Throwable("VideoId is blank"))
         return when(val apiResult = videoRemoteDataSource.deleteVideo(videoId)) {
             is ApiResult.Error -> Result.failure(apiResult.exception)
-            is ApiResult.Failure -> Result.failure(Throwable(apiResult.error.message))
+            is ApiResult.Failure -> Result.failure(Throwable(apiResult.message))
             is ApiResult.Success-> Result.success(Unit)
         }
     }

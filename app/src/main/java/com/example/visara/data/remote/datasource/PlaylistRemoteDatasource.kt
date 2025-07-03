@@ -1,7 +1,6 @@
 package com.example.visara.data.remote.datasource
 
 import com.example.visara.data.remote.api.PlaylistApi
-import com.example.visara.data.remote.common.ApiError
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.dto.PlayListDto
 import com.google.gson.Gson
@@ -15,8 +14,8 @@ import javax.inject.Singleton
 @Singleton
 class PlaylistRemoteDatasource @Inject constructor(
     private val playlistApi: PlaylistApi,
-    private val gson: Gson,
-) {
+    gson: Gson,
+) : RemoteDataSource(gson) {
     suspend fun createPlaylist(name: String, description: String, videoIdsList: List<String>) : ApiResult<PlayListDto> {
         return withContext(Dispatchers.IO) {
             try {
@@ -28,14 +27,7 @@ class PlaylistRemoteDatasource @Inject constructor(
                     val dataJson = gson.toJson(jsonObject["data"])
                     val playlistDto = gson.fromJson(dataJson, PlayListDto::class.java)
                     ApiResult.Success(playlistDto)
-                } else  ApiResult.Failure(
-                    ApiError(
-                        code = response.code,
-                        errorCode = response.code.toString(),
-                        message = response.message,
-                        rawBody = responseBody
-                    )
-                )
+                } else parseFailureFromResponse(responseBody)
             } catch (e: Exception) {
                 ApiResult.Error(e)
             }
@@ -53,14 +45,7 @@ class PlaylistRemoteDatasource @Inject constructor(
                     val data = jsonObject["data"]
                     val thumbnailUrl = data as? String ?: ""
                     ApiResult.Success(thumbnailUrl)
-                } else  ApiResult.Failure(
-                    ApiError(
-                        code = response.code,
-                        errorCode = response.code.toString(),
-                        message = response.message,
-                        rawBody = responseBody
-                    )
-                )
+                } else parseFailureFromResponse(responseBody)
             } catch (e: Exception) {
                 ApiResult.Error(e)
             }
@@ -78,14 +63,7 @@ class PlaylistRemoteDatasource @Inject constructor(
                     val dataJson = gson.toJson(jsonObject["data"])
                     val playlistDto = gson.fromJson(dataJson, PlayListDto::class.java)
                     ApiResult.Success(playlistDto)
-                } else  ApiResult.Failure(
-                    ApiError(
-                        code = response.code,
-                        errorCode = response.code.toString(),
-                        message = response.message,
-                        rawBody = responseBody
-                    )
-                )
+                } else parseFailureFromResponse(responseBody)
             } catch (e: Exception) {
                 ApiResult.Error(e)
             }
@@ -103,14 +81,7 @@ class PlaylistRemoteDatasource @Inject constructor(
                     val success = jsonObject["success"]
                     val result = success as? Boolean == true
                     ApiResult.Success(result)
-                } else  ApiResult.Failure(
-                    ApiError(
-                        code = response.code,
-                        errorCode = response.code.toString(),
-                        message = response.message,
-                        rawBody = responseBody
-                    )
-                )
+                } else  parseFailureFromResponse(responseBody)
             } catch (e: Exception) {
                 ApiResult.Error(e)
             }
@@ -129,14 +100,7 @@ class PlaylistRemoteDatasource @Inject constructor(
                     val success = jsonObject["success"]
                     val result = success as? Boolean == true
                     ApiResult.Success(result)
-                } else  ApiResult.Failure(
-                    ApiError(
-                        code = response.code,
-                        errorCode = response.code.toString(),
-                        message = response.message,
-                        rawBody = responseBody
-                    )
-                )
+                } else parseFailureFromResponse(responseBody)
             } catch (e: Exception) {
                 ApiResult.Error(e)
             }
@@ -155,14 +119,7 @@ class PlaylistRemoteDatasource @Inject constructor(
                     val type = object : TypeToken<List<PlayListDto>>() {}.type
                     val playlistDtoList: List<PlayListDto> = gson.fromJson(dataJson, type)
                     ApiResult.Success(playlistDtoList)
-                } else  ApiResult.Failure(
-                    ApiError(
-                        code = response.code,
-                        errorCode = response.code.toString(),
-                        message = response.message,
-                        rawBody = responseBody
-                    )
-                )
+                } else parseFailureFromResponse(responseBody)
             } catch (e: Exception) {
                 ApiResult.Error(e)
             }

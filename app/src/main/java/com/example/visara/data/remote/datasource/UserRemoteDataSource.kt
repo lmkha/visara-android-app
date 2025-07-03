@@ -1,6 +1,5 @@
 package com.example.visara.data.remote.datasource
 
-import com.example.visara.data.remote.common.ApiError
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.api.UserApi
 import com.example.visara.data.remote.dto.FollowerUserDto
@@ -16,8 +15,8 @@ import javax.inject.Singleton
 @Singleton
 class UserRemoteDataSource @Inject constructor(
     private val userApi: UserApi,
-    private val gson: Gson,
-) {
+    gson: Gson,
+) : RemoteDataSource(gson) {
     suspend fun getCurrentUser() : ApiResult<UserDto> {
         return withContext(Dispatchers.IO) {
             try {
@@ -30,14 +29,7 @@ class UserRemoteDataSource @Inject constructor(
                     val user = gson.fromJson(dataJson, UserDto::class.java)
                     ApiResult.Success(user)
                 } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
+                    parseFailureFromResponse(responseBody)
                 }
             } catch (e: Exception) {
                 ApiResult.Error(e)
@@ -57,14 +49,7 @@ class UserRemoteDataSource @Inject constructor(
                     val user = gson.fromJson(dataJson, UserDto::class.java)
                     ApiResult.Success(user)
                 } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
+                    parseFailureFromResponse(responseBody)
                 }
             } catch (e : Exception) {
                 ApiResult.Error(e)
@@ -85,14 +70,7 @@ class UserRemoteDataSource @Inject constructor(
                     val userDtoList: List<UserDto> = gson.fromJson(dataJson, type)
                     ApiResult.Success(userDtoList)
                 } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
+                    parseFailureFromResponse(responseBody)
                 }
             } catch (e : Exception) {
                 ApiResult.Error(e)
@@ -108,19 +86,12 @@ class UserRemoteDataSource @Inject constructor(
 
                 val jsonObject = gson.fromJson(responseBody, Map::class.java)
                 val successValue = jsonObject["success"]
-                val success = successValue is Boolean && successValue == true
+                val success = successValue is Boolean && successValue
 
-                if (response.isSuccessful && success == true) {
+                if (response.isSuccessful && success) {
                     ApiResult.Success(Unit)
                 } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
+                    parseFailureFromResponse(responseBody)
                 }
             } catch (e : Exception) {
                 ApiResult.Error(e)
@@ -136,19 +107,12 @@ class UserRemoteDataSource @Inject constructor(
 
                 val jsonObject = gson.fromJson(responseBody, Map::class.java)
                 val successValue = jsonObject["success"]
-                val success = successValue is Boolean && successValue == true
+                val success = successValue is Boolean && successValue
 
-                if (response.isSuccessful && success == true) {
+                if (response.isSuccessful && success) {
                     ApiResult.Success(Unit)
                 } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
+                    parseFailureFromResponse(responseBody)
                 }
             } catch (e : Exception) {
                 ApiResult.Error(e)
@@ -169,14 +133,7 @@ class UserRemoteDataSource @Inject constructor(
                 if (response.isSuccessful && success) {
                     ApiResult.Success(Unit)
                 } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
+                    parseFailureFromResponse(responseBody)
                 }
             } catch (e : Exception) {
                 ApiResult.Error(e)
@@ -197,14 +154,7 @@ class UserRemoteDataSource @Inject constructor(
                 if (response.isSuccessful && success) {
                     ApiResult.Success(Unit)
                 } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
+                    parseFailureFromResponse(responseBody)
                 }
             } catch (e : Exception) {
                 ApiResult.Error(e)
@@ -225,14 +175,7 @@ class UserRemoteDataSource @Inject constructor(
                     val userDtoList: List<FollowerUserDto> = gson.fromJson(dataJson, type)
                     ApiResult.Success(userDtoList)
                 } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
+                    parseFailureFromResponse(responseBody)
                 }
             } catch (e: Exception) {
                 ApiResult.Error(e)
@@ -253,14 +196,7 @@ class UserRemoteDataSource @Inject constructor(
                     val userDtoList: List<FollowingUserDto> = gson.fromJson(dataJson, type)
                     ApiResult.Success(userDtoList)
                 } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
+                    parseFailureFromResponse(responseBody)
                 }
             } catch (e: Exception) {
                 ApiResult.Error(e)

@@ -1,6 +1,5 @@
 package com.example.visara.data.remote.datasource
 
-import com.example.visara.data.remote.common.ApiError
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.api.AuthApi
 import com.example.visara.data.remote.dto.LoginDto
@@ -16,17 +15,16 @@ import kotlin.collections.get
 @Singleton
 class AuthRemoteDataSource @Inject constructor(
     private val authApi: AuthApi,
-    private val gson: Gson,
-) {
+    gson: Gson,
+) : RemoteDataSource(gson) {
     suspend fun login(username: String, password: String): ApiResult<LoginDto> {
         return withContext(Dispatchers.IO) {
             try {
                 val response = authApi.login(username, password)
                 val responseBody = response.body?.string()
 
-                if (!response.isSuccessful || responseBody.isNullOrEmpty()) {
-                    val error = gson.fromJson(responseBody, ApiError::class.java)
-                    return@withContext ApiResult.Failure(error)
+                if (!response.isSuccessful) {
+                    return@withContext parseFailureFromResponse(responseBody)
                 }
 
                 val jsonObject = gson.fromJson(responseBody, Map::class.java)
@@ -36,8 +34,7 @@ class AuthRemoteDataSource @Inject constructor(
                 if (loginDto.refreshToken.isNotBlank() && loginDto.accessToken.isNotBlank())
                     return@withContext ApiResult.Success(loginDto)
                 else {
-                    val error = gson.fromJson(responseBody, ApiError::class.java)
-                    return@withContext ApiResult.Failure(error)
+                    return@withContext parseFailureFromResponse(responseBody)
                 }
             } catch (e: Exception) {
                 return@withContext ApiResult.Error(e)
@@ -65,14 +62,7 @@ class AuthRemoteDataSource @Inject constructor(
                     val userDto: UserDto = gson.fromJson(dataJson, UserDto::class.java)
                     ApiResult.Success(userDto)
                 } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
+                    parseFailureFromResponse(responseBody)
                 }
             } catch (e: Exception) {
                 ApiResult.Error(e)
@@ -86,18 +76,11 @@ class AuthRemoteDataSource @Inject constructor(
                 val response = authApi.checkUsernameAvailability(username)
                 val responseBody = response.body?.string()
 
-                if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
+                if (response.isSuccessful) {
                     val result = gson.fromJson(responseBody, UsernameAvailabilityDto::class.java)
                     ApiResult.Success(result)
                 } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
+                    return@withContext parseFailureFromResponse(responseBody)
                 }
             } catch (e: Exception) {
                 ApiResult.Error(e)
@@ -117,19 +100,12 @@ class AuthRemoteDataSource @Inject constructor(
                 val response = authApi.addFcmToken(token = fcmToken, username = username)
                 val responseBody = response.body?.string()
                 val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                val success = jsonObject["success"]?.let { it is Boolean && it == true }
+                val success = jsonObject["success"]?.let { it is Boolean && it }
 
                 if (response.isSuccessful && success == true) {
                     ApiResult.Success(Unit)
                 } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
+                    return@withContext parseFailureFromResponse(responseBody)
                 }
             } catch (e: Exception) {
                 ApiResult.Error(e)
@@ -143,19 +119,12 @@ class AuthRemoteDataSource @Inject constructor(
                 val response = authApi.removeFcmToken(token = fcmToken, username = username)
                 val responseBody = response.body?.string()
                 val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                val success = jsonObject["success"]?.let { it is Boolean && it == true }
+                val success = jsonObject["success"]?.let { it is Boolean && it }
 
                 if (response.isSuccessful && success == true) {
                     ApiResult.Success(Unit)
                 } else {
-                    ApiResult.Failure(
-                        ApiError(
-                            code = response.code,
-                            errorCode = response.code.toString(),
-                            message = response.message,
-                            rawBody = responseBody
-                        )
-                    )
+                    return@withContext parseFailureFromResponse(responseBody)
                 }
             } catch (e: Exception) {
                 ApiResult.Error(e)
