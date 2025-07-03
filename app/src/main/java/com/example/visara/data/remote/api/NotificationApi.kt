@@ -12,7 +12,7 @@ import javax.inject.Singleton
 
 @Singleton
 class NotificationApi @Inject constructor(
-    @AuthorizedOkHttpClient private val authorizedOkHttpClient: OkHttpClient,
+    @param:AuthorizedOkHttpClient private val authorizedOkHttpClient: OkHttpClient,
 ) {
     fun getAllNotifications(username: String, page: Int, size: Int) : Response {
         val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()

@@ -33,7 +33,7 @@ import coil3.compose.AsyncImage
 import com.example.visara.data.model.VideoModel
 import com.example.visara.utils.formatDuration
 import com.example.visara.utils.formatViews
-import com.example.visara.utils.toTimeAgo
+import com.example.visara.utils.getTimeAgo
 
 @Composable
 fun VideoItem(
@@ -116,7 +116,7 @@ fun VideoItem(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
                         Text(
-                            text = state.username.toString(),
+                            text = state.username,
                             color = MaterialTheme.colorScheme.onBackground,
                         )
                         Text("-")
@@ -126,7 +126,7 @@ fun VideoItem(
                         )
                         Text("-")
                         Text(
-                            text = state.createdAt.toTimeAgo(),
+                            text = getTimeAgo(state.createdAt),
                             color = MaterialTheme.colorScheme.onBackground,
                         )
                     }

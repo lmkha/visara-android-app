@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.visara.R
@@ -28,7 +29,7 @@ fun AccountSettingsSection(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
-            text = "Account",
+            text = stringResource(R.string.account),
             color = Color.Gray,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(horizontal = 24.dp)
@@ -43,22 +44,22 @@ fun AccountSettingsSection(
             ) {
                 SettingsItem(
                     icon = { Icon(imageVector = Icons.Default.Person, contentDescription = null) },
-                    label = "Account",
+                    label = stringResource(R.string.account),
                     onClick = { onItemSelected(AccountSettings.Account) },
                 )
                 SettingsItem(
                     icon = { Icon(imageVector = Icons.Default.Lock, contentDescription = null) },
-                    label = "Privacy",
+                    label = stringResource(R.string.privacy),
                     onClick = { onItemSelected(AccountSettings.Privacy) },
                 )
                 SettingsItem(
                     icon = { Icon(painter = painterResource(id = R.drawable.security_24px), contentDescription = null) },
-                    label = "Security and permissions",
+                    label = stringResource(R.string.security_and_permission),
                     onClick = { onItemSelected(AccountSettings.SecurityAndPermission) },
                 )
                 SettingsItem(
                     icon = { Icon(painter = painterResource(id = R.drawable.forward_24px), contentDescription = null) },
-                    label = "Share profile",
+                    label = stringResource(R.string.share_profile),
                     onClick = { onItemSelected(AccountSettings.ShareProfile)},
                 )
             }

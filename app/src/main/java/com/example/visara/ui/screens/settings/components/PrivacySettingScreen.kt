@@ -29,8 +29,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.visara.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,7 +69,7 @@ fun PrivacySettingScreen(
                     },
                     title = {
                         Text(
-                            text = "Privacy",
+                            text = stringResource(R.string.privacy),
                             fontWeight = FontWeight.Bold,
                         )
                     },
@@ -85,7 +87,7 @@ fun PrivacySettingScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            text = "Private account",
+                            text = stringResource(R.string.private_account),
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.weight(1f)
@@ -100,7 +102,7 @@ fun PrivacySettingScreen(
                         )
                     }
                     Text(
-                        text = "With a private account, only followers can view your profile and posts."
+                        text = stringResource(R.string.private_account_descrption)
                     )
                 }
             }

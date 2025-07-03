@@ -32,7 +32,7 @@ import javax.inject.Singleton
 class VideoRepository @Inject constructor(
     private val videoRemoteDataSource: VideoRemoteDataSource,
     private val videoDao: VideoDao,
-    @ApplicationContext private val appContext: Context,
+    @param:ApplicationContext private val appContext: Context,
     private val gson: Gson,
 ) {
     suspend fun uploadVideoMetaData(

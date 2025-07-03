@@ -1,23 +1,24 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
-    kotlin("plugin.serialization") version "2.0.21"
+    kotlin("plugin.serialization") version "2.2.0"
     id("com.google.devtools.ksp")
     id("com.google.gms.google-services")
 }
 
 android {
     namespace = "com.example.visara"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.visara"
         minSdk = 26
+        //noinspection OldTargetApi
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -60,11 +61,8 @@ android {
         compose = true
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-    kotlinOptions {
-        jvmTarget = "11"
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     packaging {
         resources {
@@ -74,8 +72,8 @@ android {
     androidResources {
         generateLocaleConfig = true
         localeFilters += listOf(
-            "vi-rVN",
-            "en-rUS"
+            "vi-rVN", // Vietnamese
+            "en-rUS", // English: United State
         )
     }
 }
@@ -100,8 +98,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.hilt.work)
-    kapt(libs.hilt.android.compiler)
-    kapt(libs.androidx.hilt.compiler)
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.startup.runtime)
     implementation(libs.androidx.work.runtime.ktx)
 
@@ -121,8 +119,6 @@ dependencies {
     implementation(libs.androidx.media3.datasource.cronet)
     // For loading data using the OkHttp network stack
     implementation(libs.androidx.media3.datasource.okhttp)
-    // For loading data using librtmp
-    implementation(libs.androidx.media3.datasource.rtmp)
     // For building media playback UIs using Compose
     implementation(libs.androidx.media3.media3.ui.compose)
     // For building media playback UIs using Views
@@ -193,7 +189,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.process)
 }
 
-// Allow references to generated code
-kapt {
-    correctErrorTypes = true
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.fromTarget("17")
+    }
 }

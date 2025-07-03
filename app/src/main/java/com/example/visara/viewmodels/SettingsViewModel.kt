@@ -35,7 +35,7 @@ class SettingsViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val userRepository: UserRepository,
     private val localeManager: LocaleManager,
-    @ApplicationContext private val appContext: Context,
+    @param:ApplicationContext private val appContext: Context,
 ) : ViewModel() {
     private val _uiState: MutableStateFlow<SettingsScreenUiState> = MutableStateFlow(SettingsScreenUiState())
     val uiState: StateFlow<SettingsScreenUiState> = _uiState.asStateFlow()
@@ -56,6 +56,9 @@ class SettingsViewModel @Inject constructor(
     private fun getLocales() {
         try {
             val appLocales = appContext.resources.configuration.locales
+            val appLocalesX = localeManager.applicationLocales
+            Log.d("CHECK_VAR", "Locales in configuration: $appLocales")
+            Log.d("CHECK_VAR", "Locales in localeManager: $appLocalesX")
             val currentLocale = if (appLocales.size() > 0) {
                 appLocales.get(0)
             } else { null }

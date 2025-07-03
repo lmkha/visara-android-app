@@ -16,7 +16,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.visara.utils.formatViews
-import com.example.visara.utils.toTimeAgo
+import com.example.visara.utils.getTimeAgo
 
 @Composable
 fun VideoHeaderSection(
@@ -43,7 +43,7 @@ fun VideoHeaderSection(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(text = formatViews(viewsCount), color = MaterialTheme.colorScheme.onBackground)
-            Text(text = createdAt.toTimeAgo(), color = MaterialTheme.colorScheme.onBackground)
+            Text(text = getTimeAgo(createdAt), color = MaterialTheme.colorScheme.onBackground)
             hashtags.firstOrNull()?.let {
                 Text(text = it, color = MaterialTheme.colorScheme.onBackground)
             }

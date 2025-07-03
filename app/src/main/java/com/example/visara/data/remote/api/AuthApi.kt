@@ -17,8 +17,8 @@ import javax.inject.Singleton
 
 @Singleton
 class AuthApi @Inject constructor(
-    @AuthorizedOkHttpClient private val authorizedOkHttpClient: OkHttpClient,
-    @UnauthenticatedOkhttpClient private val unauthorizedOkHttpClient: OkHttpClient,
+    @param:AuthorizedOkHttpClient private val authorizedOkHttpClient: OkHttpClient,
+    @param:UnauthenticatedOkhttpClient private val unauthorizedOkHttpClient: OkHttpClient,
     private val gson: Gson,
 ) {
     fun login(username: String, password: String): Response {

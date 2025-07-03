@@ -1,6 +1,5 @@
 package com.example.visara.ui.screens.studio
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.net.Uri
@@ -25,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -33,9 +33,10 @@ import androidx.core.net.toUri
 import coil3.compose.AsyncImage
 import com.example.visara.data.model.VideoModel
 import com.example.visara.ui.components.VideoThumbnailFromVideoUri
-import com.example.visara.utils.toTimeAgo
+import com.example.visara.utils.getTimeAgo
 import java.io.IOException
 import java.util.concurrent.TimeUnit
+import com.example.visara.utils.formatDuration
 
 @Composable
 fun StudioVideoItem(
@@ -96,7 +97,11 @@ fun StudioVideoItem(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = if (video.duration != 0L) com.example.visara.utils.formatDuration(video.duration) else getVideoDurationFormatted(context, video.localVideoUri),
+                        text = if (video.duration != 0L) {
+                            formatDuration(video.duration)
+                        } else{
+                            getVideoDurationFormatted(context, video.localVideoUri)
+                        },
                         color = Color.White,
                         maxLines = 1,
                         modifier = Modifier.wrapContentWidth(),
@@ -113,7 +118,7 @@ fun StudioVideoItem(
                     )
                 }
                 Text(
-                    text = video.createdAt.toTimeAgo(),
+                    text = getTimeAgo(video.createdAt),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     fontSize = 13.sp,
@@ -124,14 +129,22 @@ fun StudioVideoItem(
     }
 }
 
+@Composable
 private fun getVideoDurationFormatted(context: Context, videoUri: Uri?): String {
+    val locale = LocalConfiguration.current.locales.get(0)
     if (videoUri == null) return "00:00:00"
     val retriever = MediaMetadataRetriever()
     return try {
         retriever.setDataSource(context, videoUri)
         val durationString = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
         val millis = durationString?.toLongOrNull() ?: 0L
-        formatDuration(millis)
+        val hours = TimeUnit.MILLISECONDS.toHours(millis)
+        val minutes = TimeUnit.MILLISECONDS.toMinutes(millis) - TimeUnit.HOURS.toMinutes(hours)
+        val seconds = TimeUnit.MILLISECONDS.toSeconds(millis) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis))
+        return String.format(
+            locale = locale,
+            format = "%02d:%02d:%02d", hours, minutes, seconds
+        )
     } catch (e: IllegalArgumentException) {
         e.printStackTrace()
         "00:00:00"
@@ -148,12 +161,4 @@ private fun getVideoDurationFormatted(context: Context, videoUri: Uri?): String 
             e.printStackTrace()
         }
     }
-}
-
-@SuppressLint("DefaultLocale")
-private fun formatDuration(millis: Long): String {
-    val hours = TimeUnit.MILLISECONDS.toHours(millis)
-    val minutes = TimeUnit.MILLISECONDS.toMinutes(millis) - TimeUnit.HOURS.toMinutes(hours)
-    val seconds = TimeUnit.MILLISECONDS.toSeconds(millis) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis))
-    return String.format("%02d:%02d:%02d", hours, minutes, seconds)
 }

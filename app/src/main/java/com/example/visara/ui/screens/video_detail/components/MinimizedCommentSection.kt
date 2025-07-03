@@ -20,12 +20,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.example.visara.R
 import com.example.visara.data.model.CommentModel
 import com.example.visara.ui.components.UserAvatar
+import com.example.visara.utils.formatCommentCount
 
 @Composable
 fun MinimizedCommentSection(
@@ -52,13 +55,13 @@ fun MinimizedCommentSection(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text(
-                    text = "Comments",
+                    text = stringResource(id = R.string.comment_title),
                     color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Medium,
                 )
 
                 Text(
-                    text = commentsCount.toString(),
+                    text = formatCommentCount(commentsCount),
                     color = Color.Gray,
                     fontWeight = FontWeight.Medium,
                 )
@@ -84,7 +87,7 @@ fun MinimizedCommentSection(
                 }
             } else {
                 Text(
-                    text = "Comments are turn off.",
+                    text = stringResource(R.string.coment_off_message),
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center,
                     fontWeight = FontWeight.Medium,

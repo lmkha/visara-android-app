@@ -14,8 +14,8 @@ import javax.inject.Singleton
 
 @Singleton
 class UserApi @Inject constructor(
-    @AuthorizedOkHttpClient private val authorizedOkHttpClient: OkHttpClient,
-    @UnauthenticatedOkhttpClient private val unauthorizedOkHttpClient: OkHttpClient,
+    @param:AuthorizedOkHttpClient private val authorizedOkHttpClient: OkHttpClient,
+    @param:UnauthenticatedOkhttpClient private val unauthorizedOkHttpClient: OkHttpClient,
 ) {
     fun getCurrentUser(): Response {
         val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()

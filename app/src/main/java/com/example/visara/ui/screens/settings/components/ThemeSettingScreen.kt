@@ -26,8 +26,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.visara.R
 import com.example.visara.ui.theme.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -64,7 +66,7 @@ fun ThemeSettingScreen(
                     },
                     title = {
                         Text(
-                            text = "Display",
+                            text = stringResource(R.string.theme),
                             fontWeight = FontWeight.Bold,
                         )
                     },
@@ -77,12 +79,6 @@ fun ThemeSettingScreen(
         ) { innerPadding->
             Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
                 Column(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
-                    Text(
-                        text = "Appearance",
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-
                     AppTheme.entries.forEach { option ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -98,9 +94,9 @@ fun ThemeSettingScreen(
                             )
                             Text(
                                 text = when(option) {
-                                    AppTheme.LIGHT -> "Light"
-                                    AppTheme.SYSTEM -> "System"
-                                    AppTheme.DARK -> "Dark"
+                                    AppTheme.LIGHT -> stringResource(R.string.light_theme)
+                                    AppTheme.SYSTEM -> stringResource(R.string.system_theme)
+                                    AppTheme.DARK -> stringResource(R.string.dark_theme)
                                 },
                                 fontWeight = FontWeight.Medium,
                             )

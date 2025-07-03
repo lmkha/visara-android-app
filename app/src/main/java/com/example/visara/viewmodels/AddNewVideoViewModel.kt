@@ -34,7 +34,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddNewVideoViewModel @Inject constructor(
-    @ApplicationContext private val appContext: Context,
+    @param:ApplicationContext private val appContext: Context,
     private val networkMonitor: NetworkMonitor,
     private val videoRepository: VideoRepository,
     private val userRepository: UserRepository,

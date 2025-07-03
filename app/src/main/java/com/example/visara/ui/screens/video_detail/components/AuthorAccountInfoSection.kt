@@ -19,8 +19,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.visara.R
 import com.example.visara.data.model.UserModel
 import com.example.visara.ui.components.UserAvatar
 import com.example.visara.ui.theme.LocalVisaraCustomColors
@@ -82,7 +84,8 @@ fun AuthorAccountInfoSection(
                 )
             ) {
                 Text(
-                    text = if (isFollowingState) "Following" else "Follow",
+                    text = if (isFollowingState) stringResource(R.string.following)
+                    else stringResource(R.string.follow)
                 )
             }
         }

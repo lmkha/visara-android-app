@@ -201,7 +201,8 @@ fun SuggestionTag(
     tags: List<String>,
     modifier: Modifier = Modifier,
 ) {
-    var selectedTag by remember { mutableStateOf("Explore") }
+    val exploreString = stringResource(R.string.explore)
+    var selectedTag by remember { mutableStateOf(exploreString) }
 
     LazyRow(
         modifier = modifier,
@@ -209,8 +210,8 @@ fun SuggestionTag(
     ) {
         item {
             AssistChip(
-                onClick = { selectedTag = "Explore" },
-                label = { Text("Explore") },
+                onClick = { selectedTag = exploreString },
+                label = { Text(exploreString) },
                 leadingIcon = {
                     Icon(
                         painter = painterResource(id = R.drawable.explore_24px),

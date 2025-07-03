@@ -25,10 +25,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import com.example.visara.R
 import com.example.visara.ui.theme.LocalVisaraCustomColors
 
 @Composable
@@ -91,7 +93,7 @@ fun LogoutBottomSheet(
                     ,
                 ) {
                     Text(
-                        text = "Are you sure you want to log out?",
+                        text = stringResource(R.string.logout_confirm_message),
                         fontWeight = FontWeight.Medium,
                         color = Color.Gray,
                         modifier = Modifier.fillMaxWidth(),
@@ -106,7 +108,7 @@ fun LogoutBottomSheet(
                             .clickable(onClick = onLogoutSelected)
                     ) {
                         Text(
-                            text = "Logout",
+                            text = stringResource(R.string.logout),
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.align(Alignment.Center)
@@ -120,7 +122,7 @@ fun LogoutBottomSheet(
                             .clickable(onClick = onClose)
                     ) {
                         Text(
-                            text = "Cancel",
+                            text = stringResource(R.string.cancel),
                             fontWeight = FontWeight.Normal,
                             color = MaterialTheme.colorScheme.onBackground,
                             modifier = Modifier.align(Alignment.Center)

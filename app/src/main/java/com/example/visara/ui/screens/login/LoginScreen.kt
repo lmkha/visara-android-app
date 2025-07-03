@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -105,7 +106,7 @@ fun LoginScreen(
             }
 
             TextField(
-                placeholder = { Text("Username") },
+                placeholder = { Text(stringResource(R.string.username)) },
                 value = username,
                 onValueChange = { username = it },
                 colors = TextFieldDefaults.colors(
@@ -118,10 +119,10 @@ fun LoginScreen(
             )
 
             TextField(
-                placeholder = { Text("Password") },
+                placeholder = { Text(stringResource(R.string.password)) },
                 trailingIcon = {
                     TextButton(onClick = { showPassword = !showPassword}) {
-                        Text(text = if (showPassword) "Hide" else "Show")
+                        Text(if (showPassword) stringResource(R.string.hide) else stringResource(R.string.show_password))
                     }
                 },
                 value = password,
@@ -159,7 +160,7 @@ fun LoginScreen(
             ) {
                 if (!uiState.isProcessing) {
                     Text(
-                        text = "Login",
+                        text = stringResource(R.string.login),
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     )
@@ -184,7 +185,7 @@ fun LoginScreen(
                 .width(350.dp)
         ) {
             Text(
-                text = "Create a new account",
+                text = stringResource(R.string.create_new_account),
                 fontSize = 16.sp
             )
         }

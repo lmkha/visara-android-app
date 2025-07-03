@@ -17,12 +17,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.visara.R
 import com.example.visara.data.model.CommentModel
 import com.example.visara.ui.components.UserAvatar
-import com.example.visara.utils.toTimeAgo
+import com.example.visara.utils.getTimeAgo
 
 @Composable
 fun ChildCommentItem(
@@ -62,7 +63,7 @@ fun ChildCommentItem(
                 )
 
                 Text(
-                    text = comment.createdAt.toTimeAgo(),
+                    text = getTimeAgo(comment.createdAt),
                     color = Color.Gray,
                 )
             }
@@ -114,7 +115,7 @@ fun ChildCommentItem(
                 }
 
                 Text(
-                    text = "Reply",
+                    text = stringResource(R.string.reply),
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.clickable { onReply(comment.username) },
                     color = MaterialTheme.colorScheme.onSurface,

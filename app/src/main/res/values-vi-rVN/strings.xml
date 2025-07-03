@@ -1,5 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Vsara</string>
     <string name="settings_and_privacy">Cài đặt và quyền riêng tư</string>
+    <plurals name="view_count">
+        <item quantity="other">%s lượt xem</item>
+    </plurals>
+    <plurals name="comment_count">
+        <item quantity="other">%s bình luận</item>
+    </plurals>
+    <plurals name="year_ago">
+        <item quantity="other">%s năm trước</item>
+    </plurals>
+    <plurals name="month_ago">
+        <item quantity="other">%d tháng trước</item>
+    </plurals>
+    <plurals name="week_ago">
+        <item quantity="other">%d tuần trước</item>
+    </plurals>
+    <plurals name="day_ago">
+        <item quantity="other">%d ngày trước</item>
+    </plurals>
+    <plurals name="hour_ago">
+        <item quantity="other">%d giờ trước</item>
+    </plurals>
+    <plurals name="minute_ago">
+        <item quantity="other">%d phút trước</item>
+    </plurals>
+    <plurals name="see_more_replies">
+        <item quantity="other">Xem thêm %s phản hồi khác…</item>
+    </plurals>
+    <string name="time_just_now">Vừa xong</string>
+    <string name="language">Ngôn ngữ</string>
+    <string name="profile">Hồ sơ</string>
+    <string name="my_qr_code">Mã QR của tôi</string>
+    <string name="login">Đăng nhập</string>
+    <string name="unfollow">Bỏ theo dõi</string>
+    <string name="follow">Theo dõi</string>
+    <string name="request_login_message">Bạn cần đăng nhập để %1$s</string>
+    <string name="follow_this_user">theo dõi người dùng này</string>
+    <string name="unfollow_confirm_message">Bạn có chắc muốn bỏ theo dõi người dùng này?</string>
+    <string name="following">Đang theo dõi</string>
+    <string name="inbox">Hộp thư</string>
+    <string name="explore">Khám phá</string>
+    <string name="view_your_profile">xem trang cá nhân</string>
+    <string name="home">Trang chủ</string>
+    <string name="add_video_bot_nav_label">Đăng video</string>
+    <string name="following_nav_label">Theo dõi</string>
+    <string name="comment_title">Bình luận</string>
+    <string name="coment_off_message">Tính năng bình luận đang tắt.</string>
+    <string name="hide">Ẩn</string>
+    <string name="reply">Trả lời</string>
+    <string name="see_videos_from_following">xem các video của những người bạn đang theo dõi.</string>
+    <string name="username">Tên người dùng</string>
+    <string name="password">Mật khẩu</string>
+    <string name="show_password">Hiện</string>
+    <string name="create_new_account">Tạo tài khoản mới</string>
+    <string name="follower">Người theo dõi</string>
+    <string name="playlist">Danh sách phát</string>
+    <string name="account">Tài khoản</string>
+    <string name="privacy">Quyền riêng tư</string>
+    <string name="security_and_permission">Bảo mật và quyền</string>
+    <string name="share_profile">Chia sẻ</string>
+    <string name="profile_edit">Sửa hồ sơ</string>
+    <string name="content_and_display">Nội dung và hiển thị</string>
+    <string name="notification">Thông báo</string>
+    <string name="theme">Giao diện</string>
+    <string name="switch_account">Chuyển tài khoản</string>
+    <string name="logout">Đăng xuất</string>
+    <string name="light_theme">Giao diện sáng</string>
+    <string name="dark_theme">Giao diện tối</string>
+    <string name="system_theme">Giao diện thiết bị</string>
+    <string name="cancel">Huỷ</string>
+    <string name="logout_confirm_message">Bạn có chắc chắn muốn đăng xuất?</string>
+    <string name="private_account">Tài khoản riêng tư</string>
+    <string name="private_account_descrption">Khi kích hoạt tài khoản riêng tư, chỉ có những người đang theo dõi bạn mới xem được hồ sơ và video của bạn.</string>
+    <string name="send_message">Gửi tin nhắn</string>
 </resources>

@@ -23,7 +23,7 @@ import javax.inject.Singleton
 
 @Singleton
 class FcmNewVideoProcessedHandler @Inject constructor(
-    @ApplicationContext private val appContext: Context,
+    @param:ApplicationContext private val appContext: Context,
     private val videoRepository: VideoRepository,
     private val notificationManager: NotificationManager,
     private val notificationHelper: NotificationHelper,

@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.visara.R
@@ -27,7 +28,7 @@ fun ContentAndDisplaySettingsSection(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
-            text = "Content and display",
+            text = stringResource(R.string.content_and_display),
             color = Color.Gray,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(horizontal = 24.dp)
@@ -42,17 +43,17 @@ fun ContentAndDisplaySettingsSection(
             ) {
                 SettingsItem(
                     icon = { Icon(imageVector = Icons.Default.Person, contentDescription = null) },
-                    label = "Notification",
+                    label = stringResource(R.string.notification),
                     onClick = { onItemSelected(ContentDisplaySettings.Notification) },
                 )
                 SettingsItem(
                     icon = { Icon(painter = painterResource(id = R.drawable.dark_mode_24px), contentDescription = null) },
-                    label = "Theme",
+                    label = stringResource(R.string.theme),
                     onClick = { onItemSelected(ContentDisplaySettings.Theme) },
                 )
                 SettingsItem(
                     icon = { Icon(painter = painterResource(id = R.drawable.security_24px), contentDescription = null) },
-                    label = "Language",
+                    label = stringResource(R.string.language),
                     onClick = { onItemSelected(ContentDisplaySettings.Language) },
                 )
             }

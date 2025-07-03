@@ -21,7 +21,7 @@ data class RegisterAccountDto(
     val email: String = "",
     val phone: String = "",
 
-    @SerializedName("profilePic")
+    @field:SerializedName("profilePic")
     val profileImageLink: String = "",
 )
 

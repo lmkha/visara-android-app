@@ -31,7 +31,7 @@ import javax.inject.Singleton
 
 @Singleton
 class NotificationHelper @Inject constructor(
-    @ApplicationContext private val appContext: Context,
+    @param:ApplicationContext private val appContext: Context,
 ) {
     fun createVideoProcessedNotificationBuilder(title: String, thumbnailUrl: String) : NotificationCompat.Builder {
         val thumbnailBitmap = getCircleBitmapFromURL(thumbnailUrl)

@@ -2,11 +2,9 @@ package com.example.visara.utils
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.ImageDecoder
+import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.net.Uri
-import android.os.Build
-import android.provider.MediaStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -28,11 +26,8 @@ suspend fun createVideoThumbFromLocalUri(context: Context, uri: Uri): Bitmap? {
 suspend fun createBitmapFromLocalUri(context: Context, imageUri: Uri): Bitmap? {
     return withContext(Dispatchers.IO) {
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                val source = ImageDecoder.createSource(context.contentResolver, imageUri)
-                ImageDecoder.decodeBitmap(source)
-            } else {
-                MediaStore.Images.Media.getBitmap(context.contentResolver, imageUri)
+            context.contentResolver.openInputStream(imageUri)?.use { inputStream ->
+                BitmapFactory.decodeStream(inputStream)
             }
         } catch (e: Exception) {
             e.printStackTrace()

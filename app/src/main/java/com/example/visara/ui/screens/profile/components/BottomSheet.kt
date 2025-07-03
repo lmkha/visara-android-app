@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -95,7 +96,7 @@ fun BottomSheet(
                                         contentDescription = null,
                                     )
                                 },
-                                label = "VSara Studio",
+                                label = stringResource(R.string.studio),
                                 onClick = { onItemSelected(SheetResult.STUDIO) },
                             )
 
@@ -106,7 +107,7 @@ fun BottomSheet(
                                         contentDescription = null,
                                     )
                                 },
-                                label = "My QR Code",
+                                label = stringResource(R.string.my_qr_code),
                                 onClick = { onItemSelected(SheetResult.MY_QR) },
                             )
                         }
@@ -118,7 +119,7 @@ fun BottomSheet(
                                     contentDescription = null,
                                 )
                             },
-                            label = "Settings and privacy",
+                            label = stringResource(R.string.settings_and_privacy),
                             onClick = { onItemSelected(SheetResult.SETTINGS) },
                             hasBottomBorder = false,
                         )
@@ -139,7 +140,7 @@ fun BottomSheet(
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
                             Text(
-                                text = "Do you want to unfollow this user?",
+                                text = stringResource(R.string.unfollow_confirm_message),
                                 fontWeight = FontWeight.Medium,
                             )
                             Button(
@@ -153,7 +154,7 @@ fun BottomSheet(
                                     .padding(horizontal = 32.dp)
                             ) {
                                 Text(
-                                    text = "Unfollow",
+                                    text = stringResource(R.string.unfollow),
                                     fontWeight = FontWeight.Medium,
                                     fontSize = 16.sp,
                                 )
@@ -175,7 +176,7 @@ fun BottomSheet(
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Text(
-                            text = "You need to log in to follow this user.",
+                            text = stringResource(id = R.string.request_login_message, stringResource(R.string.follow_this_user)),
                             fontWeight = FontWeight.Medium,
                         )
                         Button(
@@ -185,7 +186,7 @@ fun BottomSheet(
                                 .padding(horizontal = 32.dp)
                         ) {
                             Text(
-                                text = "Login",
+                                text = stringResource(R.string.login),
                                 fontWeight = FontWeight.Medium,
                                 fontSize = 16.sp,
                             )

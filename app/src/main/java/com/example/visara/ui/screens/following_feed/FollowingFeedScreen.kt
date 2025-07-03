@@ -28,12 +28,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.visara.R
 import com.example.visara.ui.components.UserAvatar
 import com.example.visara.ui.components.VideoItem
 import com.example.visara.viewmodels.FollowingFeedViewModel
@@ -63,10 +65,13 @@ fun FollowingFeedScreen(
                 modifier = Modifier.fillMaxSize(),
             ) {
                 Text(
-                    text = "Please log in to see new videos from the people you follow.",
+                    text = stringResource(
+                        id = R.string.request_login_message,
+                        stringResource(R.string.see_videos_from_following),
+                    ),
                     fontWeight = FontWeight.Medium,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 16.dp)
+                    modifier = Modifier.padding(horizontal = 8.dp)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
@@ -76,7 +81,7 @@ fun FollowingFeedScreen(
                         .width(150.dp)
                 ) {
                     Text(
-                        text = "Login",
+                        text = stringResource(R.string.login),
                         fontWeight = FontWeight.Medium,
                     )
                 }

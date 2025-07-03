@@ -15,7 +15,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.visara.data.model.VideoModel
-import com.example.visara.utils.toTimeAgo
+import com.example.visara.utils.getTimeAgo
 
 @Composable
 fun ExpandedDescriptionSection(
@@ -74,7 +74,7 @@ fun ExpandedDescriptionSection(
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
                             Text(
-                                text = video.createdAt.toTimeAgo().dropLast(4),
+                                text = getTimeAgo(video.createdAt),
                                 color = MaterialTheme.colorScheme.onBackground,
                                 fontWeight = FontWeight.Medium,
                             )

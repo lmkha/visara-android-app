@@ -314,10 +314,10 @@ fun ProfileScreenContainer(
                                 .padding(top = 16.dp)
                         ) {
                             MetricItem(
-                                label = "Following",
+                                label = stringResource(R.string.following),
                                 count = uiState.user?.followingCount?.toString() ?: "0",
                                 modifier = Modifier
-                                    .width(100.dp)
+                                    .width(150.dp)
                                     .clickable {
                                         if (uiState.isMyProfile) {
                                             onNavigateToFollowScreen(0)
@@ -325,10 +325,10 @@ fun ProfileScreenContainer(
                                     }
                             )
                             MetricItem(
-                                label = "Follower",
+                                label = stringResource(R.string.follower),
                                 count = uiState.user?.followerCount?.toString() ?: "0",
                                 modifier = Modifier
-                                    .width(100.dp)
+                                    .width(150.dp)
                                     .clickable {
                                         if (uiState.isMyProfile) {
                                             onNavigateToFollowScreen(1)
@@ -357,7 +357,7 @@ fun ProfileScreenContainer(
                                 if (uiState.isMyProfile) {
                                     ActionButton(onClick = onNavigateToEditProfileScreen) {
                                         Text(
-                                            text = "Edit profile",
+                                            text = stringResource(R.string.profile_edit),
                                             modifier = Modifier.padding(8.dp),
                                             fontWeight = FontWeight.Bold,
                                             color = LocalVisaraCustomColors.current.profileActionButtonContentColor,
@@ -365,7 +365,7 @@ fun ProfileScreenContainer(
                                     }
                                     ActionButton(onClick = {}) {
                                         Text(
-                                            text = "Share profile",
+                                            text = stringResource(R.string.share_profile),
                                             modifier = Modifier.padding(8.dp),
                                             fontWeight = FontWeight.Bold,
                                             color = LocalVisaraCustomColors.current.profileActionButtonContentColor,
@@ -382,7 +382,7 @@ fun ProfileScreenContainer(
                                 } else {
                                     ActionButton(onClick = {}) {
                                         Text(
-                                            text = "Send message",
+                                            text = stringResource(R.string.send_message),
                                             modifier = Modifier.padding(8.dp),
                                             fontWeight = FontWeight.Bold,
                                             color = LocalVisaraCustomColors.current.profileActionButtonContentColor,
@@ -400,7 +400,7 @@ fun ProfileScreenContainer(
                                                 verticalAlignment = Alignment.CenterVertically,
                                             ) {
                                                 Text(
-                                                    text = "Followed",
+                                                    text = stringResource(R.string.following),
                                                     modifier = Modifier.padding(8.dp),
                                                     fontWeight = FontWeight.Bold,
                                                     color = LocalVisaraCustomColors.current.profileActionButtonContentColor,
@@ -426,7 +426,7 @@ fun ProfileScreenContainer(
                                             modifier = Modifier
                                         ) {
                                             Text(
-                                                text = "Follow",
+                                                text = stringResource(R.string.follow),
                                                 modifier = Modifier.padding(8.dp),
                                                 fontWeight = FontWeight.Bold,
                                                 color = MaterialTheme.colorScheme.onPrimary,
@@ -488,7 +488,7 @@ fun ProfileScreenContainer(
                                 onClick = { selectedTabIndex = 1 },
                                 text = {
                                     Text(
-                                        text = "Playlist",
+                                        text = stringResource(R.string.playlist),
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )

@@ -26,8 +26,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.visara.R
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,7 +67,7 @@ fun LanguageSettingScreen(
                     },
                     title = {
                         Text(
-                            text = "Language",
+                            text = stringResource(R.string.language),
                             fontWeight = FontWeight.Bold,
                         )
                     },

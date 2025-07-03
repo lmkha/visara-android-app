@@ -34,7 +34,7 @@ import androidx.core.net.toUri
 import coil3.compose.AsyncImage
 import com.example.visara.data.model.VideoModel
 import com.example.visara.ui.components.VideoThumbnailFromVideoUri
-import com.example.visara.utils.toTimeAgo
+import com.example.visara.utils.getTimeAgo
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
@@ -117,7 +117,7 @@ fun StudioDraftVideoItem(
                     )
                 }
                 Text(
-                    text = video.createdAt.toTimeAgo(),
+                    text = getTimeAgo(video.createdAt),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     fontSize = 13.sp,

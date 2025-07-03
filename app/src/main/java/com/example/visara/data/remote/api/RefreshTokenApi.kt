@@ -15,7 +15,7 @@ import javax.inject.Singleton
 
 @Singleton
 class RefreshTokenApi @Inject constructor(
-    @UnauthenticatedOkhttpClient private val unauthorizedOkHttpClient: OkHttpClient,
+    @param:UnauthenticatedOkhttpClient private val unauthorizedOkHttpClient: OkHttpClient,
     private val gson: Gson,
 ) {
     fun refreshToken(refreshToken: String, username: String) : Response {

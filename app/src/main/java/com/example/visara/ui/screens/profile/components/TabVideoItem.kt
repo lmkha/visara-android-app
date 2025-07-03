@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.example.visara.data.model.VideoModel
 import com.example.visara.utils.formatDuration
-import com.example.visara.utils.toTimeAgo
+import com.example.visara.utils.getTimeAgo
 
 @Composable
 fun TabVideoItem(
@@ -103,7 +103,7 @@ fun TabVideoItem(
                     }
                 }
                 Text(
-                    text = video?.createdAt?.toTimeAgo() ?: "created time",
+                    text = video?.createdAt?.let { getTimeAgo(it) } ?: "created time",
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     fontSize = 13.sp,

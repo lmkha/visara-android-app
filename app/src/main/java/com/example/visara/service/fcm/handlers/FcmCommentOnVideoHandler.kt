@@ -14,7 +14,7 @@ import javax.inject.Singleton
 
 @Singleton
 class FcmCommentOnVideoHandler @Inject constructor(
-    @ApplicationContext private val appContext: Context,
+    @param:ApplicationContext private val appContext: Context,
     private val notificationHelper: NotificationHelper,
     private val notificationManager: NotificationManager,
 ) : HandleFcmMessageStrategy() {

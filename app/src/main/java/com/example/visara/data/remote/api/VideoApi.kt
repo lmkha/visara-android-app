@@ -21,8 +21,8 @@ import javax.inject.Singleton
 
 @Singleton
 class VideoApi @Inject constructor(
-    @AuthorizedOkHttpClient private val authorizedOkHttpClient: OkHttpClient,
-    @UnauthenticatedOkhttpClient private val unauthorizedOkHttpClient: OkHttpClient,
+    @param:AuthorizedOkHttpClient private val authorizedOkHttpClient: OkHttpClient,
+    @param:UnauthenticatedOkhttpClient private val unauthorizedOkHttpClient: OkHttpClient,
     private val gson: Gson,
 ) {
     fun getVideoById(videoId: String) : Response {

@@ -18,8 +18,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.visara.R
 import com.example.visara.data.model.UserModel
 import com.example.visara.ui.theme.LocalVisaraCustomColors
 import com.example.visara.viewmodels.CommentWithReplies
@@ -58,7 +60,11 @@ fun ExpandedCommentSection(
         ) {
             Text(
                 modifier = Modifier.align(Alignment.Center),
-                text = "$commentCount comments",
+                text = pluralStringResource(
+                    id = R.plurals.comment_count,
+                    count = commentCount.toInt(),
+                    commentCount
+                ),
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onBackground,
             )

@@ -1,5 +1,89 @@
-<?xml version="1.0" encoding="utf-8"?>
+<!--
+  English (en-US) is used as the default fallback language.
+...
+-->
 <resources>
-    <string name="app_name">Vsara</string>
     <string name="settings_and_privacy">Settings and privacy</string>
+    <plurals name="view_count">
+        <item quantity="one">%s view</item>
+        <item quantity="other">%s views</item>
+    </plurals>
+    <plurals name="comment_count">
+        <item quantity="one">%s comment</item>
+        <item quantity="other">%s comments</item>
+    </plurals>
+    <plurals name="year_ago">
+        <item quantity="one">%s year ago</item>
+        <item quantity="other">%s years ago</item>
+    </plurals>
+    <plurals name="month_ago">
+        <item quantity="one">%d month ago</item>
+        <item quantity="other">%d months ago</item>
+    </plurals>
+    <plurals name="week_ago">
+        <item quantity="one">%d week ago</item>
+        <item quantity="other">%d weeks ago</item>
+    </plurals>
+    <plurals name="day_ago">
+        <item quantity="one">%d day ago</item>
+        <item quantity="other">%d days ago</item>
+    </plurals>
+    <plurals name="hour_ago">
+        <item quantity="one">%d hour ago</item>
+        <item quantity="other">%d hours ago</item>
+    </plurals>
+    <plurals name="minute_ago">
+        <item quantity="one">%d minute ago</item>
+        <item quantity="other">%d minutes ago</item>
+    </plurals>
+    <plurals name="see_more_replies">
+        <item quantity="one">See more %s reply</item>
+        <item quantity="other">See more %s replies…</item>
+    </plurals>
+    <string name="time_just_now">Just now</string>
+    <string name="language">Language</string>
+    <string name="profile">Profile</string>
+    <string name="my_qr_code">My QR code</string>
+    <string name="login">Login</string>
+    <string name="unfollow">Unfollow</string>
+    <string name="follow">Follow</string>
+    <string name="request_login_message">You need to log in to %s</string>
+    <string name="follow_this_user">follow this user</string>
+    <string name="unfollow_confirm_message">Do you want to unfollow this user?</string>
+    <string name="following">Following</string>
+    <string name="inbox">Inbox</string>
+    <string name="explore">Explore</string>
+    <string name="view_your_profile">view your profile</string>
+    <string name="home">Home</string>
+    <string name="add_video_bot_nav_label">Add new</string>
+    <string name="following_nav_label">Following</string>
+    <string name="comment_title">Comments</string>
+    <string name="coment_off_message">Comments are turn off.</string>
+    <string name="hide">Hide</string>
+    <string name="reply">Reply</string>
+    <string name="see_videos_from_following">see videos from people you follow.</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="show_password">Show</string>
+    <string name="create_new_account">Create a new account</string>
+    <string name="follower">Follower</string>
+    <string name="playlist">Playlist</string>
+    <string name="account">Account</string>
+    <string name="privacy">Privacy</string>
+    <string name="security_and_permission">Security and permission</string>
+    <string name="share_profile">Share profile</string>
+    <string name="profile_edit">Edit profile</string>
+    <string name="content_and_display">Content and display</string>
+    <string name="notification">Notification</string>
+    <string name="theme">Theme</string>
+    <string name="switch_account">Switch account</string>
+    <string name="logout">Logout</string>
+    <string name="light_theme">Light theme</string>
+    <string name="dark_theme">Dark theme</string>
+    <string name="system_theme">System theme</string>
+    <string name="cancel">Cancel</string>
+    <string name="logout_confirm_message">Are you sure you want to log out?</string>
+    <string name="private_account">Private account</string>
+    <string name="private_account_descrption">With a private account, only followers can view your profile and posts.</string>
+    <string name="send_message">Send message</string>
 </resources>

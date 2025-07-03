@@ -14,7 +14,7 @@ import javax.inject.Singleton
 
 @Singleton
 class AppSettingsRepository @Inject constructor(
-    @ApplicationContext private val appContext: Context,
+    @param:ApplicationContext private val appContext: Context,
 ) {
     val appSettingsFlow = appContext.AppSettingsLocalDataSource.data
     private val fcmTokenKey = stringPreferencesKey("fcm_token_pref")

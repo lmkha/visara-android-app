@@ -29,8 +29,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.visara.R
 import com.example.visara.ui.screens.profile.components.BottomSheet
 import com.example.visara.ui.screens.profile.components.SheetResult
 import com.example.visara.ui.screens.profile.components.SheetType
@@ -58,7 +60,7 @@ fun UnauthenticatedProfileContainer(
                 CenterAlignedTopAppBar(
                     title = {
                         Text(
-                            text = "Profile",
+                            text = stringResource(R.string.profile),
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onBackground,
                         )
@@ -100,12 +102,15 @@ fun UnauthenticatedProfileContainer(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Text("Please log in to view your profile.")
+                    Text(stringResource(
+                        id = R.string.request_login_message,
+                        stringResource(R.string.view_your_profile)
+                    ))
                     Button(
                         onClick = onNavigateToLoginScreen,
                         modifier = Modifier.height(50.dp).width(200.dp)
                     ) {
-                        Text("Login")
+                        Text(stringResource(R.string.login))
                     }
                 }
             }

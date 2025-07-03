@@ -32,11 +32,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.visara.R
 import com.example.visara.ui.components.UserAvatar
-import com.example.visara.utils.toTimeAgo
+import com.example.visara.utils.getTimeAgo
 import com.example.visara.viewmodels.CommentWithReplies
 
 @Composable
@@ -89,7 +91,7 @@ fun ParentCommentItem(
                         )
 
                         Text(
-                            text = parentComment.createdAt.toTimeAgo(),
+                            text = getTimeAgo(parentComment.createdAt),
                             color = Color.Gray,
                         )
                     }
@@ -141,7 +143,7 @@ fun ParentCommentItem(
                         }
 
                         Text(
-                            text = "Reply",
+                            text = stringResource(R.string.reply),
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier
                                 .clickable { onReply(parentComment.id, parentComment.username) },
@@ -195,7 +197,11 @@ fun ParentCommentItem(
                             },
                     ) {
                         Text(
-                            text = "See more ${parentComment.replyCount} replies",
+                            text = pluralStringResource(
+                                id = R.plurals.see_more_replies,
+                                count = parentComment.replyCount.toInt(),
+                                parentComment.replyCount.toString(),
+                            ),
                             color = Color.Gray,
                         )
                         Icon(
@@ -213,7 +219,7 @@ fun ParentCommentItem(
                             },
                     ) {
                         Text(
-                            text = "Hide",
+                            text = stringResource(R.string.hide),
                             color = Color.Gray,
                         )
                         Icon(
