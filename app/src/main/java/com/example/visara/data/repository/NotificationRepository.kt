@@ -31,7 +31,7 @@ class NotificationRepository @Inject constructor(
             apiResult
         }
         if (result == null) return Result.failure(Throwable("Current user is null."))
-        if (result !is ApiResult.Success) return Result.failure(Throwable("Fail to get notifications."))
+        if (result !is ApiResult.NetworkResult.Success) return Result.failure(Throwable("Fail to get notifications."))
         return try {
             Result.success(
                 result.data.map { notificationMapper.toModel(it) }

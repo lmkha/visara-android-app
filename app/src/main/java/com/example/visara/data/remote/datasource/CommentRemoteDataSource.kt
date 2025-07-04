@@ -6,8 +6,6 @@ import com.example.visara.data.remote.dto.CommentDto
 import com.example.visara.data.remote.dto.LikeCommentDto
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,41 +15,31 @@ class CommentRemoteDataSource @Inject constructor(
     gson: Gson,
 ) : RemoteDataSource(gson) {
     suspend fun addComment(videoId: String, replyTo: String?, content: String) : ApiResult<CommentDto> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val response = commentApi.addComment(videoId, replyTo, content)
-                val responseBody = response.body?.string()
+        return callApi({ commentApi.addComment(videoId, replyTo, content) }) { response ->
+            val responseBody = response.body?.string()
 
-                if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                    val jsonObject =  gson.fromJson(responseBody, Map::class.java)
-                    val dataJson = gson.toJson(jsonObject["data"])
-                    val commentDto = gson.fromJson(dataJson, CommentDto::class.java)
-                    ApiResult.Success(commentDto)
-                } else {
-                    return@withContext parseFailureFromResponse(responseBody)
-                }
-            } catch (e: Exception) {
-                ApiResult.Error(e)
+            if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
+                val jsonObject =  gson.fromJson(responseBody, Map::class.java)
+                val dataJson = gson.toJson(jsonObject["data"])
+                val commentDto = gson.fromJson(dataJson, CommentDto::class.java)
+                ApiResult.NetworkResult.Success(commentDto)
+            } else {
+                return@callApi extractFailureFromResponseBody(responseBody)
             }
         }
     }
 
     suspend fun getCommentById(commentId: String) : ApiResult<CommentDto> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val response = commentApi.getCommentById(commentId)
-                val responseBody = response.body?.string()
+        return callApi({ commentApi.getCommentById(commentId) }) { response ->
+            val responseBody = response.body?.string()
 
-                if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                    val jsonObject =  gson.fromJson(responseBody, Map::class.java)
-                    val dataJson = gson.toJson(jsonObject["data"])
-                    val commentDto = gson.fromJson(dataJson, CommentDto::class.java)
-                    ApiResult.Success(commentDto)
-                } else {
-                    parseFailureFromResponse(responseBody)
-                }
-            } catch (e: Exception) {
-                ApiResult.Error(e)
+            if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
+                val jsonObject =  gson.fromJson(responseBody, Map::class.java)
+                val dataJson = gson.toJson(jsonObject["data"])
+                val commentDto = gson.fromJson(dataJson, CommentDto::class.java)
+                ApiResult.NetworkResult.Success(commentDto)
+            } else {
+                extractFailureFromResponseBody(responseBody)
             }
         }
     }
@@ -63,22 +51,17 @@ class CommentRemoteDataSource @Inject constructor(
         page: Int = 0,
         size: Int = 10,
     ) : ApiResult<List<CommentDto>> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val response = commentApi.getAllParentCommentsByVideoId(needAuthenticate, videoId, order, page, size)
-                val responseBody = response.body?.string()
+        return callApi({ commentApi.getAllParentCommentsByVideoId(needAuthenticate, videoId, order, page, size) }) { response ->
+            val responseBody = response.body?.string()
 
-                if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                    val jsonObject =  gson.fromJson(responseBody, Map::class.java)
-                    val dataJson = gson.toJson(jsonObject["data"])
-                    val type = object : TypeToken<List<CommentDto>>() {}.type
-                    val commentDtoList: List<CommentDto> = gson.fromJson(dataJson, type)
-                    ApiResult.Success(commentDtoList)
-                } else {
-                    parseFailureFromResponse(responseBody)
-                }
-            } catch (e: Exception) {
-                ApiResult.Error(e)
+            if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
+                val jsonObject =  gson.fromJson(responseBody, Map::class.java)
+                val dataJson = gson.toJson(jsonObject["data"])
+                val type = object : TypeToken<List<CommentDto>>() {}.type
+                val commentDtoList: List<CommentDto> = gson.fromJson(dataJson, type)
+                ApiResult.NetworkResult.Success(commentDtoList)
+            } else {
+                extractFailureFromResponseBody(responseBody)
             }
         }
     }
@@ -90,121 +73,91 @@ class CommentRemoteDataSource @Inject constructor(
         page: Int = 0,
         size: Int = 10,
     ) : ApiResult<List<CommentDto>> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val response = commentApi.getAllChildrenComment(needAuthenticate, parentId, order, page, size)
-                val responseBody = response.body?.string()
+        return callApi({ commentApi.getAllChildrenComment(needAuthenticate, parentId, order, page, size) }) { response ->
+            val response = commentApi.getAllChildrenComment(needAuthenticate, parentId, order, page, size)
+            val responseBody = response.body?.string()
 
-                if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                    val jsonObject =  gson.fromJson(responseBody, Map::class.java)
-                    val dataJson = gson.toJson(jsonObject["data"])
-                    val type = object : TypeToken<List<CommentDto>>() {}.type
-                    val commentDtoList: List<CommentDto> = gson.fromJson(dataJson, type)
-                    ApiResult.Success(commentDtoList)
-                } else {
-                    parseFailureFromResponse(responseBody)
-                }
-            } catch (e: Exception) {
-                ApiResult.Error(e)
+            if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
+                val jsonObject =  gson.fromJson(responseBody, Map::class.java)
+                val dataJson = gson.toJson(jsonObject["data"])
+                val type = object : TypeToken<List<CommentDto>>() {}.type
+                val commentDtoList: List<CommentDto> = gson.fromJson(dataJson, type)
+                ApiResult.NetworkResult.Success(commentDtoList)
+            } else {
+                extractFailureFromResponseBody(responseBody)
             }
         }
     }
 
     suspend fun likeComment(commentId: String) : ApiResult<LikeCommentDto> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val response = commentApi.likeComment(commentId)
-                val responseBody = response.body?.string()
+        return callApi({ commentApi.likeComment(commentId) }) { response ->
+            val responseBody = response.body?.string()
 
-                if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                    val jsonObject =  gson.fromJson(responseBody, Map::class.java)
-                    val dataJson = gson.toJson(jsonObject["data"])
-                    val likeCommentDto = gson.fromJson(dataJson, LikeCommentDto::class.java)
-                    ApiResult.Success(likeCommentDto)
-                } else {
-                    parseFailureFromResponse(responseBody)
-                }
-            } catch (e: Exception) {
-                ApiResult.Error(e)
+            if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
+                val jsonObject =  gson.fromJson(responseBody, Map::class.java)
+                val dataJson = gson.toJson(jsonObject["data"])
+                val likeCommentDto = gson.fromJson(dataJson, LikeCommentDto::class.java)
+                ApiResult.NetworkResult.Success(likeCommentDto)
+            } else {
+                extractFailureFromResponseBody(responseBody)
             }
         }
     }
 
     suspend fun unlikeComment(commentId: String) : ApiResult<Unit> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val response = commentApi.unlikeComment(commentId)
-                val responseBody = response.body?.string()
-
-                if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                    ApiResult.Success(Unit)
-                } else {
-                    parseFailureFromResponse(responseBody)
-                }
-            } catch (e: Exception) {
-                ApiResult.Error(e)
+        return callApi({ commentApi.unlikeComment(commentId) }) { response ->
+            val responseBody = response.body?.string()
+            if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
+                ApiResult.NetworkResult.Success(Unit)
+            } else {
+                extractFailureFromResponseBody(responseBody)
             }
         }
     }
 
-    suspend fun checkCommentLike(commentId: String) : ApiResult<Unit> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val response = commentApi.checkCommentLike(commentId)
-                val responseBody = response.body?.string()
+    suspend fun checkCommentLike(commentId: String): ApiResult<Unit> {
+        return callApi({ commentApi.checkCommentLike(commentId) }) { response ->
+            val responseBody = response.body?.string()
 
-                if (response.isSuccessful) {
-                    val jsonObject =  gson.fromJson(responseBody, Map::class.java)
-                    val message = jsonObject["message"]
-                    if (message is String && message.isNotBlank() && message == "Liked") {
-                        return@withContext ApiResult.Success(Unit)
-                    }
+            if (response.isSuccessful) {
+                val jsonObject =  gson.fromJson(responseBody, Map::class.java)
+                val message = jsonObject["message"]
+                if (message is String && message.isNotBlank() && message == "Liked") {
+                    return@callApi ApiResult.NetworkResult.Success(Unit)
                 }
-
-                return@withContext parseFailureFromResponse(responseBody)
-            } catch (e: Exception) {
-                return@withContext ApiResult.Error(e)
             }
+
+            return@callApi extractFailureFromResponseBody(responseBody)
         }
     }
 
     suspend fun deleteComment(commentId: String) : ApiResult<Unit> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val response = commentApi.deleteComment(commentId)
-                val responseBody = response.body?.string()
+        return callApi({ commentApi.deleteComment(commentId) }) { response ->
+            val responseBody = response.body?.string()
 
-                if (response.isSuccessful) {
-                    val jsonObject =  gson.fromJson(responseBody, Map::class.java)
-                    val success = jsonObject["success"]
-                    if (success is Boolean && success) {
-                        return@withContext ApiResult.Success(Unit)
-                    }
+            if (response.isSuccessful) {
+                val jsonObject =  gson.fromJson(responseBody, Map::class.java)
+                val success = jsonObject["success"]
+                if (success is Boolean && success) {
+                    return@callApi ApiResult.NetworkResult.Success(Unit)
                 }
-
-                return@withContext parseFailureFromResponse(responseBody)
-            } catch (e: Exception) {
-                return@withContext ApiResult.Error(e)
             }
+
+            return@callApi extractFailureFromResponseBody(responseBody)
         }
     }
 
     suspend fun updateComment(commentId: String, content: String) : ApiResult<CommentDto> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val response = commentApi.updateComment(commentId, content)
-                val responseBody = response.body?.string()
+        return callApi({ commentApi.updateComment(commentId, content) }) { response ->
+            val responseBody = response.body?.string()
 
-                if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                    val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                    val dataJson = gson.toJson(jsonObject["data"])
-                    val commentDto = gson.fromJson(dataJson, CommentDto::class.java)
-                    ApiResult.Success(commentDto)
-                } else {
-                    parseFailureFromResponse(responseBody)
-                }
-            } catch (e: Exception) {
-                ApiResult.Error(e)
+            if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
+                val jsonObject = gson.fromJson(responseBody, Map::class.java)
+                val dataJson = gson.toJson(jsonObject["data"])
+                val commentDto = gson.fromJson(dataJson, CommentDto::class.java)
+                ApiResult.NetworkResult.Success(commentDto)
+            } else {
+                extractFailureFromResponseBody(responseBody)
             }
         }
     }

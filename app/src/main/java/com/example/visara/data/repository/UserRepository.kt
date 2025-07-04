@@ -36,7 +36,7 @@ class UserRepository @Inject constructor(
 
     suspend fun syncCurrentUser() {
         val apiResult = userRemoteDataSource.getCurrentUser()
-        val user = if (apiResult is ApiResult.Success) apiResult.data.toUserModel()
+        val user = if (apiResult is ApiResult.NetworkResult.Success) apiResult.data.toUserModel()
         else null
 
         user?.let { saveUser(it) }
@@ -52,7 +52,7 @@ class UserRepository @Inject constructor(
         if (currentLocalUser != null) return currentLocalUser
 
         val apiResult = userRemoteDataSource.getCurrentUser()
-        if (apiResult is ApiResult.Success) {
+        if (apiResult is ApiResult.NetworkResult.Success) {
             val userModel = apiResult.data.toUserModel()
             return userModel
         }
@@ -61,7 +61,7 @@ class UserRepository @Inject constructor(
 
     suspend fun getPublicUser(username: String) : UserModel? {
         val apiResult =  userRemoteDataSource.getPublicUser(username)
-        if (apiResult is ApiResult.Success) {
+        if (apiResult is ApiResult.NetworkResult.Success) {
             return apiResult.data.toUserModel()
         }
         return null
@@ -71,7 +71,7 @@ class UserRepository @Inject constructor(
         if (pattern.isEmpty() || pattern.isBlank()) return emptyList()
 
         val apiResult = userRemoteDataSource.searchUser(pattern)
-        val result = if (apiResult is ApiResult.Success) {
+        val result = if (apiResult is ApiResult.NetworkResult.Success) {
             apiResult.data.map { it.toUserModel() }
         } else {
             emptyList()
@@ -81,24 +81,24 @@ class UserRepository @Inject constructor(
 
     suspend fun followUser(username: String) : Boolean {
         val apiResult = userRemoteDataSource.followUser(username)
-        val result = apiResult is ApiResult.Success
+        val result = apiResult is ApiResult.NetworkResult.Success
         return result
     }
 
     suspend fun unfollowUser(username: String) : Boolean {
         val apiResult = userRemoteDataSource.unfollowUser(username)
-        val result = apiResult is ApiResult.Success
+        val result = apiResult is ApiResult.NetworkResult.Success
         return result
     }
 
     suspend fun checkIsFollowingThisUser(username: String) : Boolean {
         val apiResult = userRemoteDataSource.checkIsFollowingThisUser(username)
-        return apiResult is ApiResult.Success
+        return apiResult is ApiResult.NetworkResult.Success
     }
 
     suspend fun getAllFollowers(page: Int = 0, size: Long = 100L) : List<FollowUserModel> {
         val apiResult = userRemoteDataSource.getAllFollower(page, size)
-        if (apiResult !is ApiResult.Success) return emptyList()
+        if (apiResult !is ApiResult.NetworkResult.Success) return emptyList()
 
         val userModelList = apiResult.data.map { it.toFollowUserModel() }
 
@@ -107,7 +107,7 @@ class UserRepository @Inject constructor(
 
     suspend fun getAllFollowings(page: Int, size: Long) : List<FollowUserModel> {
         val apiResult = userRemoteDataSource.getAllFollowing(page, size)
-        if (apiResult !is ApiResult.Success) return emptyList()
+        if (apiResult !is ApiResult.NetworkResult.Success) return emptyList()
 
         val userModelList = apiResult.data.map { it.toFollowUserModel() }
 

@@ -29,10 +29,10 @@ class AuthRepository @Inject constructor(
             is ApiResult.Error -> {
                 Result.failure(Throwable(message = loginResult.exception.message))
             }
-            is ApiResult.Failure -> {
+            is ApiResult.NetworkResult.Failure -> {
                 Result.failure(Throwable(message = loginResult.message))
             }
-            is ApiResult.Success -> {
+            is ApiResult.NetworkResult.Success -> {
                 // Must set current username before saving token — token key depends on it.
                 authLocalDataSource.setCurrentUsername(username)
                 val accessToken = loginResult.data.accessToken
@@ -55,8 +55,8 @@ class AuthRepository @Inject constructor(
     ) : Result<UserModel> {
         return when (val apiResult = authRemoteDataSource.updateUser(isPrivate = isPrivate, fullName = fullName, bio = bio)) {
             is ApiResult.Error -> Result.failure(apiResult.exception)
-            is ApiResult.Failure -> Result.failure(Throwable(apiResult.message))
-            is ApiResult.Success -> Result.success(apiResult.data.toUserModel())
+            is ApiResult.NetworkResult.Failure -> Result.failure(Throwable(apiResult.message))
+            is ApiResult.NetworkResult.Success -> Result.success(apiResult.data.toUserModel())
         }
     }
 
@@ -70,7 +70,7 @@ class AuthRepository @Inject constructor(
                 username = currentUsername
             )
 
-            if (result is ApiResult.Success) {
+            if (result is ApiResult.NetworkResult.Success) {
                 authLocalDataSource.clearToken()
                 authLocalDataSource.clearCurrentUsername()
                 _isAuthenticated.update { false }

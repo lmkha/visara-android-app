@@ -5,8 +5,6 @@ import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.dto.PlayListDto
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -17,112 +15,81 @@ class PlaylistRemoteDatasource @Inject constructor(
     gson: Gson,
 ) : RemoteDataSource(gson) {
     suspend fun createPlaylist(name: String, description: String, videoIdsList: List<String>) : ApiResult<PlayListDto> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val response = playlistApi.createPlaylist(name, description, videoIdsList)
-                val responseBody = response.body?.string()
+        return callApi({ playlistApi.createPlaylist(name, description, videoIdsList) }) { response ->
+            val responseBody = response.body?.string()
 
-                if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                    val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                    val dataJson = gson.toJson(jsonObject["data"])
-                    val playlistDto = gson.fromJson(dataJson, PlayListDto::class.java)
-                    ApiResult.Success(playlistDto)
-                } else parseFailureFromResponse(responseBody)
-            } catch (e: Exception) {
-                ApiResult.Error(e)
-            }
+            if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
+                val jsonObject = gson.fromJson(responseBody, Map::class.java)
+                val dataJson = gson.toJson(jsonObject["data"])
+                val playlistDto = gson.fromJson(dataJson, PlayListDto::class.java)
+                ApiResult.NetworkResult.Success(playlistDto)
+            } else extractFailureFromResponseBody(responseBody)
         }
     }
 
     suspend fun uploadThumbnailForPlaylist(playlistId: String, thumbnailFile: File) : ApiResult<String> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val response = playlistApi.uploadThumbnailForPlaylist(playlistId, thumbnailFile)
-                val responseBody = response.body?.string()
+        return callApi({ playlistApi.uploadThumbnailForPlaylist(playlistId, thumbnailFile) }) { response ->
+            val responseBody = response.body?.string()
 
-                if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                    val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                    val data = jsonObject["data"]
-                    val thumbnailUrl = data as? String ?: ""
-                    ApiResult.Success(thumbnailUrl)
-                } else parseFailureFromResponse(responseBody)
-            } catch (e: Exception) {
-                ApiResult.Error(e)
-            }
+            if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
+                val jsonObject = gson.fromJson(responseBody, Map::class.java)
+                val data = jsonObject["data"]
+                val thumbnailUrl = data as? String ?: ""
+                ApiResult.NetworkResult.Success(thumbnailUrl)
+            } else extractFailureFromResponseBody(responseBody)
         }
     }
 
     suspend fun getPlaylistById(playlistId: String) : ApiResult<PlayListDto> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val response = playlistApi.getPlaylistById(playlistId)
-                val responseBody = response.body?.string()
+        return callApi({ playlistApi.getPlaylistById(playlistId) }) { response ->
+            val responseBody = response.body?.string()
 
-                if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                    val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                    val dataJson = gson.toJson(jsonObject["data"])
-                    val playlistDto = gson.fromJson(dataJson, PlayListDto::class.java)
-                    ApiResult.Success(playlistDto)
-                } else parseFailureFromResponse(responseBody)
-            } catch (e: Exception) {
-                ApiResult.Error(e)
-            }
+            if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
+                val jsonObject = gson.fromJson(responseBody, Map::class.java)
+                val dataJson = gson.toJson(jsonObject["data"])
+                val playlistDto = gson.fromJson(dataJson, PlayListDto::class.java)
+                ApiResult.NetworkResult.Success(playlistDto)
+            } else extractFailureFromResponseBody(responseBody)
         }
     }
 
     suspend fun addVideoToPlaylist(playlistId: String, videoId: String) : ApiResult<Boolean> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val response = playlistApi.addVideoToPlaylist(playlistId, videoId)
-                val responseBody = response.body?.string()
+        return callApi({ playlistApi.addVideoToPlaylist(playlistId, videoId) }) { response ->
+            val responseBody = response.body?.string()
 
-                if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                    val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                    val success = jsonObject["success"]
-                    val result = success as? Boolean == true
-                    ApiResult.Success(result)
-                } else  parseFailureFromResponse(responseBody)
-            } catch (e: Exception) {
-                ApiResult.Error(e)
-            }
+            if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
+                val jsonObject = gson.fromJson(responseBody, Map::class.java)
+                val success = jsonObject["success"]
+                val result = success as? Boolean == true
+                ApiResult.NetworkResult.Success(result)
+            } else  extractFailureFromResponseBody(responseBody)
         }
-
     }
 
     suspend fun removeVideoFromPlaylist(playlistId: String, videoId: String) : ApiResult<Boolean> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val response = playlistApi.removeVideoFromPlaylist(playlistId, videoId)
-                val responseBody = response.body?.string()
+        return callApi({ playlistApi.removeVideoFromPlaylist(playlistId, videoId) }) { response ->
+            val responseBody = response.body?.string()
 
-                if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                    val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                    val success = jsonObject["success"]
-                    val result = success as? Boolean == true
-                    ApiResult.Success(result)
-                } else parseFailureFromResponse(responseBody)
-            } catch (e: Exception) {
-                ApiResult.Error(e)
-            }
+            if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
+                val jsonObject = gson.fromJson(responseBody, Map::class.java)
+                val success = jsonObject["success"]
+                val result = success as? Boolean == true
+                ApiResult.NetworkResult.Success(result)
+            } else extractFailureFromResponseBody(responseBody)
         }
     }
 
     suspend fun getAllPlaylistByUserId(userId: Long) : ApiResult<List<PlayListDto>> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val response = playlistApi.getAllPlaylistByUserId(userId)
-                val responseBody = response.body?.string()
+        return callApi({ playlistApi.getAllPlaylistByUserId(userId) }) { response ->
+            val responseBody = response.body?.string()
 
-                if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                    val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                    val dataJson = gson.toJson(jsonObject["data"])
-                    val type = object : TypeToken<List<PlayListDto>>() {}.type
-                    val playlistDtoList: List<PlayListDto> = gson.fromJson(dataJson, type)
-                    ApiResult.Success(playlistDtoList)
-                } else parseFailureFromResponse(responseBody)
-            } catch (e: Exception) {
-                ApiResult.Error(e)
-            }
+            if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
+                val jsonObject = gson.fromJson(responseBody, Map::class.java)
+                val dataJson = gson.toJson(jsonObject["data"])
+                val type = object : TypeToken<List<PlayListDto>>() {}.type
+                val playlistDtoList: List<PlayListDto> = gson.fromJson(dataJson, type)
+                ApiResult.NetworkResult.Success(playlistDtoList)
+            } else extractFailureFromResponseBody(responseBody)
         }
     }
 }
