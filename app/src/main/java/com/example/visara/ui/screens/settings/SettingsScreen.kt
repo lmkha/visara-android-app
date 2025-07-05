@@ -1,8 +1,5 @@
 package com.example.visara.ui.screens.settings
-
-import android.os.Build
 import androidx.activity.compose.BackHandler
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,7 +43,6 @@ import com.example.visara.viewmodels.SettingsScreenEvent
 import com.example.visara.viewmodels.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun SettingsScreen(
     modifier: Modifier = Modifier,

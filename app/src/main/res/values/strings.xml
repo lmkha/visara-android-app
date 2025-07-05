@@ -91,4 +91,6 @@
     <string name="private_account">Private account</string>
     <string name="private_account_descrption">With a private account, only followers can view your profile and posts.</string>
     <string name="send_message">Send message</string>
+    <string name="profile_intent_filter_label" translatable="false">Filter profile intent</string>
+    <string name="deep_link_base" translatable="false">https://deeplink.sample.com</string>
 </resources>

@@ -33,18 +33,30 @@ android {
             }
         }
 
-        val backendUrlDebug = localProperties["BACKEND_URL_DEBUG"] as String?
-        val backendUrlRelease = localProperties["BACKEND_URL_RELEASE"] as String?
         val apiVersion = localProperties["API_VERSION"] as String? ?: "v1"
 
-        val apiPath = "/api/$apiVersion"
+        val debugScheme = localProperties["BACKEND_SCHEME_DEBUG"] ?: "http"
+        val debugHost = localProperties["BACKEND_HOST_DEBUG"] ?: "10.0.2.2"
+        val debugPort = localProperties["BACKEND_PORT_DEBUG"] ?: "8080"
 
-        val apiUrlDebug = backendUrlDebug?.removeSuffix("/") + apiPath
-        val apiUrlRelease = backendUrlRelease?.removeSuffix("/") + apiPath
+        val releaseScheme = localProperties["BACKEND_SCHEME_RELEASE"] ?: "https"
+        val releaseHost = localProperties["BACKEND_HOST_RELEASE"] ?: "api.visara.com"
+        val releasePort = localProperties["BACKEND_PORT_RELEASE"] ?: "443"
+
+        val deeplinkHost = localProperties["DEEPLINK_HOST"] ?: "visara.com"
+        val deeplinkHttpsScheme = localProperties["DEEPLINK_HTTPS_SCHEME"] ?: "https"
+
+        val backendUrlDebug = "$debugScheme://$debugHost:$debugPort"
+        val apiUrlDebug = "$backendUrlDebug/api/$apiVersion"
+
+        val backendUrlRelease = "$releaseScheme://$releaseHost:$releasePort"
+        val apiUrlRelease = "$backendUrlRelease/api/$apiVersion"
 
         debug {
             buildConfigField("String", "API_URL", "\"$apiUrlDebug\"")
             buildConfigField("String", "BACKEND_URL", "\"$backendUrlDebug\"")
+            buildConfigField("String", "DEEPLINK_HOST", "\"$deeplinkHost\"")
+            buildConfigField("String", "DEEPLINK_SCHEME", "\"$deeplinkHttpsScheme\"")
         }
         release {
             isMinifyEnabled = false
@@ -54,6 +66,8 @@ android {
             )
             buildConfigField("String", "API_URL", "\"$apiUrlRelease\"")
             buildConfigField("String", "BACKEND_URL", "\"$backendUrlRelease\"")
+            buildConfigField("String", "DEEPLINK_HOST", "\"$deeplinkHost\"")
+            buildConfigField("String", "DEEPLINK_SCHEME", "\"$deeplinkHttpsScheme\"")
         }
     }
     buildFeatures {

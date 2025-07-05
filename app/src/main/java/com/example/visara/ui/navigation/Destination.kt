@@ -1,52 +1,47 @@
 package com.example.visara.ui.navigation
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-sealed class Destination(val name: String) {
+sealed class Destination {
     val route: String get() = this::class.qualifiedName ?: this.toString()
 
     @Serializable
-    data object Main : Destination("Main") {
-        @Serializable
-        data object Home : Destination("Main.Home")
-        @Serializable
-        data object FollowingFeed : Destination("Main.FollowingFeed")
+    data object Main : Destination() {
+        @Serializable data object Home : Destination()
+        @Serializable data object FollowingFeed : Destination()
         @Serializable data class AddNewVideo(
             val isPostDraft: Boolean = false,
             val localDraftVideoId: Long? = null,
-        ) : Destination("Main.AddNewVideo")
-        @Serializable
-        data object Inbox : Destination("Main.Inbox") {
+        ) : Destination()
+        @Serializable data object Inbox : Destination() {
             @Serializable
-            data object InboxList : Destination("Main.Inbox.InboxList")
+            data object InboxList : Destination()
             @Serializable
-            data object NewFollowersInbox : Destination("Main.Inbox.NewFollowers")
+            data object NewFollowersInbox : Destination()
             @Serializable
-            data object ActivityInbox : Destination("Main.Inbox.Activity")
+            data object ActivityInbox : Destination()
             @Serializable
-            data object SystemNotificationInbox : Destination("Main.Inbox.SystemNotification")
+            data object SystemNotificationInbox : Destination()
             @Serializable
-            data object Studio : Destination("Main.Inbox.Studio")
-            @Serializable data class ChatInbox(val username: String) : Destination("Main.Inbox.Chat")
+            data object Studio : Destination()
+            @Serializable data class ChatInbox(val username: String) : Destination()
         }
         @Serializable data class Profile(
-            val username: String? = null,
+            @SerialName("username")
+            val username: String,
             val shouldNavigateToMyProfile: Boolean = false,
-        ) : Destination("Main.Profile")
+        ) : Destination()
     }
-    @Serializable data object EditProfile: Destination("EditProfile")
-    @Serializable data class Follow(val startedTabIndex: Int = 0): Destination("Follow")
-    @Serializable
-    data object Settings: Destination("Settings")
+    @Serializable data object EditProfile: Destination()
+    @Serializable data class Follow(val startedTabIndex: Int = 0): Destination()
+    @Serializable data object Settings: Destination()
     @Serializable data class Search(
         val type: String = "",
         val pattern: String = "",
-    ): Destination("Search")
-    @Serializable
-    data object Login : Destination("Login")
-    //    @Serializable object SignUp : Destination("SignUp")
-    @Serializable data class Studio(val selectedTagIndex: Int = 0) : Destination("Studio")
-    @Serializable data class EditVideo(val videoJson: String) : Destination("EditVideo")
-    @Serializable
-    data object Test : Destination("Test")
+    ): Destination()
+    @Serializable data object Login : Destination()
+    @Serializable data class Studio(val selectedTagIndex: Int = 0) : Destination()
+    @Serializable data class EditVideo(val videoJson: String) : Destination()
+    @Serializable data object Test : Destination()
 }

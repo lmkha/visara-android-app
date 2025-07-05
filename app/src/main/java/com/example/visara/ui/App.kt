@@ -1,4 +1,4 @@
-package com.example.visara.ui.app
+package com.example.visara.ui
 
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
@@ -60,6 +60,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navDeepLink
 import androidx.navigation.toRoute
 import com.example.visara.data.model.VideoModel
 import com.example.visara.ui.components.LoginRequestDialog
@@ -192,6 +193,7 @@ fun App(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     navigation<Destination.Main>(startDestination = Destination.Main.Home) {
+                        val currentAvatarUrl = appState.currentUser?.networkAvatarUrl
                         composable<Destination.Main.Home> {
                             HomeScreen(
                                 navigateToSearchScreen = { navController.navigate(Destination.Search()) },
@@ -202,24 +204,14 @@ fun App(
                                         )
                                     )
                                 },
-                                bottomNavBar = {
-                                    BottomNavBar(
-                                        activeDestination = Destination.Main.Home,
-                                        appState = appState,
-                                        onNavigate = { botNavBarNavigate(it) }
-                                    )
+                                currentAvatarUrl = currentAvatarUrl,
+                                onBotNavigate = {
+                                    botNavBarNavigate(it)
                                 }
                             )
                         }
                         composable<Destination.Main.FollowingFeed> {
                             FollowingFeedScreen(
-                                bottomNavBar = {
-                                    BottomNavBar(
-                                        activeDestination = Destination.Main.FollowingFeed,
-                                        appState = appState,
-                                        onNavigate = { botNavBarNavigate(it) }
-                                    )
-                                },
                                 onNavigateToProfileScreen = { username ->
                                     navController.navigate(Destination.Main.Profile(username = username))
                                 },
@@ -228,6 +220,10 @@ fun App(
                                 },
                                 onNavigateToLoginScreen = {
                                     navController.navigate(Destination.Login)
+                                },
+                                currentAvatarUrl = currentAvatarUrl,
+                                onBotNavigate = {
+                                    botNavBarNavigate(it)
                                 }
                             )
                         }
@@ -261,7 +257,7 @@ fun App(
                             val route: Destination.Main.AddNewVideo = backStackEntry.toRoute()
                             val postFromDraft = route.isPostDraft && route.localDraftVideoId != null
                             if (postFromDraft) {
-                                route.localDraftVideoId?.let { viewModel.prepareDraftData(it) }
+                                route.localDraftVideoId.let { viewModel.prepareDraftData(it) }
                             }
 
                             AddNewVideoScreen(
@@ -305,13 +301,10 @@ fun App(
                                     onOpenNewFollowersInbox = { navController.navigate(Destination.Main.Inbox.NewFollowersInbox) },
                                     onOpenSystemNotificationInbox = { navController.navigate(Destination.Main.Inbox.SystemNotificationInbox) },
                                     openStudioInbox = { navController.navigate(Destination.Main.Inbox.Studio) },
-                                    bottomNavBar = {
-                                        BottomNavBar(
-                                            activeDestination = Destination.Main.Inbox,
-                                            appState = appState,
-                                            onNavigate = { botNavBarNavigate(it) }
-                                        )
-                                    },
+                                    currentAvatarUrl = currentAvatarUrl,
+                                    onBotNavigate = {
+                                        botNavBarNavigate(it)
+                                    }
                                 )
                             }
                             composable<Destination.Main.Inbox.ChatInbox>(
@@ -350,7 +343,13 @@ fun App(
                                 SystemNotificationInboxScreen()
                             }
                         }
-                        composable<Destination.Main.Profile> { backStackEntry ->
+                        composable<Destination.Main.Profile>(
+                            deepLinks = listOf(
+                                navDeepLink<Destination.Main.Profile>(
+                                    basePath = "https://visara.com/profile"
+                                )
+                            )
+                        ) { backStackEntry ->
                             val route: Destination.Main.Profile = backStackEntry.toRoute()
                             val viewModel: ProfileViewModel = hiltViewModel()
                             viewModel.setProfile(
@@ -385,13 +384,11 @@ fun App(
                                 onNavigateToEditProfileScreen = {
                                     navController.navigate(Destination.EditProfile)
                                 },
-                                bottomNavBar = {
-                                    BottomNavBar(
-                                        activeDestination = Destination.Main.Profile(),
-                                        appState = appState,
-                                        onNavigate = { botNavBarNavigate(it) }
-                                    )
-                                },
+                                profileRoute = route.route,
+                                currentAvatarUrl = currentAvatarUrl,
+                                onBotNavigate = {
+                                    botNavBarNavigate(it)
+                                }
                             )
                         }
                     }
@@ -445,6 +442,7 @@ fun App(
                         TestScreen()
                     }
                     composable<Destination.Settings> {
+
                         SettingsScreen(
                             onBack = { navController.popBackStack() },
                             navigateToLoginScreen = { navController.navigate(Destination.Login) },

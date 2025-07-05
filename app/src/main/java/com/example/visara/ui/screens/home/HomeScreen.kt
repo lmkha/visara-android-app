@@ -53,7 +53,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.visara.R
+import com.example.visara.ui.components.BottomNavBar
 import com.example.visara.ui.components.VideoItem
+import com.example.visara.ui.navigation.Destination
 import com.example.visara.ui.theme.LocalVisaraCustomColors
 import com.example.visara.viewmodels.HomeViewModel
 import kotlinx.coroutines.launch
@@ -65,7 +67,8 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     navigateToSearchScreen: () -> Unit = {},
     navigateToProfileScreen: (username: String) -> Unit,
-    bottomNavBar: @Composable () -> Unit,
+    currentAvatarUrl: String?,
+    onBotNavigate: (Destination) -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -111,7 +114,7 @@ fun HomeScreen(
                 )
             )
         },
-        bottomBar = { bottomNavBar() },
+        bottomBar = { BottomNavBar(activeRoute = Destination.Main.Home.route, currentUserAvatarUrl = currentAvatarUrl) { onBotNavigate(it) } },
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
     ) { innerPadding->
         Box(modifier = modifier.fillMaxSize().padding(innerPadding)) {

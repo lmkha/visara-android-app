@@ -1,4 +1,4 @@
-package com.example.visara.ui.app
+package com.example.visara.ui.components
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.size
@@ -21,14 +21,13 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.visara.R
-import com.example.visara.ui.components.UserAvatar
 import com.example.visara.ui.navigation.Destination
-import com.example.visara.viewmodels.AppState
+
 
 @Composable
 fun BottomNavBar(
-    activeDestination: Destination,
-    appState: AppState,
+    activeRoute: String,
+    currentUserAvatarUrl: String?,
     onNavigate: (Destination) -> Unit
 ) {
     NavigationBar(containerColor = Color.Transparent) {
@@ -36,14 +35,14 @@ fun BottomNavBar(
             val label = stringResource(id = item.stringRes)
             NavigationBarItem(
                 label = { Text(label) },
-                selected = item.destination.route == activeDestination.route,
+                selected = item.destination.route == activeRoute,
                 onClick = { onNavigate(item.destination) },
                 icon = {
-                    if (item.destination.route != Destination.Main.Profile().route) {
+                    if (item.destination.route != Destination.Main.Profile("").route) {
                         Icon(imageVector = item.icon, contentDescription = label)
                     } else {
                         UserAvatar(
-                            avatarLink = appState.currentUser?.networkAvatarUrl,
+                            avatarLink = currentUserAvatarUrl,
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -64,7 +63,7 @@ private object BotNavItems {
         BottomNavigationItemData(R.string.following_nav_label, Icons.Filled.Star, Destination.Main.FollowingFeed),
         BottomNavigationItemData(R.string.add_video_bot_nav_label, Icons.Filled.AddCircle, Destination.Main.AddNewVideo()),
         BottomNavigationItemData(R.string.inbox, Icons.Filled.Email, Destination.Main.Inbox),
-        BottomNavigationItemData(R.string.profile, Icons.Filled.AccountCircle, Destination.Main.Profile(shouldNavigateToMyProfile = true)),
+        BottomNavigationItemData(R.string.profile, Icons.Filled.AccountCircle, Destination.Main.Profile("", shouldNavigateToMyProfile = true)),
     )
 }
 

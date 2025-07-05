@@ -1,5 +1,6 @@
 package com.example.visara.viewmodels
 
+import android.annotation.SuppressLint
 import android.app.LocaleManager
 import android.content.Context
 import android.os.Build
@@ -29,12 +30,11 @@ import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 class SettingsViewModel @Inject constructor(
     private val appSettingsRepository: AppSettingsRepository,
     private val authRepository: AuthRepository,
     private val userRepository: UserRepository,
-    private val localeManager: LocaleManager,
+    @param:SuppressLint("NewApi") private val localeManager: LocaleManager,
     @param:ApplicationContext private val appContext: Context,
 ) : ViewModel() {
     private val _uiState: MutableStateFlow<SettingsScreenUiState> = MutableStateFlow(SettingsScreenUiState())
