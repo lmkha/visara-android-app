@@ -1,8 +1,10 @@
 package com.example.visara.data.remote.dto
 
 import com.example.visara.data.model.CommentModel
+import kotlinx.serialization.Serializable
 
 
+@Serializable
 data class CommentDto(
     val createdAt: String = "",
     val updatedAt: String = "",
@@ -39,6 +41,7 @@ data class CommentDto(
     }
 }
 
+@Serializable
 data class LikeCommentDto(
     val id: String = "",
     val commentId: String = "",

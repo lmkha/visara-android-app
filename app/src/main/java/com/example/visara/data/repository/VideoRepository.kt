@@ -16,12 +16,12 @@ import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.datasource.VideoRemoteDataSource
 import com.example.visara.ui.screens.add_new_video.components.enter_video_info.PrivacyState
 import com.example.visara.viewmodels.AddVideoSubmitData
-import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.serialization.json.Json
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
@@ -33,7 +33,7 @@ class VideoRepository @Inject constructor(
     private val videoRemoteDataSource: VideoRemoteDataSource,
     private val videoDao: VideoDao,
     @param:ApplicationContext private val appContext: Context,
-    private val gson: Gson,
+    private val json: Json,
 ) {
     suspend fun uploadVideoMetaData(
         title: String,
@@ -59,7 +59,7 @@ class VideoRepository @Inject constructor(
             playlistIds = playlists.map { it.id },
         )
 
-        if (uploadVideoMetaDataResult !is ApiResult.NetworkResult.Success) return null
+        if (uploadVideoMetaDataResult !is ApiResult.Success || uploadVideoMetaDataResult.data == null) return null
 
         val videoEntity = LocalVideoEntity(
             remoteId = uploadVideoMetaDataResult.data.id,
@@ -69,8 +69,8 @@ class VideoRepository @Inject constructor(
             userProfilePic = currentUser.networkAvatarUrl,
             title = title,
             description = description,
-            playlistsJson = gson.toJson(playlists),
-            hashtagsJson = gson.toJson(hashtags),
+            playlistsJson = json.encodeToString(playlists),
+            hashtagsJson = json.encodeToString(hashtags),
             localVideoUriString = videoUri.toString(),
             localThumbnailUriString = thumbnailUri.toString(),
             isPrivate = privacy == VideoPrivacy.ONLY_ME,
@@ -115,7 +115,7 @@ class VideoRepository @Inject constructor(
         }
 
         val videoEntity = videoMetaData.localId?.let { getLocalVideoEntityById(it) }
-        if (uploadVideoFileResult is ApiResult.NetworkResult.Success) {
+        if (uploadVideoFileResult is ApiResult.Success) {
             videoEntity?.let {
                 videoDao.updateVideo(it.copy(statusCode = VideoStatus.PROCESSING.code))
             }
@@ -169,7 +169,7 @@ class VideoRepository @Inject constructor(
             isCommentOff = !isAllowComment
         )
 
-        val result = updateVideoResult is ApiResult.NetworkResult.Success
+        val result = updateVideoResult is ApiResult.Success
         if (!result) return false
 
         val thumbnailFile = thumbnailUri?.let { uriToFile(appContext, it) }
@@ -208,8 +208,8 @@ class VideoRepository @Inject constructor(
             userProfilePic = currentUser.networkAvatarUrl,
             title = title,
             description = description,
-            playlistsJson = gson.toJson(playlists),
-            hashtagsJson = gson.toJson(hashtags),
+            playlistsJson = json.encodeToString(playlists),
+            hashtagsJson = json.encodeToString(hashtags),
             localVideoUriString = videoUri.toString(),
             localThumbnailUriString = thumbnailUri.toString(),
             isPrivate = privacy == VideoPrivacy.ONLY_ME,
@@ -228,15 +228,15 @@ class VideoRepository @Inject constructor(
 
     suspend fun getVideoById(videoId: String) : VideoModel? {
         val apiResult = videoRemoteDataSource.getVideoById(videoId)
-        if (apiResult is ApiResult.NetworkResult.Success) {
-            return apiResult.data
+        if (apiResult is ApiResult.Success) {
+            return apiResult.data?.toVideoModel()
         }
         return null
     }
 
     suspend fun getVideoForHomeScreen(): List<VideoModel> {
         val videoListResult = videoRemoteDataSource.getRandomVideos(50)
-        return if (videoListResult is ApiResult.NetworkResult.Success) {
+        return if (videoListResult is ApiResult.Success && videoListResult.data != null) {
             videoListResult.data.map { it.toVideoModel() }
         } else {
             emptyList()
@@ -249,7 +249,7 @@ class VideoRepository @Inject constructor(
 
     suspend fun getRecommendedVideos(video: VideoModel) : List<VideoModel> {
         val videoListResult = videoRemoteDataSource.getRandomVideos(50)
-        return if (videoListResult is ApiResult.NetworkResult.Success) {
+        return if (videoListResult is ApiResult.Success && videoListResult.data != null) {
             videoListResult.data
                 .asSequence()
                 .map { it.toVideoModel() }
@@ -287,9 +287,8 @@ class VideoRepository @Inject constructor(
     suspend fun getAllVideoByUserId(userId: Long) : List<VideoModel> {
         val apiResult = videoRemoteDataSource.getAllVideoByUserId(userId)
 
-        if (apiResult is ApiResult.NetworkResult.Success) {
-            val videoModelList = apiResult.data.map { it.toVideoModel() }
-            return videoModelList
+        if (apiResult is ApiResult.Success && apiResult.data != null) {
+            return apiResult.data.map { it.toVideoModel() }
         }
 
         return emptyList()
@@ -297,17 +296,17 @@ class VideoRepository @Inject constructor(
 
     suspend fun likeVideo(videoId: String) : Boolean {
         val apiResult = videoRemoteDataSource.likeVideo(videoId)
-        return apiResult is ApiResult.NetworkResult.Success
+        return apiResult is ApiResult.Success
     }
 
     suspend fun unlikeVideo(videoId: String) : Boolean {
         val apiResult = videoRemoteDataSource.unlikeVideo(videoId)
-        return apiResult is ApiResult.NetworkResult.Success
+        return apiResult is ApiResult.Success
     }
 
     suspend fun isVideoLiked(videoId: String) : Boolean {
         val apiResult = videoRemoteDataSource.isVideoLiked(videoId)
-        return apiResult is ApiResult.NetworkResult.Success && apiResult.data
+        return apiResult is ApiResult.Success && apiResult.data == true
     }
 
     suspend fun searchVideo(type: String, pattern: String, count: Long) : List<VideoModel> {
@@ -317,7 +316,7 @@ class VideoRepository @Inject constructor(
 
         val apiResult = videoRemoteDataSource.searchVideo(type, pattern, count)
 
-        val result = if (apiResult is ApiResult.NetworkResult.Success) {
+        val result = if (apiResult is ApiResult.Success && apiResult.data != null) {
             apiResult.data.map { it.toVideoModel() }
         } else {
             emptyList()
@@ -328,7 +327,7 @@ class VideoRepository @Inject constructor(
 
     suspend fun increaseVideoView(videoId: String) : Boolean {
         val apiResult = videoRemoteDataSource.increaseVideoView(videoId)
-        return apiResult is ApiResult.NetworkResult.Success
+        return apiResult is ApiResult.Success
     }
 
     suspend fun addVideoToHistory(video: VideoModel, currentUser: UserModel?) : Boolean {
@@ -343,13 +342,13 @@ class VideoRepository @Inject constructor(
             viewerId = currentUser.id.toString(),
             viewerUsername = currentUser.username,
         )
-        return apiResult is ApiResult.NetworkResult.Success
+        return apiResult is ApiResult.Success
     }
 
     suspend fun getFollowingVideos(count: Long = 50) : List<VideoModel> {
         val apiResult = videoRemoteDataSource.getFollowingVideos(count)
-        if (apiResult !is ApiResult.NetworkResult.Success) return emptyList()
-        return apiResult.data.map { it.toVideoModel() }
+        if (apiResult !is ApiResult.Success) return emptyList()
+        return apiResult.data?.map { it.toVideoModel() } ?: emptyList()
     }
 
     suspend fun getDraftVideoByLocalId(localDraftVideoId: Long) : AddVideoSubmitData? {
@@ -362,8 +361,8 @@ class VideoRepository @Inject constructor(
         with(entity) {
             val playlistsType = object : TypeToken<List<PlaylistModel>>() {}.type
             val hashtagsType = object : TypeToken<List<String>>() {}.type
-            val playlists: List<PlaylistModel> = gson.fromJson(this.playlistsJson, playlistsType)
-            val hashtags: List<String> = gson.fromJson(this.hashtagsJson, hashtagsType)
+            val playlists = json.decodeFromString<List<PlaylistModel>>(this.playlistsJson)
+            val hashtags: List<String> = json.decodeFromString<List<String>>(this.hashtagsJson)
 
             return AddVideoSubmitData(
                 localId = localId,
@@ -434,8 +433,8 @@ class VideoRepository @Inject constructor(
         if (videoId.isBlank()) return Result.failure(Throwable("VideoId is blank"))
         return when(val apiResult = videoRemoteDataSource.deleteVideo(videoId)) {
             is ApiResult.Error -> Result.failure(apiResult.exception)
-            is ApiResult.NetworkResult.Failure -> Result.failure(Throwable(apiResult.message))
-            is ApiResult.NetworkResult.Success-> Result.success(Unit)
+            is ApiResult.Failure -> Result.failure(Throwable(apiResult.message))
+            is ApiResult.Success-> Result.success(Unit)
         }
     }
 }

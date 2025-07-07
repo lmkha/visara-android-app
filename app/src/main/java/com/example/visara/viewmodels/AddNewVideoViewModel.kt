@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.media3.session.MediaController
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
@@ -19,17 +18,16 @@ import com.example.visara.data.repository.VideoRepository
 import com.example.visara.ui.screens.add_new_video.components.enter_video_info.PrivacyState
 import com.example.visara.worker.UploadVideoWorkerParams
 import com.example.visara.worker.UploadVideoWorker
-import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 @HiltViewModel
@@ -39,7 +37,7 @@ class AddNewVideoViewModel @Inject constructor(
     private val videoRepository: VideoRepository,
     private val userRepository: UserRepository,
     private val playlistRepository: PlaylistRepository,
-    private val gson: Gson,
+    private val json: Json,
     val playerManager: PlayerManager,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AddNewVideoScreenUiState())
@@ -104,7 +102,7 @@ class AddNewVideoViewModel @Inject constructor(
                 videoUri = data.videoUri.toString(),
                 thumbnailUri = data.thumbnailUri.toString(),
             )
-            val jsonParams = gson.toJson(params)
+            val jsonParams = json.encodeToString(params)
             val inputData = workDataOf(UploadVideoWorker.KEY to jsonParams)
             val request = OneTimeWorkRequestBuilder<UploadVideoWorker>()
                 .setInputData(inputData)

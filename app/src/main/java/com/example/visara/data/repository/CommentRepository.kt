@@ -26,7 +26,7 @@ class CommentRepository @Inject constructor(
             size = size
         )
 
-        if (apiResult is ApiResult.NetworkResult.Success) {
+        if (apiResult is ApiResult.Success && apiResult.data != null) {
             val commentModelList = apiResult.data.map { it.toCommentModel() }
             return commentModelList
         }
@@ -49,7 +49,7 @@ class CommentRepository @Inject constructor(
             size = size,
         )
 
-        if (apiResult is ApiResult.NetworkResult.Success) {
+        if (apiResult is ApiResult.Success && apiResult.data != null) {
             val commentModelList = apiResult.data.map { it.toCommentModel() }
             return commentModelList
         }
@@ -59,19 +59,19 @@ class CommentRepository @Inject constructor(
 
     suspend fun likeComment(commentId: String) : Boolean {
         val apiResult = commentRemoteDataSource.likeComment(commentId)
-        return apiResult is ApiResult.NetworkResult.Success
+        return apiResult is ApiResult.Success
     }
 
     suspend fun unlikeComment(commentId: String) : Boolean {
         val apiResult = commentRemoteDataSource.unlikeComment(commentId)
-        return apiResult is ApiResult.NetworkResult.Success
+        return apiResult is ApiResult.Success
     }
 
     suspend fun addComment(videoId: String, replyTo: String?, content: String) : CommentModel? {
         val apiResult = commentRemoteDataSource.addComment(videoId, replyTo, content)
         var newComment: CommentModel? = null
 
-        if (apiResult is ApiResult.NetworkResult.Success) {
+        if (apiResult is ApiResult.Success && apiResult.data != null) {
             newComment = apiResult.data.toCommentModel()
         }
 

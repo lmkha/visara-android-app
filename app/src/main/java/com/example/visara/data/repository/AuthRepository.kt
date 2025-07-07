@@ -1,5 +1,6 @@
 package com.example.visara.data.repository
 
+import android.util.Log
 import com.example.visara.data.local.datasource.AuthLocalDataSource
 import com.example.visara.data.model.UserModel
 import com.example.visara.data.remote.common.ApiResult
@@ -29,19 +30,20 @@ class AuthRepository @Inject constructor(
             is ApiResult.Error -> {
                 Result.failure(Throwable(message = loginResult.exception.message))
             }
-            is ApiResult.NetworkResult.Failure -> {
+            is ApiResult.Failure -> {
                 Result.failure(Throwable(message = loginResult.message))
             }
-            is ApiResult.NetworkResult.Success -> {
+            is ApiResult.Success -> {
                 // Must set current username before saving token — token key depends on it.
                 authLocalDataSource.setCurrentUsername(username)
-                val accessToken = loginResult.data.accessToken
+                val accessToken = loginResult.data?.accessToken ?: return Result.failure(Exception("Tokens are null"))
                 val refreshToken = loginResult.data.refreshToken
                 authLocalDataSource.saveAccessToken(accessToken)
                 authLocalDataSource.saveRefreshToken(refreshToken)
                 _isAuthenticated.update { true }
                 appSettingsRepository.getFcmToken()?.let { fcmToken ->
-                    authRemoteDataSource.addFcmTokenForAccount(username = username, fcmToken = fcmToken)
+                    val addTokenResult = authRemoteDataSource.addFcmTokenForAccount(username = username, fcmToken = fcmToken)
+                    Log.d("CHECK_VAR", "result : $addTokenResult")
                 }
                 Result.success(Unit)
             }
@@ -55,8 +57,8 @@ class AuthRepository @Inject constructor(
     ) : Result<UserModel> {
         return when (val apiResult = authRemoteDataSource.updateUser(isPrivate = isPrivate, fullName = fullName, bio = bio)) {
             is ApiResult.Error -> Result.failure(apiResult.exception)
-            is ApiResult.NetworkResult.Failure -> Result.failure(Throwable(apiResult.message))
-            is ApiResult.NetworkResult.Success -> Result.success(apiResult.data.toUserModel())
+            is ApiResult.Failure -> Result.failure(Throwable(apiResult.message))
+            is ApiResult.Success -> apiResult.data?.let { Result.success(it.toUserModel()) } ?: Result.failure(Exception(""))
         }
     }
 
@@ -70,7 +72,7 @@ class AuthRepository @Inject constructor(
                 username = currentUsername
             )
 
-            if (result is ApiResult.NetworkResult.Success) {
+            if (result is ApiResult.Success) {
                 authLocalDataSource.clearToken()
                 authLocalDataSource.clearCurrentUsername()
                 _isAuthenticated.update { false }

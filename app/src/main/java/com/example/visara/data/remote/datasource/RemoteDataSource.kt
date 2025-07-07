@@ -1,15 +1,15 @@
 package com.example.visara.data.remote.datasource
 
 import com.example.visara.data.remote.common.ApiResult
-import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
 import okhttp3.Response
 
-abstract class RemoteDataSource(protected val gson: Gson) {
+abstract class RemoteDataSource(protected val json: Json) {
     suspend fun <T> callApi(
         request: suspend () -> Response,
-        handleResponse: (Response) -> ApiResult.NetworkResult<T>
+        handleResponse: (Response) -> ApiResult<T>
     ): ApiResult<T> {
         return withContext(Dispatchers.IO) {
             try {
@@ -21,11 +21,8 @@ abstract class RemoteDataSource(protected val gson: Gson) {
         }
     }
 
-    fun extractFailureFromResponseBody(responseBody: String?) : ApiResult.NetworkResult.Failure {
-        if (responseBody.isNullOrEmpty()) return ApiResult.NetworkResult.Failure()
-        return gson.fromJson(
-            responseBody,
-            ApiResult.NetworkResult.Failure::class.java
-        )
+    fun extractFailureFromResponseBody(responseBody: String?) : ApiResult.Failure {
+        if (responseBody.isNullOrEmpty()) return ApiResult.Failure()
+        return json.decodeFromString<ApiResult.Failure>(responseBody)
     }
 }

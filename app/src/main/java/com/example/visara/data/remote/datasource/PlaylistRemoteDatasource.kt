@@ -1,10 +1,10 @@
 package com.example.visara.data.remote.datasource
 
 import com.example.visara.data.remote.api.PlaylistApi
+import com.example.visara.data.remote.common.ApiResponse
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.dto.PlayListDto
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import kotlinx.serialization.json.Json
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -12,17 +12,14 @@ import javax.inject.Singleton
 @Singleton
 class PlaylistRemoteDatasource @Inject constructor(
     private val playlistApi: PlaylistApi,
-    gson: Gson,
-) : RemoteDataSource(gson) {
+    json: Json
+) : RemoteDataSource(json) {
     suspend fun createPlaylist(name: String, description: String, videoIdsList: List<String>) : ApiResult<PlayListDto> {
         return callApi({ playlistApi.createPlaylist(name, description, videoIdsList) }) { response ->
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                val dataJson = gson.toJson(jsonObject["data"])
-                val playlistDto = gson.fromJson(dataJson, PlayListDto::class.java)
-                ApiResult.NetworkResult.Success(playlistDto)
+                json.decodeFromString<ApiResult.Success<PlayListDto>>(responseBody)
             } else extractFailureFromResponseBody(responseBody)
         }
     }
@@ -32,10 +29,7 @@ class PlaylistRemoteDatasource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                val data = jsonObject["data"]
-                val thumbnailUrl = data as? String ?: ""
-                ApiResult.NetworkResult.Success(thumbnailUrl)
+                json.decodeFromString<ApiResult.Success<String>>(responseBody)
             } else extractFailureFromResponseBody(responseBody)
         }
     }
@@ -45,10 +39,7 @@ class PlaylistRemoteDatasource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                val dataJson = gson.toJson(jsonObject["data"])
-                val playlistDto = gson.fromJson(dataJson, PlayListDto::class.java)
-                ApiResult.NetworkResult.Success(playlistDto)
+                json.decodeFromString<ApiResult.Success<PlayListDto>>(responseBody)
             } else extractFailureFromResponseBody(responseBody)
         }
     }
@@ -58,10 +49,7 @@ class PlaylistRemoteDatasource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                val success = jsonObject["success"]
-                val result = success as? Boolean == true
-                ApiResult.NetworkResult.Success(result)
+                json.decodeFromString<ApiResponse<Nothing>>(responseBody).toApiResult()
             } else  extractFailureFromResponseBody(responseBody)
         }
     }
@@ -71,10 +59,13 @@ class PlaylistRemoteDatasource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                val success = jsonObject["success"]
-                val result = success as? Boolean == true
-                ApiResult.NetworkResult.Success(result)
+                json.decodeFromString<ApiResponse<Nothing>>(responseBody).let {
+                    if (it.success) {
+                        ApiResult.Success(true)
+                    } else {
+                        ApiResult.Failure()
+                    }
+                }
             } else extractFailureFromResponseBody(responseBody)
         }
     }
@@ -84,11 +75,7 @@ class PlaylistRemoteDatasource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                val dataJson = gson.toJson(jsonObject["data"])
-                val type = object : TypeToken<List<PlayListDto>>() {}.type
-                val playlistDtoList: List<PlayListDto> = gson.fromJson(dataJson, type)
-                ApiResult.NetworkResult.Success(playlistDtoList)
+                json.decodeFromString<ApiResult.Success<List<PlayListDto>>>(responseBody)
             } else extractFailureFromResponseBody(responseBody)
         }
     }

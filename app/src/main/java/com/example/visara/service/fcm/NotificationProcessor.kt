@@ -5,7 +5,7 @@ import com.example.visara.data.remote.dto.NotificationDto
 import com.example.visara.data.repository.NotificationRepository
 import com.example.visara.service.fcm.handlers.HandleFcmMessageStrategy
 import com.google.firebase.messaging.RemoteMessage
-import com.google.gson.Gson
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -14,12 +14,12 @@ class NotificationProcessor @Inject constructor(
     private val notificationRepository: NotificationRepository,
     private val handlerMap: Map<RemoteNotificationType, @JvmSuppressWildcards HandleFcmMessageStrategy?>,
     private val notificationMapper: NotificationMapper,
-    private val gson: Gson,
+    private val json: Json,
 ) {
     fun process(remoteMessage: RemoteMessage) {
         if (remoteMessage.data.isEmpty()) return
         try {
-            val content: NotificationDto = gson.fromJson(remoteMessage.data["content"], NotificationDto::class.java)
+            val content = remoteMessage.data["content"]?.let { json.decodeFromString<NotificationDto>(it)} ?: return
             val type = determineType(content.type)
             val handler = getHandler(type) ?: return
             handler.handle(content)

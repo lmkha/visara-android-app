@@ -16,13 +16,13 @@ import com.example.visara.data.local.entity.VideoStatus
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.repository.VideoRepository
 import com.example.visara.notification.NotificationHelper
-import com.example.visara.ui.navigation.Destination
+import com.example.visara.ui.Destination
 import com.example.visara.ui.screens.studio.StudioSelectedTag
 import com.example.visara.utils.createBitmapFromLocalUri
 import com.example.visara.utils.createVideoThumbFromLocalUri
-import com.google.gson.Gson
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.serialization.json.Json
 
 @HiltWorker
 class UploadVideoWorker @AssistedInject constructor(
@@ -31,7 +31,7 @@ class UploadVideoWorker @AssistedInject constructor(
     private val notificationManager: NotificationManager,
     private val notificationHelper: NotificationHelper,
     private val videoRepository: VideoRepository,
-    private val gson: Gson,
+    private val json: Json,
 ) : CoroutineWorker(appContext, workerParams) {
     companion object {
         const val KEY: String = "params"
@@ -41,7 +41,7 @@ class UploadVideoWorker @AssistedInject constructor(
     override suspend fun doWork(): Result {
         val jsonParams = inputData.getString(KEY) ?: return Result.failure()
         val params = try {
-            gson.fromJson(jsonParams, UploadVideoWorkerParams::class.java) ?: return Result.failure()
+            json.decodeFromString<UploadVideoWorkerParams>(jsonParams)
         } catch (e : Exception) {
             e.printStackTrace()
             return Result.failure()
@@ -52,7 +52,7 @@ class UploadVideoWorker @AssistedInject constructor(
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                 putExtra("request-type", "navigation")
                 putExtra("route", "studio")
-                putExtra("destination", gson.toJson(Destination.Studio()))
+                putExtra("destination", json.encodeToString(Destination.Studio()))
             }
             val progressPendingIntent: PendingIntent = PendingIntent.getActivity(
                 applicationContext,
@@ -80,7 +80,7 @@ class UploadVideoWorker @AssistedInject constructor(
             )
 
             when (uploadResult) {
-                is ApiResult.NetworkResult.Success<*> -> {
+                is ApiResult.Success<*> -> {
                     val localVideoEntity = videoMetaData.localId?.let { videoRepository.getLocalVideoEntityById(it) }
                     localVideoEntity?.let {
                         videoRepository.updateLocalVideoEntity(
@@ -108,7 +108,7 @@ class UploadVideoWorker @AssistedInject constructor(
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                         putExtra("request-type", "navigation")
                         putExtra("route", "studio")
-                        putExtra("destination", gson.toJson(Destination.Studio(selectedTagIndex = StudioSelectedTag.PROCESSING.ordinal)))
+                        putExtra("destination", json.encodeToString(Destination.Studio(selectedTagIndex = StudioSelectedTag.PROCESSING.ordinal)))
                     }
                     val successPendingIntent: PendingIntent = PendingIntent.getActivity(
                         applicationContext,
@@ -151,7 +151,7 @@ class UploadVideoWorker @AssistedInject constructor(
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                         putExtra("request-type", "navigation")
                         putExtra("route", "studio")
-                        putExtra("destination", gson.toJson(Destination.Studio(selectedTagIndex = StudioSelectedTag.PENDING_RE_UPLOAD.ordinal)))
+                        putExtra("destination", json.encodeToString(Destination.Studio(selectedTagIndex = StudioSelectedTag.PENDING_RE_UPLOAD.ordinal)))
                     }
                     val failurePendingIntent: PendingIntent = PendingIntent.getActivity(
                         applicationContext,

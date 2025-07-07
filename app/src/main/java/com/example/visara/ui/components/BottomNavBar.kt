@@ -21,7 +21,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.visara.R
-import com.example.visara.ui.navigation.Destination
+import com.example.visara.ui.Destination
 
 
 @Composable

@@ -5,7 +5,7 @@ import com.example.visara.utils.getMimeTypeOrNull
 import com.example.visara.data.remote.common.ProgressRequestBody
 import com.example.visara.di.AuthorizedOkHttpClient
 import com.example.visara.di.UnauthenticatedOkhttpClient
-import com.google.gson.Gson
+import kotlinx.serialization.json.Json
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -22,7 +22,7 @@ import javax.inject.Singleton
 class PlaylistApi @Inject constructor(
     @param:AuthorizedOkHttpClient private val authorizedOkHttpClient: OkHttpClient,
     @param:UnauthenticatedOkhttpClient private val unauthorizedOkHttpClient: OkHttpClient,
-    private val gson: Gson,
+    private val json: Json,
 ) {
     fun createPlaylist(name: String, description: String, videoIdsList: List<String>) : Response {
         val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
@@ -35,7 +35,7 @@ class PlaylistApi @Inject constructor(
             "videoIdsList" to videoIdsList
         )
 
-        val requestBody = gson.toJson(payload)
+        val requestBody = json.encodeToString(payload)
             .toRequestBody("application/json".toMediaTypeOrNull())
 
         val request: Request = Request.Builder()

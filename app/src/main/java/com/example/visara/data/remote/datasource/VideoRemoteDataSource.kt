@@ -1,11 +1,10 @@
 package com.example.visara.data.remote.datasource
 
-import com.example.visara.data.model.VideoModel
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.api.VideoApi
+import com.example.visara.data.remote.common.ApiResponse
 import com.example.visara.data.remote.dto.VideoDto
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import kotlinx.serialization.json.Json
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -13,17 +12,14 @@ import javax.inject.Singleton
 @Singleton
 class VideoRemoteDataSource @Inject constructor(
     private val videoApi: VideoApi,
-    gson: Gson,
-) : RemoteDataSource(gson) {
-    suspend fun getVideoById(videoId: String) : ApiResult<VideoModel> {
+    json: Json,
+) : RemoteDataSource(json) {
+    suspend fun getVideoById(videoId: String) : ApiResult<VideoDto> {
         return callApi({ videoApi.getVideoById(videoId) }) { response ->
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                val dataJson = gson.toJson(jsonObject["data"])
-                val videoModel = gson.fromJson(dataJson, VideoModel::class.java)
-                ApiResult.NetworkResult.Success(videoModel)
+                json.decodeFromString<ApiResult.Success<VideoDto>>(responseBody)
             } else extractFailureFromResponseBody(responseBody)
         }
     }
@@ -33,13 +29,7 @@ class VideoRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                val dataJson = gson.toJson(jsonObject["data"])
-                val type = object : TypeToken<List<VideoDto>>() {}.type
-                val videoList: List<VideoDto> = gson.fromJson(dataJson, type)
-
-                ApiResult.NetworkResult.Success(videoList)
-
+                json.decodeFromString<ApiResult.Success<List<VideoDto>>>(responseBody)
             } else extractFailureFromResponseBody(responseBody)
         }
     }
@@ -67,12 +57,7 @@ class VideoRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                val dataJson = gson.toJson(jsonObject["data"])
-                val videoDto: VideoDto = gson.fromJson(dataJson, VideoDto::class.java)
-
-                ApiResult.NetworkResult.Success(videoDto)
-
+                json.decodeFromString<ApiResult.Success<VideoDto>>(responseBody)
             } else extractFailureFromResponseBody(responseBody)
         }
     }
@@ -100,12 +85,7 @@ class VideoRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                val dataJson = gson.toJson(jsonObject["data"])
-                val videoDto: VideoDto = gson.fromJson(dataJson, VideoDto::class.java)
-
-                ApiResult.NetworkResult.Success(videoDto)
-
+                json.decodeFromString<ApiResult.Success<VideoDto>>(responseBody)
             } else extractFailureFromResponseBody(responseBody)
         }
     }
@@ -119,13 +99,7 @@ class VideoRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                val data = jsonObject["data"]
-                val thumbnailLink = if (data is String && data.isNotBlank()) data else null
-
-                if (!thumbnailLink.isNullOrEmpty()) {
-                    ApiResult.NetworkResult.Success(thumbnailLink)
-                } else extractFailureFromResponseBody(responseBody)
+                json.decodeFromString<ApiResult.Success<String>>(responseBody)
             } else extractFailureFromResponseBody(responseBody)
         }
     }
@@ -139,7 +113,7 @@ class VideoRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful) {
-                ApiResult.NetworkResult.Success(Unit)
+                ApiResult.Success(Unit)
             } else {
                 extractFailureFromResponseBody(responseBody)
             }
@@ -151,11 +125,7 @@ class VideoRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                val jsonObject =  gson.fromJson(responseBody, Map::class.java)
-                val dataJson = gson.toJson(jsonObject["data"])
-                val type = object : TypeToken<List<VideoDto>>() {}.type
-                val videoDtoList: List<VideoDto> = gson.fromJson(dataJson, type)
-                ApiResult.NetworkResult.Success(videoDtoList)
+                json.decodeFromString<ApiResult.Success<List<VideoDto>>>(responseBody)
             } else {
                 extractFailureFromResponseBody(responseBody)
             }
@@ -164,45 +134,41 @@ class VideoRemoteDataSource @Inject constructor(
 
     suspend fun likeVideo(videoId: String) : ApiResult<Unit> {
         return callApi({ videoApi.likeVideo(videoId) }) { response ->
-            val responseBody = response.body?.string()
-            val jsonObject = gson.fromJson(responseBody, Map::class.java)
-            val successValue = jsonObject["success"]
-            val success = successValue is Boolean && successValue
-
-            if (response.isSuccessful && success) {
-                ApiResult.NetworkResult.Success(Unit)
-            } else {
-                extractFailureFromResponseBody(responseBody)
+            val responseBody = response.body?.string() ?: return@callApi extractFailureFromResponseBody(null)
+            json.decodeFromString<ApiResponse<Nothing>>(responseBody).toApiResult()
+            json.decodeFromString<ApiResponse<Nothing>>(responseBody).let {
+                if (it.success) {
+                    ApiResult.Success(Unit)
+                } else {
+                    extractFailureFromResponseBody(responseBody)
+                }
             }
         }
     }
 
     suspend fun unlikeVideo(videoId: String) : ApiResult<Unit> {
         return callApi({ videoApi.unlikeVideo(videoId) }) { response ->
-            val responseBody = response.body?.string()
-            val jsonObject = gson.fromJson(responseBody, Map::class.java)
-            val successValue = jsonObject["success"]
-            val success = successValue is Boolean && successValue
-
-            if (response.isSuccessful && success) {
-                ApiResult.NetworkResult.Success(Unit)
-            } else {
-                extractFailureFromResponseBody(responseBody)
+            val responseBody = response.body?.string() ?: return@callApi extractFailureFromResponseBody(null)
+            json.decodeFromString<ApiResponse<Nothing>>(responseBody).let {
+                if (it.success) {
+                    ApiResult.Success(Unit)
+                } else {
+                    extractFailureFromResponseBody(responseBody)
+                }
             }
         }
     }
 
     suspend fun isVideoLiked(videoId: String) : ApiResult<Boolean> {
         return callApi({ videoApi.getIsVideoLiked(videoId) }) { response ->
-            val responseBody = response.body?.string()
-            val jsonObject = gson.fromJson(responseBody, Map::class.java)
-            val messageValue = jsonObject["message"]
-            val liked = messageValue is String && messageValue == "Liked"
-
-            if (response.isSuccessful) {
-                ApiResult.NetworkResult.Success(liked)
-            } else {
-                extractFailureFromResponseBody(responseBody)
+            val responseBody = response.body?.string() ?: return@callApi extractFailureFromResponseBody(null)
+            if (!response.isSuccessful) return@callApi extractFailureFromResponseBody(responseBody)
+            json.decodeFromString<ApiResponse<Nothing>>(responseBody).let {
+                if (it.message == "Liked") {
+                    ApiResult.Success(true)
+                } else {
+                    extractFailureFromResponseBody(responseBody)
+                }
             }
         }
     }
@@ -212,11 +178,7 @@ class VideoRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                val dataJson = gson.toJson(jsonObject["data"])
-                val type = object : TypeToken<List<VideoDto>>() {}.type
-                val videoDtoList: List<VideoDto> = gson.fromJson(dataJson, type)
-                ApiResult.NetworkResult.Success(videoDtoList)
+                json.decodeFromString<ApiResult.Success<List<VideoDto>>>(responseBody)
             } else {
                 extractFailureFromResponseBody(responseBody)
             }
@@ -225,17 +187,15 @@ class VideoRemoteDataSource @Inject constructor(
 
     suspend fun increaseVideoView(videoId: String) : ApiResult<Long> {
         return callApi({ videoApi.increaseVideoView(videoId) }) { response ->
-            val responseBody = response.body?.string()
-            val jsonObject = gson.fromJson(responseBody, Map::class.java)
-            val messageValue = jsonObject["message"]
-            val videoViewCount = if (messageValue is String) {
-                messageValue.toLongOrNull() ?: 0L
-            } else 0L
-
-            if (response.isSuccessful) {
-                ApiResult.NetworkResult.Success(videoViewCount)
-            } else {
-                extractFailureFromResponseBody(responseBody)
+            if (!response.isSuccessful) return@callApi ApiResult.Failure()
+            val responseBody = response.body?.string() ?: return@callApi ApiResult.Failure()
+            json.decodeFromString<ApiResponse<Nothing>>(responseBody).let { result ->
+                val videoViewCount = result.message?.toLongOrNull()
+                if (videoViewCount != null) {
+                    ApiResult.Success(videoViewCount)
+                } else {
+                    ApiResult.Failure()
+                }
             }
         }
     }
@@ -264,15 +224,13 @@ class VideoRemoteDataSource @Inject constructor(
                 )
             }
         ) { response ->
-            val responseBody = response.body?.string()
-            val jsonObject = gson.fromJson(responseBody, Map::class.java)
-            val successValue = jsonObject["success"]
-            val success = successValue is Boolean && successValue
-
-            if (response.isSuccessful && success) {
-                ApiResult.NetworkResult.Success(Unit)
-            } else {
-                extractFailureFromResponseBody(responseBody)
+            val responseBody = response.body?.string() ?: return@callApi ApiResult.Failure()
+            json.decodeFromString<ApiResponse<Nothing>>(responseBody).let {
+                if (it.success) {
+                    ApiResult.Success(Unit)
+                } else {
+                    ApiResult.Failure()
+                }
             }
         }
     }
@@ -282,11 +240,7 @@ class VideoRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                val dataJson = gson.toJson(jsonObject["data"])
-                val type = object : TypeToken<List<VideoDto>>() {}.type
-                val videoDtoList: List<VideoDto> = gson.fromJson(dataJson, type)
-                ApiResult.NetworkResult.Success(videoDtoList)
+                json.decodeFromString<ApiResult.Success<List<VideoDto>>>(responseBody)
             } else {
                 extractFailureFromResponseBody(responseBody)
             }
@@ -295,15 +249,13 @@ class VideoRemoteDataSource @Inject constructor(
 
     suspend fun deleteVideo(videoId: String) : ApiResult<Unit> {
         return callApi({ videoApi.deleteVideo(videoId) }) { response ->
-            val responseBody = response.body?.string()
-            val jsonObject = gson.fromJson(responseBody, Map::class.java)
-            val successValue = jsonObject["success"]
-            val success = successValue is Boolean && successValue
-
-            if (response.isSuccessful && success) {
-                ApiResult.NetworkResult.Success(Unit)
-            } else {
-                extractFailureFromResponseBody(responseBody)
+            val responseBody = response.body?.string() ?: return@callApi ApiResult.Failure()
+            json.decodeFromString<ApiResponse<Nothing>>(responseBody).let {
+                if (it.success) {
+                    ApiResult.Success(Unit)
+                } else {
+                    ApiResult.Failure()
+                }
             }
         }
     }

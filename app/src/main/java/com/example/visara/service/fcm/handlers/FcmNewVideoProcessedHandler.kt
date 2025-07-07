@@ -11,13 +11,13 @@ import com.example.visara.data.model.NotificationModel
 import com.example.visara.data.remote.dto.NotificationDto
 import com.example.visara.data.repository.VideoRepository
 import com.example.visara.notification.NotificationHelper
-import com.example.visara.ui.navigation.Destination
+import com.example.visara.ui.Destination
 import com.example.visara.ui.screens.studio.StudioSelectedTag
-import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -27,7 +27,7 @@ class FcmNewVideoProcessedHandler @Inject constructor(
     private val videoRepository: VideoRepository,
     private val notificationManager: NotificationManager,
     private val notificationHelper: NotificationHelper,
-    private val gson: Gson,
+    private val json: Json,
     private val notificationMapper: NotificationMapper,
 ) : HandleFcmMessageStrategy() {
 
@@ -48,7 +48,7 @@ class FcmNewVideoProcessedHandler @Inject constructor(
             putExtra("route", "studio")
             putExtra(
                 "destination",
-                gson.toJson(Destination.Studio(selectedTagIndex = StudioSelectedTag.ACTIVE.ordinal))
+                json.encodeToString(Destination.Studio(selectedTagIndex = StudioSelectedTag.ACTIVE.ordinal))
             )
         }
         val successPendingIntent: PendingIntent = PendingIntent.getActivity(

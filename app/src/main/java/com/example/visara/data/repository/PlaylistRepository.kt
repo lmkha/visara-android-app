@@ -13,29 +13,29 @@ class PlaylistRepository @Inject constructor(
 ) {
     suspend fun createPlaylist(name: String, description: String, videoIdsList: List<String>) : PlaylistModel? {
         val apiResult = playlistRemoteDatasource.createPlaylist(name, description, videoIdsList)
-        if (apiResult !is ApiResult.NetworkResult.Success) return null
+        if (apiResult !is ApiResult.Success || apiResult.data == null) return null
         return apiResult.data.toPlayListModel()
     }
     suspend fun uploadThumbnailForPlaylist(playlistId: String, thumbnailFile: File) : Boolean {
         val apiResult = playlistRemoteDatasource.uploadThumbnailForPlaylist(playlistId, thumbnailFile)
-        return apiResult is ApiResult.NetworkResult.Success
+        return apiResult is ApiResult.Success
     }
     suspend fun getPlaylistById(playlistId: String) : PlaylistModel? {
         val apiResult = playlistRemoteDatasource.getPlaylistById(playlistId)
-        if (apiResult !is ApiResult.NetworkResult.Success) return null
+        if (apiResult !is ApiResult.Success || apiResult.data == null) return null
         return apiResult.data.toPlayListModel()
     }
     suspend fun addVideoToPlaylist(playlistId: String, videoId: String) : Boolean {
         val apiResult = playlistRemoteDatasource.addVideoToPlaylist(playlistId, videoId)
-        return apiResult is ApiResult.NetworkResult.Success && apiResult.data
+        return apiResult is ApiResult.Success && apiResult.data == true
     }
     suspend fun removeVideoFromPlaylist(playlistId: String, videoId: String) : Boolean {
         val apiResult = playlistRemoteDatasource.removeVideoFromPlaylist(playlistId, videoId)
-        return apiResult is ApiResult.NetworkResult.Success && apiResult.data
+        return apiResult is ApiResult.Success && apiResult.data == true
     }
     suspend fun getAllPlaylistByUserId(userId: Long) : List<PlaylistModel> {
         val apiResult = playlistRemoteDatasource.getAllPlaylistByUserId(userId)
-        if (apiResult !is ApiResult.NetworkResult.Success) return emptyList()
+        if (apiResult !is ApiResult.Success || apiResult.data == null) return emptyList()
         return apiResult.data.map { it.toPlayListModel() }
     }
 }

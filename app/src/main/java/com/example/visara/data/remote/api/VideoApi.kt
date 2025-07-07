@@ -5,7 +5,7 @@ import com.example.visara.utils.getMimeTypeOrNull
 import com.example.visara.data.remote.common.ProgressRequestBody
 import com.example.visara.di.AuthorizedOkHttpClient
 import com.example.visara.di.UnauthenticatedOkhttpClient
-import com.google.gson.Gson
+import kotlinx.serialization.json.Json
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -23,7 +23,7 @@ import javax.inject.Singleton
 class VideoApi @Inject constructor(
     @param:AuthorizedOkHttpClient private val authorizedOkHttpClient: OkHttpClient,
     @param:UnauthenticatedOkhttpClient private val unauthorizedOkHttpClient: OkHttpClient,
-    private val gson: Gson,
+    private val json: Json,
 ) {
     fun getVideoById(videoId: String) : Response {
         val url: HttpUrl = BuildConfig.API_URL.toHttpUrl().newBuilder()
@@ -148,7 +148,7 @@ class VideoApi @Inject constructor(
             .addPathSegments("videos/new/")
             .build()
 
-        val requestBody: RequestBody = gson.toJson(
+        val requestBody: RequestBody = json.encodeToString(
             mapOf(
                 "title" to title,
                 "description" to description,
@@ -246,7 +246,7 @@ class VideoApi @Inject constructor(
             "isPrivate" to isPrivate
         )
 
-        val requestBody = gson.toJson(payload)
+        val requestBody = json.encodeToString(payload)
             .toRequestBody("application/json".toMediaTypeOrNull())
 
         val request: Request = Request.Builder()
@@ -286,7 +286,7 @@ class VideoApi @Inject constructor(
             .addPathSegments("videos/history")
             .build()
 
-        val requestBody = gson.toJson(
+        val requestBody = json.encodeToString(
             mapOf(
                 "videoId" to videoId,
                 "videoTitle" to videoTitle,

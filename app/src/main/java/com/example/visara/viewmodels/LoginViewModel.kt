@@ -3,7 +3,7 @@ package com.example.visara.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.visara.data.repository.AuthRepository
-import com.example.visara.data.repository.UserRepository
+import com.example.visara.domain.LoginUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,8 +16,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val authRepository: AuthRepository,
-    private val userRepository: UserRepository,
+    authRepository: AuthRepository,
+    private val loginUseCase: LoginUseCase,
 ) : ViewModel() {
     private var _uiState = MutableStateFlow(LoginScreenUiState())
     val uiState: StateFlow<LoginScreenUiState> = _uiState.asStateFlow()
@@ -34,9 +34,8 @@ class LoginViewModel @Inject constructor(
     fun login(username: String, password: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(isProcessing = true) }
-            val loginResult = authRepository.login(username, password)
+            val loginResult = loginUseCase(username, password)
             if (loginResult.isSuccess) {
-                userRepository.syncCurrentUser()
                 _uiState.update { oldState-> oldState.copy(isAuthenticated = true, isProcessing = false) }
                 _eventChannel.send(LoginScreenUiEvent.LoginSuccess)
             } else {

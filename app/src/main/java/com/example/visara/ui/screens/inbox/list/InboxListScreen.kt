@@ -37,7 +37,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.visara.R
 import com.example.visara.ui.components.BottomNavBar
-import com.example.visara.ui.navigation.Destination
+import com.example.visara.ui.Destination
 import com.example.visara.viewmodels.InboxListViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)

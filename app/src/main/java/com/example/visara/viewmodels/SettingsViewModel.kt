@@ -5,14 +5,13 @@ import android.app.LocaleManager
 import android.content.Context
 import android.os.Build
 import android.os.LocaleList
-import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.visara.data.model.UserModel
 import com.example.visara.data.repository.AppSettingsRepository
 import com.example.visara.data.repository.AuthRepository
 import com.example.visara.data.repository.UserRepository
+import com.example.visara.domain.LogoutUseCase
 import com.example.visara.ui.theme.AppTheme
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -34,6 +33,7 @@ class SettingsViewModel @Inject constructor(
     private val appSettingsRepository: AppSettingsRepository,
     private val authRepository: AuthRepository,
     private val userRepository: UserRepository,
+    private val logoutUseCase: LogoutUseCase,
     @param:SuppressLint("NewApi") private val localeManager: LocaleManager,
     @param:ApplicationContext private val appContext: Context,
 ) : ViewModel() {
@@ -55,21 +55,20 @@ class SettingsViewModel @Inject constructor(
 
     private fun getLocales() {
         try {
-            val appLocales = appContext.resources.configuration.locales
-            val appLocalesX = localeManager.applicationLocales
-            Log.d("CHECK_VAR", "Locales in configuration: $appLocales")
-            Log.d("CHECK_VAR", "Locales in localeManager: $appLocalesX")
-            val currentLocale = if (appLocales.size() > 0) {
-                appLocales.get(0)
-            } else { null }
-            _uiState.update {
-                it.copy(
-                    appLocales = appLocales,
-                    currentLocale = currentLocale,
-                )
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                val appLocales = appContext.resources.configuration.locales
+                val currentLocale = if (appLocales.size() > 0) {
+                    appLocales.get(0)
+                } else { null }
+                _uiState.update {
+                    it.copy(
+                        appLocales = appLocales,
+                        currentLocale = currentLocale,
+                    )
+                }
             }
         } catch (e: Exception) {
-            Log.e("CHECK_VAR", e.toString())
+            e.printStackTrace()
         }
     }
 
@@ -125,17 +124,18 @@ class SettingsViewModel @Inject constructor(
 
     fun changeLocale(locale: Locale) {
         viewModelScope.launch {
-            if (locale.toLanguageTag() != uiState.value.currentLocale?.toLanguageTag()) {
-                localeManager.applicationLocales = LocaleList(locale)
-                _uiState.update { it.copy(currentLocale = locale) }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                if (locale.toLanguageTag() != uiState.value.currentLocale?.toLanguageTag()) {
+                    localeManager.applicationLocales = LocaleList(locale)
+                    _uiState.update { it.copy(currentLocale = locale) }
+                }
             }
         }
     }
 
     fun logout() {
         viewModelScope.launch(Dispatchers.IO) {
-            authRepository.logout()
-            userRepository.refreshCurrentUser()
+            logoutUseCase()
             _eventFlow.emit(SettingsScreenEvent.LogoutSuccess)
         }
     }

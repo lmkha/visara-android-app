@@ -2,7 +2,7 @@ package com.example.visara.data.remote.api
 
 import com.example.visara.BuildConfig
 import com.example.visara.di.UnauthenticatedOkhttpClient
-import com.google.gson.Gson
+import kotlinx.serialization.json.Json
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
@@ -16,14 +16,14 @@ import javax.inject.Singleton
 @Singleton
 class RefreshTokenApi @Inject constructor(
     @param:UnauthenticatedOkhttpClient private val unauthorizedOkHttpClient: OkHttpClient,
-    private val gson: Gson,
+    private val json: Json,
 ) {
     fun refreshToken(refreshToken: String, username: String) : Response {
         val url = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("auth/refresh")
             .build()
 
-        val requestBody: RequestBody = gson.toJson(
+        val requestBody: RequestBody = json.encodeToString(
             mapOf("username" to username)
         ).toRequestBody("application/json".toMediaTypeOrNull())
 

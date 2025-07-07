@@ -55,7 +55,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.visara.R
 import com.example.visara.ui.components.BottomNavBar
 import com.example.visara.ui.components.VideoItem
-import com.example.visara.ui.navigation.Destination
+import com.example.visara.ui.Destination
 import com.example.visara.ui.theme.LocalVisaraCustomColors
 import com.example.visara.viewmodels.HomeViewModel
 import kotlinx.coroutines.launch

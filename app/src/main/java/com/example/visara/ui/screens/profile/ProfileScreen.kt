@@ -6,7 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.visara.data.model.VideoModel
 import com.example.visara.ui.components.BottomNavBar
-import com.example.visara.ui.navigation.Destination
+import com.example.visara.ui.Destination
 import com.example.visara.viewmodels.ProfileViewModel
 
 @Composable

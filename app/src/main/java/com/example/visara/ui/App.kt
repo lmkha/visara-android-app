@@ -65,7 +65,6 @@ import androidx.navigation.toRoute
 import com.example.visara.data.model.VideoModel
 import com.example.visara.ui.components.LoginRequestDialog
 import com.example.visara.ui.components.rememberLoginRequestDialogState
-import com.example.visara.ui.navigation.Destination
 import com.example.visara.ui.screens.add_new_video.AddNewVideoScreen
 import com.example.visara.ui.screens.add_new_video.AddNewVideoStep
 import com.example.visara.ui.screens.edit_profile.EditProfileScreen
@@ -81,6 +80,9 @@ import com.example.visara.ui.screens.inbox.studio.StudioInboxScreen
 import com.example.visara.ui.screens.inbox.system_notification.SystemNotificationInboxScreen
 import com.example.visara.ui.screens.login.LoginScreen
 import com.example.visara.ui.screens.profile.ProfileScreen
+import com.example.visara.ui.screens.qrcode.QRCodeGereratorScreen
+import com.example.visara.ui.screens.qrcode.QRCodeScannerScreen
+import com.example.visara.ui.screens.qrcode.QRCodeScreen
 import com.example.visara.ui.screens.search.SearchScreen
 import com.example.visara.ui.screens.settings.SettingsScreen
 import com.example.visara.ui.screens.studio.StudioScreen
@@ -98,8 +100,8 @@ import com.example.visara.viewmodels.FollowScreenViewModel
 import com.example.visara.viewmodels.ProfileViewModel
 import com.example.visara.viewmodels.SearchViewModel
 import com.example.visara.viewmodels.VideoDetailViewModel
-import com.google.gson.Gson
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 import kotlin.math.roundToInt
 
 @Composable
@@ -190,10 +192,10 @@ fun App(
                 NavHost(
                     navController = navController,
                     startDestination = Destination.Main,
+//                    startDestination = Destination.QRCode,
                     modifier = Modifier.fillMaxSize()
                 ) {
                     navigation<Destination.Main>(startDestination = Destination.Main.Home) {
-                        val currentAvatarUrl = appState.currentUser?.networkAvatarUrl
                         composable<Destination.Main.Home> {
                             HomeScreen(
                                 navigateToSearchScreen = { navController.navigate(Destination.Search()) },
@@ -204,7 +206,7 @@ fun App(
                                         )
                                     )
                                 },
-                                currentAvatarUrl = currentAvatarUrl,
+                                currentAvatarUrl = appState.currentUser?.networkAvatarUrl,
                                 onBotNavigate = {
                                     botNavBarNavigate(it)
                                 }
@@ -221,7 +223,7 @@ fun App(
                                 onNavigateToLoginScreen = {
                                     navController.navigate(Destination.Login)
                                 },
-                                currentAvatarUrl = currentAvatarUrl,
+                                currentAvatarUrl = appState.currentUser?.networkAvatarUrl,
                                 onBotNavigate = {
                                     botNavBarNavigate(it)
                                 }
@@ -301,7 +303,7 @@ fun App(
                                     onOpenNewFollowersInbox = { navController.navigate(Destination.Main.Inbox.NewFollowersInbox) },
                                     onOpenSystemNotificationInbox = { navController.navigate(Destination.Main.Inbox.SystemNotificationInbox) },
                                     openStudioInbox = { navController.navigate(Destination.Main.Inbox.Studio) },
-                                    currentAvatarUrl = currentAvatarUrl,
+                                    currentAvatarUrl = appState.currentUser?.networkAvatarUrl,
                                     onBotNavigate = {
                                         botNavBarNavigate(it)
                                     }
@@ -377,7 +379,7 @@ fun App(
                                 onNavigateToQRCodeScreen = {},
                                 onNavigateToEditVideoScreen = { video ->
                                     coroutineScope.launch {
-                                        val videoJson = Gson().toJson(video)
+                                        val videoJson = Json.encodeToString(video)
                                         navController.navigate(Destination.EditVideo(videoJson = videoJson))
                                     }
                                 },
@@ -385,7 +387,7 @@ fun App(
                                     navController.navigate(Destination.EditProfile)
                                 },
                                 profileRoute = route.route,
-                                currentAvatarUrl = currentAvatarUrl,
+                                currentAvatarUrl = appState.currentUser?.networkAvatarUrl,
                                 onBotNavigate = {
                                     botNavBarNavigate(it)
                                 }
@@ -497,7 +499,7 @@ fun App(
                     }
                     composable<Destination.EditVideo> { backStackEntry ->
                         val route: Destination.EditVideo = backStackEntry.toRoute()
-                        val video = Gson().fromJson(route.videoJson, VideoModel::class.java)
+                        val video = Json.decodeFromString<VideoModel>(route.videoJson)
                         val viewModel: EditVideoViewModel = hiltViewModel()
                         viewModel.setVideo(video)
                         EditVideoScreen(
@@ -510,6 +512,22 @@ fun App(
                         EditProfileScreen(
                             onBack = { navController.popBackStack() },
                             modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                    composable<Destination.QRCodeGenerate> {
+                        QRCodeGereratorScreen(
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                    composable<Destination.QRCodeScan> {
+                        QRCodeScannerScreen(
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    }
+                    composable<Destination.QRCode> {
+                        QRCodeScreen(
+                            onNavigateToGenerateQRCode = { navController.navigate(Destination.QRCodeGenerate) },
+                            onNavigateToScanQRCode = { navController.navigate(Destination.QRCodeScan) }
                         )
                     }
                 }

@@ -3,7 +3,7 @@ package com.example.visara.data.remote.api
 import com.example.visara.BuildConfig
 import com.example.visara.di.AuthorizedOkHttpClient
 import com.example.visara.di.UnauthenticatedOkhttpClient
-import com.google.gson.Gson
+import kotlinx.serialization.json.Json
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -19,14 +19,14 @@ import javax.inject.Singleton
 class AuthApi @Inject constructor(
     @param:AuthorizedOkHttpClient private val authorizedOkHttpClient: OkHttpClient,
     @param:UnauthenticatedOkhttpClient private val unauthorizedOkHttpClient: OkHttpClient,
-    private val gson: Gson,
+    private val json: Json,
 ) {
     fun login(username: String, password: String): Response {
         val url = BuildConfig.API_URL.toHttpUrl().newBuilder()
             .addPathSegments("auth/sign-in")
             .build()
 
-        val requestBody = gson.toJson(
+        val requestBody = json.encodeToString(
             mapOf("username" to username, "password" to password)
         ).toRequestBody("application/json".toMediaTypeOrNull())
 
@@ -75,7 +75,7 @@ class AuthApi @Inject constructor(
             .addPathSegments("users/")
             .build()
 
-        val payload = gson.toJson(
+        val payload = json.encodeToString(
             mapOf(
                 "isPrivate" to isPrivate,
                 "fullName" to fullName,
@@ -103,7 +103,7 @@ class AuthApi @Inject constructor(
             .addPathSegments("auth/register")
             .build()
 
-        val requestBody = gson.toJson(
+        val requestBody = json.encodeToString(
             mapOf(
                 "username" to username,
                 "password" to password,

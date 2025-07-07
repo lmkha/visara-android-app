@@ -2,31 +2,23 @@ package com.example.visara.data.remote.datasource
 
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.api.UserApi
+import com.example.visara.data.remote.common.ApiResponse
 import com.example.visara.data.remote.dto.FollowerUserDto
 import com.example.visara.data.remote.dto.FollowingUserDto
 import com.example.visara.data.remote.dto.UserDto
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class UserRemoteDataSource @Inject constructor(
     private val userApi: UserApi,
-    gson: Gson,
-) : RemoteDataSource(gson) {
+    json: Json,
+) : RemoteDataSource(json) {
     suspend fun getCurrentUser() : ApiResult<UserDto> {
         return callApi({ userApi.getCurrentUser() }) { response ->
-            val responseBody = response.body?.string()
-
-            if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                val dataJson = gson.toJson(jsonObject["data"])
-                val user = gson.fromJson(dataJson, UserDto::class.java)
-                ApiResult.NetworkResult.Success(user)
-            } else {
-                extractFailureFromResponseBody(responseBody)
-            }
+            val responseBody = response.body?.string() ?: return@callApi ApiResult.Failure()
+            json.decodeFromString<ApiResponse<UserDto>>(responseBody).toApiResult()
         }
     }
 
@@ -35,10 +27,7 @@ class UserRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                val dataJson = gson.toJson(jsonObject["data"])
-                val user = gson.fromJson(dataJson, UserDto::class.java)
-                ApiResult.NetworkResult.Success(user)
+                json.decodeFromString<ApiResult.Success<UserDto>>(responseBody)
             } else {
                 extractFailureFromResponseBody(responseBody)
             }
@@ -50,11 +39,7 @@ class UserRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                val dataJson = gson.toJson(jsonObject["data"])
-                val type = object : TypeToken<List<UserDto>>() {}.type
-                val userDtoList: List<UserDto> = gson.fromJson(dataJson, type)
-                ApiResult.NetworkResult.Success(userDtoList)
+                json.decodeFromString<ApiResult.Success<List<UserDto>>>(responseBody)
             } else {
                 extractFailureFromResponseBody(responseBody)
             }
@@ -63,64 +48,52 @@ class UserRemoteDataSource @Inject constructor(
 
     suspend fun followUser(username: String) : ApiResult<Unit> {
         return callApi({ userApi.followUser(username) }) { response ->
-            val responseBody = response.body?.string()
+            if (!response.isSuccessful) return@callApi ApiResult.Failure()
+            val responseBody = response.body?.string() ?: return@callApi ApiResult.Failure()
 
-            val jsonObject = gson.fromJson(responseBody, Map::class.java)
-            val successValue = jsonObject["success"]
-            val success = successValue is Boolean && successValue
-
-            if (response.isSuccessful && success) {
-                ApiResult.NetworkResult.Success(Unit)
-            } else {
-                extractFailureFromResponseBody(responseBody)
-            }
+            json.decodeFromString<ApiResponse<Nothing>>(responseBody).toApiResult()
         }
     }
 
     suspend fun unfollowUser(username: String) : ApiResult<Unit> {
         return callApi({ userApi.unfollowUser(username) }) { response ->
-            val responseBody = response.body?.string()
+            if (!response.isSuccessful) return@callApi ApiResult.Failure()
+            val responseBody = response.body?.string() ?: return@callApi ApiResult.Failure()
 
-            val jsonObject = gson.fromJson(responseBody, Map::class.java)
-            val successValue = jsonObject["success"]
-            val success = successValue is Boolean && successValue
-
-            if (response.isSuccessful && success) {
-                ApiResult.NetworkResult.Success(Unit)
-            } else {
-                extractFailureFromResponseBody(responseBody)
+            json.decodeFromString<ApiResponse<Nothing>>(responseBody).let {
+                if (it.success) {
+                    ApiResult.Success(Unit)
+                } else {
+                    ApiResult.Failure()
+                }
             }
         }
     }
 
     suspend fun checkUserIsMyFollower(username: String) : ApiResult<Unit> {
         return callApi({ userApi.checkUserIsMyFollower(username) }) { response ->
-            val responseBody = response.body?.string()
-
-            val jsonObject = gson.fromJson(responseBody, Map::class.java)
-            val messageValue = jsonObject["message"]
-            val success = messageValue is String && messageValue == "Followed"
-
-            if (response.isSuccessful && success) {
-                ApiResult.NetworkResult.Success(Unit)
-            } else {
-                extractFailureFromResponseBody(responseBody)
+            if (!response.isSuccessful) return@callApi ApiResult.Failure()
+            val responseBody = response.body?.string() ?: return@callApi ApiResult.Failure()
+            json.decodeFromString<ApiResponse<Nothing>>(responseBody).let {
+                if (it.message == "Followed") {
+                    ApiResult.Success(Unit)
+                } else {
+                    ApiResult.Failure()
+                }
             }
         }
     }
 
     suspend fun checkIsFollowingThisUser(username: String) : ApiResult<Unit> {
         return callApi({ userApi.checkIsFollowingThisUser(username) }) { response ->
-            val responseBody = response.body?.string()
-
-            val jsonObject = gson.fromJson(responseBody, Map::class.java)
-            val messageValue = jsonObject["message"]
-            val success = messageValue is String && messageValue == "Followed"
-
-            if (response.isSuccessful && success) {
-                ApiResult.NetworkResult.Success(Unit)
-            } else {
-                extractFailureFromResponseBody(responseBody)
+            if (!response.isSuccessful) return@callApi ApiResult.Failure()
+            val responseBody = response.body?.string() ?: return@callApi ApiResult.Failure()
+            json.decodeFromString<ApiResponse<Nothing>>(responseBody).let {
+                if (it.message == "Followed") {
+                    ApiResult.Success(Unit)
+                } else {
+                    ApiResult.Failure()
+                }
             }
         }
     }
@@ -130,11 +103,7 @@ class UserRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                val dataJson = gson.toJson(jsonObject["data"])
-                val type = object : TypeToken<List<FollowerUserDto>>() {}.type
-                val userDtoList: List<FollowerUserDto> = gson.fromJson(dataJson, type)
-                ApiResult.NetworkResult.Success(userDtoList)
+                json.decodeFromString<ApiResult.Success<List<FollowerUserDto>>>(responseBody)
             } else {
                 extractFailureFromResponseBody(responseBody)
             }
@@ -146,11 +115,7 @@ class UserRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                val dataJson = gson.toJson(jsonObject["data"])
-                val type = object : TypeToken<List<FollowingUserDto>>() {}.type
-                val userDtoList: List<FollowingUserDto> = gson.fromJson(dataJson, type)
-                ApiResult.NetworkResult.Success(userDtoList)
+                json.decodeFromString<ApiResult.Success<List<FollowingUserDto>>>(responseBody)
             } else {
                 extractFailureFromResponseBody(responseBody)
             }

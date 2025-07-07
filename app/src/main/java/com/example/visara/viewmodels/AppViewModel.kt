@@ -10,21 +10,22 @@ import com.example.visara.data.repository.UserRepository
 import com.example.visara.PlayerManager
 import com.example.visara.VideoDetailState
 import com.example.visara.utils.NetworkMonitor
-import com.example.visara.ui.navigation.Destination
+import com.example.visara.ui.Destination
 import com.example.visara.ui.theme.AppTheme
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
-import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 
@@ -35,7 +36,8 @@ class AppViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val playerManager: PlayerManager,
     private val networkMonitor: NetworkMonitor,
-    private val gson: Gson,
+//    private val gson: Gson,
+    private val json: Json,
 ) : ViewModel() {
     private val _appState = MutableStateFlow(AppState())
     val appState: StateFlow<AppState> = _appState.asStateFlow()
@@ -80,7 +82,7 @@ class AppViewModel @Inject constructor(
 
     private fun observerCurrentUser() {
         viewModelScope.launch {
-            userRepository.currentUser.collect { currentUser->
+            userRepository.currentUser.collectLatest { currentUser->
                 _appState.update { it.copy(currentUser = currentUser) }
             }
         }
@@ -155,7 +157,7 @@ class AppViewModel @Inject constructor(
                     when (route) {
                         "studio" -> {
                             destination = intent.getStringExtra("destination")?.let {
-                                gson.fromJson(it, Destination.Studio::class.java)
+                                json.decodeFromString<Destination.Studio>(it)
                             }
                         }
 

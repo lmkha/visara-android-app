@@ -2,7 +2,9 @@ package com.example.visara.data.remote.dto
 
 import com.example.visara.data.model.FollowUserModel
 import com.example.visara.data.model.UserModel
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class UserDto(
     val createdAt: String = "",
     val updatedAt: String = "",
@@ -42,6 +44,7 @@ data class UserDto(
     }
 }
 
+@Serializable
 data class FollowingUserDto(
     val id: Long = 0L,
     val username: String = "",
@@ -61,6 +64,7 @@ data class FollowingUserDto(
     }
 }
 
+@Serializable
 data class FollowerUserDto(
     val id: Long = 0L,
     val username: String = "",

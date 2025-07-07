@@ -11,25 +11,29 @@ import com.example.visara.data.model.VideoLikeNotificationData
 import com.example.visara.data.remote.dto.NotificationDto
 import com.example.visara.notification.NotificationType
 import com.example.visara.service.fcm.RemoteNotificationType
-import com.google.gson.Gson
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromJsonElement
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class NotificationMapper @Inject constructor(private val gson: Gson) {
+class NotificationMapper @Inject constructor(private val json: Json) {
     fun toModel(notificationDto: NotificationDto) : NotificationModel {
         val type =  RemoteNotificationType.entries
             .find {it.remoteTypeString == notificationDto.type }?.toNotificationType()
             ?: RemoteNotificationType.UNKNOWN.toNotificationType()
         with(notificationDto) {
-            val data: NotificationData? = when (type) {
-                NotificationType.VIDEO_UPLOAD_PROCESSED -> gson.fromJson(dataJsonObject, NewVideoProcessedNotificationData::class.java)
-                NotificationType.VIDEO_LIKED -> gson.fromJson(dataJsonObject, VideoLikeNotificationData::class.java)
-                NotificationType.COMMENT_LIKED -> gson.fromJson(dataJsonObject, CommentLikeNotificationData::class.java)
-                NotificationType.COMMENT_ON_VIDEO -> gson.fromJson(dataJsonObject, CommentOnVideoNotificationData::class.java)
-                else -> null
-            }
+            val data = if (dataJsonObject != null) {
+                when (type) {
+                    NotificationType.VIDEO_UPLOAD_PROCESSED -> json.decodeFromJsonElement<NewVideoProcessedNotificationData>(dataJsonObject)
+                    NotificationType.VIDEO_LIKED -> json.decodeFromJsonElement<VideoLikeNotificationData>(dataJsonObject)
+                    NotificationType.COMMENT_LIKED -> json.decodeFromJsonElement<CommentLikeNotificationData>(dataJsonObject)
+                    NotificationType.COMMENT_ON_VIDEO -> json.decodeFromJsonElement<CommentOnVideoNotificationData>(dataJsonObject)
+                    else -> null
+                }
+            } else null
+
             val localId = UUID.nameUUIDFromBytes(id.toByteArray()).toString()
             return NotificationModel(
                 remoteId = id,
@@ -51,11 +55,11 @@ class NotificationMapper @Inject constructor(private val gson: Gson) {
         with(entity) {
             val data: NotificationData? = rawData?.let {
                 when (type) {
-                    NotificationType.VIDEO_UPLOAD_PROCESSED -> gson.fromJson(rawData, NewVideoProcessedNotificationData::class.java)
-                    NotificationType.VIDEO_LIKED -> gson.fromJson(rawData, VideoLikeNotificationData::class.java)
-                    NotificationType.COMMENT_LIKED -> gson.fromJson(rawData, CommentLikeNotificationData::class.java)
-                    NotificationType.COMMENT_ON_VIDEO -> gson.fromJson(rawData, CommentOnVideoNotificationData::class.java)
-                    NotificationType.NEW_MESSAGE -> gson.fromJson(rawData, NewChatMessageNotificationData::class.java)
+                    NotificationType.VIDEO_UPLOAD_PROCESSED -> json.decodeFromString<NewVideoProcessedNotificationData>(rawData)
+                    NotificationType.VIDEO_LIKED -> json.decodeFromString<VideoLikeNotificationData>(rawData)
+                    NotificationType.COMMENT_LIKED -> json.decodeFromString<CommentLikeNotificationData>(rawData)
+                    NotificationType.COMMENT_ON_VIDEO -> json.decodeFromString<CommentOnVideoNotificationData>(rawData)
+                    NotificationType.NEW_MESSAGE -> json.decodeFromString<NewChatMessageNotificationData>(rawData)
                     else -> null
                 }
             }
@@ -88,7 +92,7 @@ class NotificationMapper @Inject constructor(private val gson: Gson) {
                 isRead = isRead,
                 createdAt = createdAt,
                 updatedAt = updatedAt,
-                rawData = data?.let { gson.toJson(it) },
+                rawData = data?.let { json.encodeToString(it) },
             )
         }
     }

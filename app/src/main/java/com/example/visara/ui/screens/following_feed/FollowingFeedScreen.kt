@@ -39,7 +39,7 @@ import com.example.visara.R
 import com.example.visara.ui.components.BottomNavBar
 import com.example.visara.ui.components.UserAvatar
 import com.example.visara.ui.components.VideoItem
-import com.example.visara.ui.navigation.Destination
+import com.example.visara.ui.Destination
 import com.example.visara.viewmodels.FollowingFeedViewModel
 
 // New video of user that you are following

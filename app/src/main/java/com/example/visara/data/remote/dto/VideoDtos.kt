@@ -1,8 +1,10 @@
 package com.example.visara.data.remote.dto
 
 import com.example.visara.data.model.VideoModel
+import kotlinx.serialization.Serializable
 
 
+@Serializable
 data class VideoDto(
     val createdAt: String = "",
     val updatedAt: String = "",

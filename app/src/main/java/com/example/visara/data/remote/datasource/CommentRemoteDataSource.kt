@@ -1,28 +1,25 @@
 package com.example.visara.data.remote.datasource
 
 import com.example.visara.data.remote.api.CommentApi
+import com.example.visara.data.remote.common.ApiResponse
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.dto.CommentDto
 import com.example.visara.data.remote.dto.LikeCommentDto
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class CommentRemoteDataSource @Inject constructor(
     private val commentApi: CommentApi,
-    gson: Gson,
-) : RemoteDataSource(gson) {
+    json: Json,
+) : RemoteDataSource(json) {
     suspend fun addComment(videoId: String, replyTo: String?, content: String) : ApiResult<CommentDto> {
         return callApi({ commentApi.addComment(videoId, replyTo, content) }) { response ->
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                val jsonObject =  gson.fromJson(responseBody, Map::class.java)
-                val dataJson = gson.toJson(jsonObject["data"])
-                val commentDto = gson.fromJson(dataJson, CommentDto::class.java)
-                ApiResult.NetworkResult.Success(commentDto)
+                json.decodeFromString<ApiResult.Success<CommentDto>>(responseBody)
             } else {
                 return@callApi extractFailureFromResponseBody(responseBody)
             }
@@ -34,10 +31,7 @@ class CommentRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                val jsonObject =  gson.fromJson(responseBody, Map::class.java)
-                val dataJson = gson.toJson(jsonObject["data"])
-                val commentDto = gson.fromJson(dataJson, CommentDto::class.java)
-                ApiResult.NetworkResult.Success(commentDto)
+                json.decodeFromString<ApiResult.Success<CommentDto>>(responseBody)
             } else {
                 extractFailureFromResponseBody(responseBody)
             }
@@ -55,11 +49,7 @@ class CommentRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                val jsonObject =  gson.fromJson(responseBody, Map::class.java)
-                val dataJson = gson.toJson(jsonObject["data"])
-                val type = object : TypeToken<List<CommentDto>>() {}.type
-                val commentDtoList: List<CommentDto> = gson.fromJson(dataJson, type)
-                ApiResult.NetworkResult.Success(commentDtoList)
+                json.decodeFromString<ApiResult.Success<List<CommentDto>>>(responseBody)
             } else {
                 extractFailureFromResponseBody(responseBody)
             }
@@ -78,11 +68,7 @@ class CommentRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                val jsonObject =  gson.fromJson(responseBody, Map::class.java)
-                val dataJson = gson.toJson(jsonObject["data"])
-                val type = object : TypeToken<List<CommentDto>>() {}.type
-                val commentDtoList: List<CommentDto> = gson.fromJson(dataJson, type)
-                ApiResult.NetworkResult.Success(commentDtoList)
+                json.decodeFromString<ApiResult.Success<List<CommentDto>>>(responseBody)
             } else {
                 extractFailureFromResponseBody(responseBody)
             }
@@ -94,10 +80,7 @@ class CommentRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                val jsonObject =  gson.fromJson(responseBody, Map::class.java)
-                val dataJson = gson.toJson(jsonObject["data"])
-                val likeCommentDto = gson.fromJson(dataJson, LikeCommentDto::class.java)
-                ApiResult.NetworkResult.Success(likeCommentDto)
+                json.decodeFromString<ApiResult.Success<LikeCommentDto>>(responseBody)
             } else {
                 extractFailureFromResponseBody(responseBody)
             }
@@ -108,7 +91,7 @@ class CommentRemoteDataSource @Inject constructor(
         return callApi({ commentApi.unlikeComment(commentId) }) { response ->
             val responseBody = response.body?.string()
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                ApiResult.NetworkResult.Success(Unit)
+                ApiResult.Success(Unit)
             } else {
                 extractFailureFromResponseBody(responseBody)
             }
@@ -120,10 +103,13 @@ class CommentRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful) {
-                val jsonObject =  gson.fromJson(responseBody, Map::class.java)
-                val message = jsonObject["message"]
-                if (message is String && message.isNotBlank() && message == "Liked") {
-                    return@callApi ApiResult.NetworkResult.Success(Unit)
+                val responseBody = response.body?.string() ?: return@callApi ApiResult.Failure()
+                json.decodeFromString<ApiResponse<Nothing>>(responseBody).let {
+                    if (it.message == "Liked") {
+                        ApiResult.Success(Unit)
+                    } else {
+                        ApiResult.Failure()
+                    }
                 }
             }
 
@@ -133,14 +119,10 @@ class CommentRemoteDataSource @Inject constructor(
 
     suspend fun deleteComment(commentId: String) : ApiResult<Unit> {
         return callApi({ commentApi.deleteComment(commentId) }) { response ->
-            val responseBody = response.body?.string()
+            val responseBody = response.body?.string() ?: return@callApi ApiResult.Failure()
 
             if (response.isSuccessful) {
-                val jsonObject =  gson.fromJson(responseBody, Map::class.java)
-                val success = jsonObject["success"]
-                if (success is Boolean && success) {
-                    return@callApi ApiResult.NetworkResult.Success(Unit)
-                }
+                json.decodeFromString<ApiResponse<Unit>>(responseBody)
             }
 
             return@callApi extractFailureFromResponseBody(responseBody)
@@ -152,10 +134,7 @@ class CommentRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                val jsonObject = gson.fromJson(responseBody, Map::class.java)
-                val dataJson = gson.toJson(jsonObject["data"])
-                val commentDto = gson.fromJson(dataJson, CommentDto::class.java)
-                ApiResult.NetworkResult.Success(commentDto)
+                json.decodeFromString<ApiResult.Success<CommentDto>>(responseBody)
             } else {
                 extractFailureFromResponseBody(responseBody)
             }

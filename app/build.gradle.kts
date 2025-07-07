@@ -139,8 +139,6 @@ dependencies {
     implementation(libs.androidx.media3.ui)
     // For building media playback UIs using Jetpack Compose
     implementation(libs.androidx.media3.media3.ui.compose)
-    // For building media playback UIs for Android TV using the Jetpack Leanback library
-    implementation(libs.androidx.media3.ui.leanback)
     // For exposing and controlling media sessions
     implementation(libs.androidx.media3.session)
     // For extracting data from media containers
@@ -177,8 +175,6 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.logging.interceptor)
 
-    implementation(libs.gson)
-
     implementation(libs.androidx.security.crypto)
 
     implementation(libs.androidx.navigation.compose)
@@ -201,6 +197,21 @@ dependencies {
     implementation(libs.firebase.messaging)
 
     implementation(libs.androidx.lifecycle.process)
+
+    // Generate QR Code
+    implementation(libs.zxing.android.embedded)
+
+    // Scan QR Code
+    implementation(libs.barcode.scanning)
+
+    // CameraX
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.video)
+    implementation(libs.androidx.camera.view)
+    implementation(libs.androidx.camera.mlkit.vision)
+    implementation(libs.androidx.camera.extensions)
 }
 
 kotlin {
