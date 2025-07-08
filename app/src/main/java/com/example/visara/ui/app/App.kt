@@ -58,6 +58,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navDeepLink
@@ -167,7 +168,7 @@ fun App(
                 bottomBar = {
                     Column {
                         BottomNavBar(
-                            navController = navController,
+                            currentNavBackstackEntry = navController.currentBackStackEntryAsState().value,
                             currentUserAvatarUrl = appState.currentUser?.networkAvatarUrl,
                             onNavigate = { navController.navigate(it) }
                         )

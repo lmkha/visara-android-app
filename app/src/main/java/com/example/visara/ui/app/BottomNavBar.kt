@@ -19,10 +19,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.visara.R
 import com.example.visara.ui.Destination
 import com.example.visara.ui.components.UserAvatar
@@ -36,19 +35,21 @@ import com.example.visara.ui.components.UserAvatar
  * is inspired by the AndroidX Navigation Compose demos, specifically:
  * [BottomBarNavDemo.kt](https://cs.android.com/androidx/platform/frameworks/support/+/androidx-main:navigation/navigation-compose/integration-tests/navigation-demos/src/main/java/androidx/navigation/compose/demos/BottomBarNavDemo.kt;l=64)
  *
- * @param navController The [NavHostController] managing navigation within the app.
+ * @param currentNavBackstackEntry The [NavBackStackEntry] representing the current screen's entry
+ * in the navigation stack. This is typically obtained from
+ * `navController.currentBackStackEntryAsState().value`.
  * @param currentUserAvatarUrl The URL for the current user's avatar, used for the profile icon. Can be null.
  * @param onNavigate A lambda function to handle navigation actions when a bottom navigation item is clicked.
  */
 @Composable
 fun BottomNavBar(
-    navController: NavHostController,
+    currentNavBackstackEntry: NavBackStackEntry?,
     currentUserAvatarUrl: String?,
     onNavigate: (Destination) -> Unit
 ) {
 
-    val navBackstackEntry = navController.currentBackStackEntryAsState().value
-    val currentDestination = navBackstackEntry?.destination
+//    val navBackstackEntry = navController.currentBackStackEntryAsState().value
+    val currentDestination = currentNavBackstackEntry?.destination
 
     val shouldShowBottomBar = currentDestination?.hierarchy?.any { navDestination ->
         requiredDisplayBotNavBarDestinations.any { destination -> navDestination.hasRoute(destination::class) }
