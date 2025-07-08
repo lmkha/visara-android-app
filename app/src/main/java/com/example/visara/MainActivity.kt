@@ -19,7 +19,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import com.example.visara.ui.App
+import com.example.visara.ui.app.App
 import com.example.visara.viewmodels.AppViewModel
 import dagger.hilt.android.AndroidEntryPoint
 

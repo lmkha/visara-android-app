@@ -1,7 +1,10 @@
 package com.example.visara.data.model
 
 import android.net.Uri
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
+@Serializable
 data class VideoModel(
     val createdAt: String = "",
     val updatedAt: String = "",
@@ -16,8 +19,6 @@ data class VideoModel(
     val description: String = "",
     val hashtags: List<String> = emptyList(),
     val thumbnailUrl: String = "",
-    @Transient val localThumbnailUri: Uri? = null,
-    @Transient val localVideoUri: Uri? = null,
     val viewsCount: Long = 0L,
     val likesCount: Long = 0L,
     val commentsCount: Long = 0L,
@@ -26,4 +27,8 @@ data class VideoModel(
     val isUploaded: Boolean = false,
     val isProcessed: Boolean = false,
     val duration: Long = 0L,
+    @Transient
+    val localThumbnailUri: Uri? = null,
+    @Transient
+    val localVideoUri: Uri? = null,
 )

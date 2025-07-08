@@ -101,9 +101,8 @@ class AddNewVideoViewModel @Inject constructor(
                 videoMetaData = newVideoMetaData,
                 videoUri = data.videoUri.toString(),
                 thumbnailUri = data.thumbnailUri.toString(),
-            )
-            val jsonParams = json.encodeToString(params)
-            val inputData = workDataOf(UploadVideoWorker.KEY to jsonParams)
+            ).let { json.encodeToString(it) }
+            val inputData = workDataOf(UploadVideoWorker.KEY to params)
             val request = OneTimeWorkRequestBuilder<UploadVideoWorker>()
                 .setInputData(inputData)
                 .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)

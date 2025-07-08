@@ -19,7 +19,7 @@ class CommentRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                json.decodeFromString<ApiResult.Success<CommentDto>>(responseBody)
+                json.decodeFromString<ApiResponse<CommentDto>>(responseBody).toApiResult()
             } else {
                 return@callApi extractFailureFromResponseBody(responseBody)
             }
@@ -31,7 +31,7 @@ class CommentRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                json.decodeFromString<ApiResult.Success<CommentDto>>(responseBody)
+                json.decodeFromString<ApiResponse<CommentDto>>(responseBody).toApiResult()
             } else {
                 extractFailureFromResponseBody(responseBody)
             }
@@ -49,7 +49,7 @@ class CommentRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                json.decodeFromString<ApiResult.Success<List<CommentDto>>>(responseBody)
+                json.decodeFromString<ApiResponse<List<CommentDto>>>(responseBody).toApiResult()
             } else {
                 extractFailureFromResponseBody(responseBody)
             }
@@ -68,7 +68,7 @@ class CommentRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                json.decodeFromString<ApiResult.Success<List<CommentDto>>>(responseBody)
+                json.decodeFromString<ApiResponse<List<CommentDto>>>(responseBody).toApiResult()
             } else {
                 extractFailureFromResponseBody(responseBody)
             }
@@ -134,7 +134,7 @@ class CommentRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                json.decodeFromString<ApiResult.Success<CommentDto>>(responseBody)
+                json.decodeFromString<ApiResponse<CommentDto>>(responseBody).toApiResult()
             } else {
                 extractFailureFromResponseBody(responseBody)
             }

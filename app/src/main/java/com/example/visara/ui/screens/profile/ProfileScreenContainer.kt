@@ -91,7 +91,6 @@ fun ProfileScreenContainer(
     modifier: Modifier = Modifier,
     uiState: ProfileScreenUiState,
     uiEvent: Flow<ProfileEvent>,
-    bottomNavBar: @Composable () -> Unit,
     onBack: () -> Unit,
     follow: () -> Unit,
     unfollow: () -> Unit,
@@ -238,11 +237,6 @@ fun ProfileScreenContainer(
                     ),
                 )
             },
-            bottomBar = {
-                if (uiState.isMyProfile) {
-                    bottomNavBar()
-                }
-            }
         ) { innerPadding ->
                 LazyColumn(
                     state = mainScrollState,

@@ -1,4 +1,4 @@
-package com.example.visara.ui
+package com.example.visara.ui.app
 
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
@@ -63,6 +63,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navDeepLink
 import androidx.navigation.toRoute
 import com.example.visara.data.model.VideoModel
+import com.example.visara.ui.Destination
 import com.example.visara.ui.components.LoginRequestDialog
 import com.example.visara.ui.components.rememberLoginRequestDialogState
 import com.example.visara.ui.screens.add_new_video.AddNewVideoScreen
@@ -125,16 +126,6 @@ fun App(
     val navController = rememberNavController()
     var enableBottomPaddingForVideoDetail by remember { mutableStateOf(true) }
     val loginRequestDialogState = rememberLoginRequestDialogState()
-    fun botNavBarNavigate(dest: Destination) {
-        coroutineScope.launch {
-            if (dest.route == Destination.Main.AddNewVideo().route && !appState.isAuthenticated) {
-                loginRequestDialogState.show("Please log in to post a new video.")
-            } else {
-                val popped = navController.popBackStack(route = dest, inclusive = false)
-                if (!popped) navController.navigate(dest)
-            }
-        }
-    }
 
     LaunchedEffect(
         key1 = appState.appTheme,
@@ -175,14 +166,16 @@ fun App(
             Scaffold(
                 bottomBar = {
                     Column {
-                        AnimatedVisibility(
-                            visible = appState.shouldDisplayIsOnlineStatus,
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding())
-                                    .background(color = if (appState.isOnline) Color.Green else Color.Red)
+                        BottomNavBar(
+                            navController = navController,
+                            currentUserAvatarUrl = appState.currentUser?.networkAvatarUrl,
+                            onNavigate = { navController.navigate(it) }
+                        )
+                        AnimatedVisibility(visible = appState.shouldDisplayIsOnlineStatus) {
+                            Box(Modifier
+                                .fillMaxWidth()
+                                .height(WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding())
+                                .background(color = if (appState.isOnline) Color.Green else Color.Red)
                             )
                         }
                     }
@@ -206,10 +199,6 @@ fun App(
                                         )
                                     )
                                 },
-                                currentAvatarUrl = appState.currentUser?.networkAvatarUrl,
-                                onBotNavigate = {
-                                    botNavBarNavigate(it)
-                                }
                             )
                         }
                         composable<Destination.Main.FollowingFeed> {
@@ -223,10 +212,6 @@ fun App(
                                 onNavigateToLoginScreen = {
                                     navController.navigate(Destination.Login)
                                 },
-                                currentAvatarUrl = appState.currentUser?.networkAvatarUrl,
-                                onBotNavigate = {
-                                    botNavBarNavigate(it)
-                                }
                             )
                         }
                         composable<Destination.Main.AddNewVideo>(enterTransition = {
@@ -301,12 +286,9 @@ fun App(
                                 InboxListScreen(
                                     onOpenActivityInbox = { navController.navigate(Destination.Main.Inbox.ActivityInbox) },
                                     onOpenNewFollowersInbox = { navController.navigate(Destination.Main.Inbox.NewFollowersInbox) },
-                                    onOpenSystemNotificationInbox = { navController.navigate(Destination.Main.Inbox.SystemNotificationInbox) },
+                                    onOpenSystemNotificationInbox = { navController.navigate(
+                                        Destination.Main.Inbox.SystemNotificationInbox) },
                                     openStudioInbox = { navController.navigate(Destination.Main.Inbox.Studio) },
-                                    currentAvatarUrl = appState.currentUser?.networkAvatarUrl,
-                                    onBotNavigate = {
-                                        botNavBarNavigate(it)
-                                    }
                                 )
                             }
                             composable<Destination.Main.Inbox.ChatInbox>(
@@ -386,11 +368,6 @@ fun App(
                                 onNavigateToEditProfileScreen = {
                                     navController.navigate(Destination.EditProfile)
                                 },
-                                profileRoute = route.route,
-                                currentAvatarUrl = appState.currentUser?.networkAvatarUrl,
-                                onBotNavigate = {
-                                    botNavBarNavigate(it)
-                                }
                             )
                         }
                     }
@@ -486,7 +463,8 @@ fun App(
                         StudioScreen(
                             initialSelectedTag = selectedTag ?: StudioSelectedTag.ACTIVE,
                             onNavigateToAddNewVideoScreen = {
-                                navController.navigate(Destination.Main.AddNewVideo(
+                                navController.navigate(
+                                    Destination.Main.AddNewVideo(
                                     isPostDraft = true,
                                     localDraftVideoId = it,
                                 ))

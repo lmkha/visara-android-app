@@ -36,10 +36,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.visara.R
-import com.example.visara.ui.components.BottomNavBar
 import com.example.visara.ui.components.UserAvatar
 import com.example.visara.ui.components.VideoItem
-import com.example.visara.ui.Destination
 import com.example.visara.viewmodels.FollowingFeedViewModel
 
 // New video of user that you are following
@@ -51,23 +49,11 @@ fun FollowingFeedScreen(
     onNavigateToProfileScreen: (authorUsername: String) -> Unit,
     onNavigateToFollowingScreen: () -> Unit,
     onNavigateToLoginScreen: () -> Unit,
-    onBotNavigate: (Destination) -> Unit,
-    currentAvatarUrl: String?,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val pullToRefreshState = rememberPullToRefreshState()
 
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        bottomBar = {
-            BottomNavBar(
-                activeRoute = Destination.Main.FollowingFeed.route,
-                currentUserAvatarUrl = currentAvatarUrl,
-            ) {
-                onBotNavigate(it)
-            }
-        },
-    ) { innerPadding->
+    Scaffold(modifier = modifier.fillMaxSize()) { innerPadding->
         if (!uiState.isAuthenticated && !uiState.isLoadingFollowings && !uiState.isLoadingVideos) {
             Column(
                 verticalArrangement = Arrangement.Center,

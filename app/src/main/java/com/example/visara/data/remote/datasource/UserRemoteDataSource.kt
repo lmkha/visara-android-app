@@ -17,6 +17,7 @@ class UserRemoteDataSource @Inject constructor(
 ) : RemoteDataSource(json) {
     suspend fun getCurrentUser() : ApiResult<UserDto> {
         return callApi({ userApi.getCurrentUser() }) { response ->
+            if (!response.isSuccessful) return@callApi extractFailureFromResponseBody(response.body?.string())
             val responseBody = response.body?.string() ?: return@callApi ApiResult.Failure()
             json.decodeFromString<ApiResponse<UserDto>>(responseBody).toApiResult()
         }
@@ -25,12 +26,8 @@ class UserRemoteDataSource @Inject constructor(
     suspend fun getPublicUser(username: String) : ApiResult<UserDto> {
         return callApi({ userApi.getPublicUser(username) }) { response ->
             val responseBody = response.body?.string()
-
-            if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                json.decodeFromString<ApiResult.Success<UserDto>>(responseBody)
-            } else {
-                extractFailureFromResponseBody(responseBody)
-            }
+            if (responseBody.isNullOrEmpty()) return@callApi ApiResult.Failure()
+            json.decodeFromString<ApiResponse<UserDto>>(responseBody).toApiResult()
         }
     }
 
@@ -39,7 +36,7 @@ class UserRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                json.decodeFromString<ApiResult.Success<List<UserDto>>>(responseBody)
+                json.decodeFromString<ApiResponse<List<UserDto>>>(responseBody).toApiResult()
             } else {
                 extractFailureFromResponseBody(responseBody)
             }
@@ -103,7 +100,7 @@ class UserRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                json.decodeFromString<ApiResult.Success<List<FollowerUserDto>>>(responseBody)
+                json.decodeFromString<ApiResponse<List<FollowerUserDto>>>(responseBody).toApiResult()
             } else {
                 extractFailureFromResponseBody(responseBody)
             }
@@ -115,7 +112,7 @@ class UserRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                json.decodeFromString<ApiResult.Success<List<FollowingUserDto>>>(responseBody)
+                json.decodeFromString<ApiResponse<List<FollowingUserDto>>>(responseBody).toApiResult()
             } else {
                 extractFailureFromResponseBody(responseBody)
             }

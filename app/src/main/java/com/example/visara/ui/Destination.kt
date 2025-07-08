@@ -37,7 +37,7 @@ sealed class Destination {
         @Serializable
         data class Profile(
             @SerialName("username")
-            val username: String,
+            val username: String?,
             val shouldNavigateToMyProfile: Boolean = false,
         ) : Destination()
     }

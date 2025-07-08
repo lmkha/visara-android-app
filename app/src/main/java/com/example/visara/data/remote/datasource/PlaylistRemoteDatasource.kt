@@ -19,7 +19,7 @@ class PlaylistRemoteDatasource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                json.decodeFromString<ApiResult.Success<PlayListDto>>(responseBody)
+                json.decodeFromString<ApiResponse<PlayListDto>>(responseBody).toApiResult()
             } else extractFailureFromResponseBody(responseBody)
         }
     }
@@ -29,7 +29,7 @@ class PlaylistRemoteDatasource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                json.decodeFromString<ApiResult.Success<String>>(responseBody)
+                json.decodeFromString<ApiResponse<String>>(responseBody).toApiResult()
             } else extractFailureFromResponseBody(responseBody)
         }
     }
@@ -39,7 +39,7 @@ class PlaylistRemoteDatasource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                json.decodeFromString<ApiResult.Success<PlayListDto>>(responseBody)
+                json.decodeFromString<ApiResponse<PlayListDto>>(responseBody).toApiResult()
             } else extractFailureFromResponseBody(responseBody)
         }
     }
@@ -75,7 +75,7 @@ class PlaylistRemoteDatasource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                json.decodeFromString<ApiResult.Success<List<PlayListDto>>>(responseBody)
+                json.decodeFromString<ApiResponse<List<PlayListDto>>>(responseBody).toApiResult()
             } else extractFailureFromResponseBody(responseBody)
         }
     }

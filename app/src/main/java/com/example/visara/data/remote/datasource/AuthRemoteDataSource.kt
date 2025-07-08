@@ -1,6 +1,5 @@
 package com.example.visara.data.remote.datasource
 
-import android.util.Log
 import com.example.visara.data.remote.api.AuthApi
 import com.example.visara.data.remote.common.ApiResponse
 import com.example.visara.data.remote.common.ApiResult
@@ -56,7 +55,7 @@ class AuthRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string() ?: return@callApi ApiResult.Failure()
 
             if (response.isSuccessful) {
-                json.decodeFromString<ApiResult.Success<UsernameAvailabilityDto>>(responseBody)
+                json.decodeFromString<ApiResponse<UsernameAvailabilityDto>>(responseBody).toApiResult()
             } else {
                 return@callApi extractFailureFromResponseBody(responseBody)
             }
@@ -68,8 +67,7 @@ class AuthRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
             if (!response.isSuccessful || responseBody.isNullOrEmpty()) return@callApi ApiResult.Failure()
 
-            val apiResponse = json.decodeFromString<ApiResponse<Nothing>>(responseBody)
-            apiResponse.toApiResult()
+            json.decodeFromString<ApiResponse<Nothing>>(responseBody).toApiResult()
         }
     }
 

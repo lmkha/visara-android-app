@@ -1,6 +1,7 @@
 package com.example.visara.data.remote.datasource
 
 import com.example.visara.data.remote.api.NotificationApi
+import com.example.visara.data.remote.common.ApiResponse
 import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.dto.NotificationDto
 import kotlinx.serialization.json.Json
@@ -18,7 +19,7 @@ class NotificationRemoteDataSource @Inject constructor(
             if (!response.isSuccessful || responseBody.isNullOrEmpty()) {
                 return@callApi extractFailureFromResponseBody(responseBody)
             }
-            json.decodeFromString<ApiResult.Success<List<NotificationDto>>>(responseBody)
+            json.decodeFromString<ApiResponse<List<NotificationDto>>>(responseBody).toApiResult()
         }
     }
 }

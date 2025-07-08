@@ -1,7 +1,7 @@
 package com.example.visara.data.model
 
 import com.example.visara.notification.NotificationType
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -34,7 +34,7 @@ data class CommentLikeNotificationData(
     val videoTitle: String,
     val thumbnailUrl: String,
     val commentId: String,
-    @SerializedName("comment") val commentContent: String,
+    @SerialName("comment") val commentContent: String,
 ) : NotificationData
 
 @Serializable
@@ -43,7 +43,7 @@ data class CommentOnVideoNotificationData(
     val videoTitle: String,
     val thumbnailUrl: String,
     val commentId: String,
-    @SerializedName("comment") val commentContent: String,
+    @SerialName("comment") val commentContent: String,
 ) : NotificationData
 
 @Serializable

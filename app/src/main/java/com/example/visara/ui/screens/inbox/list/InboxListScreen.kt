@@ -36,8 +36,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.visara.R
-import com.example.visara.ui.components.BottomNavBar
-import com.example.visara.ui.Destination
 import com.example.visara.viewmodels.InboxListViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,8 +47,6 @@ fun InboxListScreen(
    onOpenNewFollowersInbox: () -> Unit,
    openStudioInbox: () -> Unit,
    onOpenSystemNotificationInbox: () -> Unit,
-   onBotNavigate: (Destination) -> Unit,
-   currentAvatarUrl: String?,
 ) {
 
    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -122,14 +118,6 @@ fun InboxListScreen(
                containerColor = MaterialTheme.colorScheme.background,
             ),
          )
-      },
-      bottomBar = {
-         BottomNavBar (
-            activeRoute = Destination.Main.Inbox.route,
-            currentUserAvatarUrl = currentAvatarUrl,
-         ) {
-            onBotNavigate(it)
-         }
       },
    ) { innerPadding->
       LazyColumn(

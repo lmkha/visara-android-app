@@ -1,6 +1,6 @@
 package com.example.visara.data.remote.dto
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -26,7 +26,7 @@ data class RegisterAccountDto(
     val email: String = "",
     val phone: String = "",
 
-    @field:SerializedName("profilePic")
+    @SerialName("profilePic")
     val profileImageLink: String = "",
 )
 

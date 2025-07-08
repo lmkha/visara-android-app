@@ -16,7 +16,6 @@ import com.example.visara.data.remote.common.ApiResult
 import com.example.visara.data.remote.datasource.VideoRemoteDataSource
 import com.example.visara.ui.screens.add_new_video.components.enter_video_info.PrivacyState
 import com.example.visara.viewmodels.AddVideoSubmitData
-import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -359,8 +358,6 @@ class VideoRepository @Inject constructor(
 
     private fun convertVideoEntityToSubmitData(entity: LocalVideoEntity) : AddVideoSubmitData {
         with(entity) {
-            val playlistsType = object : TypeToken<List<PlaylistModel>>() {}.type
-            val hashtagsType = object : TypeToken<List<String>>() {}.type
             val playlists = json.decodeFromString<List<PlaylistModel>>(this.playlistsJson)
             val hashtags: List<String> = json.decodeFromString<List<String>>(this.hashtagsJson)
 

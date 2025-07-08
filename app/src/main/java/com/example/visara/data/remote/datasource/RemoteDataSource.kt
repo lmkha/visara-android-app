@@ -7,7 +7,7 @@ import kotlinx.serialization.json.Json
 import okhttp3.Response
 
 abstract class RemoteDataSource(protected val json: Json) {
-    suspend fun <T> callApi(
+    protected suspend fun <T> callApi(
         request: suspend () -> Response,
         handleResponse: (Response) -> ApiResult<T>
     ): ApiResult<T> {
@@ -21,7 +21,7 @@ abstract class RemoteDataSource(protected val json: Json) {
         }
     }
 
-    fun extractFailureFromResponseBody(responseBody: String?) : ApiResult.Failure {
+    protected fun extractFailureFromResponseBody(responseBody: String?) : ApiResult.Failure {
         if (responseBody.isNullOrEmpty()) return ApiResult.Failure()
         return json.decodeFromString<ApiResult.Failure>(responseBody)
     }

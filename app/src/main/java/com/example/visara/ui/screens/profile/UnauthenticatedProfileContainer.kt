@@ -43,7 +43,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun UnauthenticatedProfileContainer(
     onBack: () -> Unit,
-    bottomNavBar: @Composable () -> Unit,
     onNavigateToLoginScreen: () -> Unit,
     onNavigateToSettingsScreen: () -> Unit,
 ) {
@@ -89,7 +88,6 @@ fun UnauthenticatedProfileContainer(
                     ),
                 )
             },
-            bottomBar = { bottomNavBar() },
             containerColor = MaterialTheme.colorScheme.background,
         ) { innerPadding ->
             Box(

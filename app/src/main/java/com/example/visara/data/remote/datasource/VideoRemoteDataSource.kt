@@ -19,7 +19,7 @@ class VideoRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                json.decodeFromString<ApiResult.Success<VideoDto>>(responseBody)
+                json.decodeFromString<ApiResponse<VideoDto>>(responseBody).toApiResult()
             } else extractFailureFromResponseBody(responseBody)
         }
     }
@@ -29,7 +29,7 @@ class VideoRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                json.decodeFromString<ApiResult.Success<List<VideoDto>>>(responseBody)
+                json.decodeFromString<ApiResponse<List<VideoDto>>>(responseBody).toApiResult()
             } else extractFailureFromResponseBody(responseBody)
         }
     }
@@ -57,7 +57,7 @@ class VideoRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                json.decodeFromString<ApiResult.Success<VideoDto>>(responseBody)
+                json.decodeFromString<ApiResponse<VideoDto>>(responseBody).toApiResult()
             } else extractFailureFromResponseBody(responseBody)
         }
     }
@@ -85,7 +85,7 @@ class VideoRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                json.decodeFromString<ApiResult.Success<VideoDto>>(responseBody)
+                json.decodeFromString<ApiResponse<VideoDto>>(responseBody).toApiResult()
             } else extractFailureFromResponseBody(responseBody)
         }
     }
@@ -99,7 +99,7 @@ class VideoRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                json.decodeFromString<ApiResult.Success<String>>(responseBody)
+                json.decodeFromString<ApiResponse<String>>(responseBody).toApiResult()
             } else extractFailureFromResponseBody(responseBody)
         }
     }
@@ -125,7 +125,7 @@ class VideoRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                json.decodeFromString<ApiResult.Success<List<VideoDto>>>(responseBody)
+                json.decodeFromString<ApiResponse<List<VideoDto>>>(responseBody).toApiResult()
             } else {
                 extractFailureFromResponseBody(responseBody)
             }
@@ -178,7 +178,7 @@ class VideoRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                json.decodeFromString<ApiResult.Success<List<VideoDto>>>(responseBody)
+                json.decodeFromString<ApiResponse<List<VideoDto>>>(responseBody).toApiResult()
             } else {
                 extractFailureFromResponseBody(responseBody)
             }
@@ -240,7 +240,7 @@ class VideoRemoteDataSource @Inject constructor(
             val responseBody = response.body?.string()
 
             if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
-                json.decodeFromString<ApiResult.Success<List<VideoDto>>>(responseBody)
+                json.decodeFromString<ApiResponse<List<VideoDto>>>(responseBody).toApiResult()
             } else {
                 extractFailureFromResponseBody(responseBody)
             }
