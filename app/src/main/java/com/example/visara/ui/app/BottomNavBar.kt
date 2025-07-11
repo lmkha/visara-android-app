@@ -48,7 +48,6 @@ fun BottomNavBar(
     onNavigate: (Destination) -> Unit
 ) {
 
-//    val navBackstackEntry = navController.currentBackStackEntryAsState().value
     val currentDestination = currentNavBackstackEntry?.destination
 
     val shouldShowBottomBar = currentDestination?.hierarchy?.any { navDestination ->
@@ -66,13 +65,13 @@ fun BottomNavBar(
                         onNavigate(item.destination)
                     },
                     icon = {
-                        if (item.destination.route != Destination.Main.Profile(null).route) {
-                            Icon(imageVector = item.icon, contentDescription = label)
-                        } else {
+                        if (item.destination is Destination.Main.Profile) {
                             UserAvatar(
                                 avatarLink = currentUserAvatarUrl,
                                 modifier = Modifier.size(24.dp)
                             )
+                        } else {
+                            Icon(imageVector = item.icon, contentDescription = label)
                         }
                     },
                     colors = NavigationBarItemDefaults.colors(

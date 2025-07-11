@@ -2,12 +2,9 @@ package com.example.visara.ui
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 
 @Serializable
 sealed class Destination {
-    val route: String get() = this::class.qualifiedName ?: this.toString()
-
     @Serializable
     data object Main : Destination() {
         @Serializable
@@ -61,12 +58,12 @@ sealed class Destination {
     @Serializable
     data object Test : Destination()
     @Serializable
-    data object QRCodeGenerate : Destination()
-    @Serializable
-    data object QRCodeScan : Destination()
-
-    @Serializable
-    data object QRCode : Destination()
+    data object QRCode : Destination() {
+        @Serializable
+        data object MyQRCode : Destination()
+        @Serializable
+        data object ScanQRCode: Destination()
+        @Serializable
+        data class UnRecognizedQRCodeScanned(val data: String) : Destination()
+    }
 }
-
-val x = Json.encodeToString(Destination.QRCode)

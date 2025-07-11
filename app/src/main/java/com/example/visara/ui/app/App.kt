@@ -59,9 +59,9 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navDeepLink
+import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import com.example.visara.data.model.VideoModel
 import com.example.visara.ui.Destination
@@ -81,10 +81,10 @@ import com.example.visara.ui.screens.inbox.new_followers.NewFollowersInboxScreen
 import com.example.visara.ui.screens.inbox.studio.StudioInboxScreen
 import com.example.visara.ui.screens.inbox.system_notification.SystemNotificationInboxScreen
 import com.example.visara.ui.screens.login.LoginScreen
+import com.example.visara.ui.screens.qr_code.MyQRCodeScreen
 import com.example.visara.ui.screens.profile.ProfileScreen
-import com.example.visara.ui.screens.qrcode.QRCodeGereratorScreen
-import com.example.visara.ui.screens.qrcode.QRCodeScannerScreen
-import com.example.visara.ui.screens.qrcode.QRCodeScreen
+import com.example.visara.ui.screens.qr_code.ScanQRCodeScreen
+import com.example.visara.ui.screens.qr_code.UnrecognizedQRCodeDataScannedScreen
 import com.example.visara.ui.screens.search.SearchScreen
 import com.example.visara.ui.screens.settings.SettingsScreen
 import com.example.visara.ui.screens.studio.StudioScreen
@@ -101,6 +101,7 @@ import com.example.visara.viewmodels.EditVideoViewModel
 import com.example.visara.viewmodels.FollowScreenViewModel
 import com.example.visara.viewmodels.ProfileViewModel
 import com.example.visara.viewmodels.SearchViewModel
+import com.example.visara.viewmodels.UnrecognizedQRCodeDataViewModel
 import com.example.visara.viewmodels.VideoDetailViewModel
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -186,7 +187,6 @@ fun App(
                 NavHost(
                     navController = navController,
                     startDestination = Destination.Main,
-//                    startDestination = Destination.QRCode,
                     modifier = Modifier.fillMaxSize()
                 ) {
                     navigation<Destination.Main>(startDestination = Destination.Main.Home) {
@@ -359,7 +359,7 @@ fun App(
                                 },
                                 onNavigateToAddNewVideoScreen = { navController.navigate(Destination.Main.AddNewVideo()) },
                                 onNavigateToStudioScreen = { navController.navigate(Destination.Studio()) },
-                                onNavigateToQRCodeScreen = {},
+                                onNavigateToQRCodeScreen = { navController.navigate(Destination.QRCode.MyQRCode) },
                                 onNavigateToEditVideoScreen = { video ->
                                     coroutineScope.launch {
                                         val videoJson = Json.encodeToString(video)
@@ -369,6 +369,37 @@ fun App(
                                 onNavigateToEditProfileScreen = {
                                     navController.navigate(Destination.EditProfile)
                                 },
+                            )
+                        }
+                    }
+                    navigation<Destination.QRCode>(startDestination = Destination.QRCode.ScanQRCode) {
+                        composable<Destination.QRCode.ScanQRCode> {
+                            ScanQRCodeScreen(
+                                modifier = Modifier.fillMaxSize(),
+                                onBack = { navController.popBackStack() },
+                                onNavigateToProfileScreen = { username ->
+                                    navController.navigate(Destination.Main.Profile(username = username))
+                                },
+                                onNavigateToUnrecognizedQRCodeDataScreen = { data ->
+                                    navController.navigate(Destination.QRCode.UnRecognizedQRCodeScanned(data))
+                                }
+                            )
+                        }
+                        composable<Destination.QRCode.MyQRCode> {
+                            MyQRCodeScreen(
+                                modifier = Modifier.fillMaxSize(),
+                                onNavigateToScanQRCodeScreen = { navController.navigate(Destination.QRCode.ScanQRCode) },
+                                onBack = { navController.popBackStack() },
+                            )
+                        }
+                        composable<Destination.QRCode.UnRecognizedQRCodeScanned> { backstackEntry ->
+                            val route: Destination.QRCode.UnRecognizedQRCodeScanned = backstackEntry.toRoute()
+                            val viewModel: UnrecognizedQRCodeDataViewModel = hiltViewModel()
+                            viewModel.setQRCodeData(route.data)
+                            UnrecognizedQRCodeDataScannedScreen(
+                                viewModel = viewModel,
+                                modifier = Modifier.fillMaxSize(),
+                                onBack = { navController.popBackStack() }
                             )
                         }
                     }
@@ -491,22 +522,6 @@ fun App(
                         EditProfileScreen(
                             onBack = { navController.popBackStack() },
                             modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                    composable<Destination.QRCodeGenerate> {
-                        QRCodeGereratorScreen(
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                    composable<Destination.QRCodeScan> {
-                        QRCodeScannerScreen(
-                            modifier = Modifier.fillMaxSize(),
-                        )
-                    }
-                    composable<Destination.QRCode> {
-                        QRCodeScreen(
-                            onNavigateToGenerateQRCode = { navController.navigate(Destination.QRCodeGenerate) },
-                            onNavigateToScanQRCode = { navController.navigate(Destination.QRCodeScan) }
                         )
                     }
                 }

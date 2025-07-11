@@ -22,6 +22,7 @@ object AppModule {
     @Singleton
     fun provideJson() : Json {
         return Json {
+            encodeDefaults = true
             ignoreUnknownKeys = true
             explicitNulls = false
             useAlternativeNames = true
