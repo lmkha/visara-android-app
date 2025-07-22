@@ -16,19 +16,19 @@ Visara is a Kotlin-based Android native app built with Jetpack Compose for shari
 - QR code scanning for quick profile access
 
 ## Tech Stack
-- **Core:** Android, Kotlin, Jetpack Compose, Jetpack Media3, Dagger/Hilt  
-- **Networking:** OkHttp  
-- **Storage:** Room Database, DataStore, EncryptedSharedPreferences  
-- **Notifications:** Firebase Cloud Messaging  
+- **Core:** Android, Kotlin, Jetpack Compose, Jetpack Media3, Dagger/Hilt
+- **Networking:** OkHttp
+- **Storage:** Room Database, DataStore, EncryptedSharedPreferences
+- **Notifications:** Firebase Cloud Messaging
 - **Others:** WorkManager, Google ML Kit (Barcode Scanner)
 
 ## Architecture
-<img 
-  src="docs/images/mobile_architecture.png" 
-  alt="Architecture Diagram" 
-  title="Architecture Diagram"
-  width="100%" 
-  style="border:1px solid #ccc; border-radius:8px;" 
+<img
+src="docs/images/mobile_architecture.png"
+alt="Architecture Diagram"
+title="Architecture Diagram"
+width="100%"
+style="border:1px solid #ccc; border-radius:8px;"
 />
 
 
@@ -37,20 +37,24 @@ Visara is a Kotlin-based Android native app built with Jetpack Compose for shari
 
 ## Setup
 **1. Clone project**
-    ```bash
-    git clone https://github.com/lmkha/visara-android-app.git
-    ```
-2. [Add local.properties(env)](docs/setup_local_properties.md)
+
+```powershell
+git clone https://github.com/lmkha/visara-android-app.git
+```
+
+**2. [Add local.properties(env)](docs/setup_local_properties.md)**
+
+
 **3. Setup FCM:**
-   - Create new firebase project
-   - Go to Project Overview -> Project settings
-   - Download **google-services.json** file in **Android apps** section
-   - Put **google-services.json** in **project/app** folder
-        ```
-        visara-android-app/
-        │
-        ├── app/
-        │   ├── Sgoogle-services.json 
-        │   └...
-        ...
-        ```
+- Create new firebase project
+- Go to Project Overview -> Project settings
+- Download **google-services.json** file in **Android apps** section
+- Put **google-services.json** in **project/app** folder
+     ```
+     visara-android-app/
+     │
+     ├── app/
+     │   ├── google-services.json 
+     │   └...
+     ...
+     ```
