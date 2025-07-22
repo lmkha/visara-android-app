@@ -34,6 +34,46 @@ style="border:1px solid #ccc; border-radius:8px;"
 
 ## Screenshots
 
+**1. Home Screen:** Supports persistent video playback with a floating mini player, allowing users to browse other content without interrupting playback — just like YouTube’s experience.
+
+<img
+src="docs/images/home_screen.png"
+alt="Home screen"
+title="Home screen"
+width="50%"
+style="border:1px solid #ccc; border-radius:8px;"
+/>
+
+**2. Detail video screen:** The video detail screen supports smooth automatic fullscreen transition on device rotation, and delivers quick playback using adaptive streaming — without downloading the entire file.
+
+<img
+src="docs/images/video_detail_1.png"
+alt="Video detail screen"
+title="Video detail screen"
+width="50%"
+style="border:1px solid #ccc; border-radius:8px;"
+/>
+
+**3. Play background:** Supports background audio playback with media controls in the notification shade and lock screen, even when the app is no longer in the foreground.
+
+<img
+src="docs/images/video_detail_2.png"
+alt="Play background"
+title="Play background"
+width="50%"
+style="border:1px solid #ccc; border-radius:8px;"
+/>
+
+**4. Settings screen:** Supports language switching, theme customization (Light, Dark, or System), and account management directly from the settings screen.
+
+<img
+src="docs/images/settings_screen.png"
+alt="Settings screen"
+title="Settings screen"
+width="50%"
+style="border:1px solid #ccc; border-radius:8px;"
+/>
+
 
 ## Setup
 **1. Clone project**
