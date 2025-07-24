@@ -5,6 +5,10 @@ Visara App
 ==================
 Visara is a Kotlin-based Android native app built with Jetpack Compose for sharing and watching videos, featuring adaptive streaming, push notifications, and social interactions such as like, comment, and follow.
 
+> ℹ️ This Android application is part of a multi-platform architecture (backend, web, and mobile) designed and developed as my Graduation Project. The full system includes:
+> - [Backend (Spring Boot)](https://github.com/quythuong18/VideoPlatform-REST-API.git)
+> - [Web Frontend (Next.js)](https://github.com/lmkha/datn-fe.git)
+
 ## Features
 - Adaptive video streaming using MPEG-DASH and ExoPlayer
 - Background audio playback and media session support
