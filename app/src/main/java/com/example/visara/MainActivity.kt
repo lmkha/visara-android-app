@@ -20,6 +20,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.example.visara.ui.app.App
+import com.example.visara.ui.theme.AppTheme
 import com.example.visara.viewmodels.AppViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -58,15 +59,19 @@ class MainActivity : ComponentActivity() {
                 onRequirePortraitMode = {
                     requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
                 },
-                onRequireAppearanceDarkStatusBars = {
-                    windowInsetsController.isAppearanceLightStatusBars = false
-                },
-                onRequireAppearanceLightStatusBars = {
-                    windowInsetsController.isAppearanceLightStatusBars = true
-                },
-                onRequireAppearanceDefaultStatusBars = {
-                    val currentNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
-                    windowInsetsController.isAppearanceLightStatusBars = (currentNightMode != Configuration.UI_MODE_NIGHT_YES)
+                onThemeChanged = { theme ->
+                    when(theme) {
+                        AppTheme.LIGHT -> {
+                            windowInsetsController.isAppearanceLightStatusBars = true
+                        }
+                        AppTheme.DARK -> {
+                            windowInsetsController.isAppearanceLightStatusBars = false
+                        }
+                        AppTheme.SYSTEM -> {
+                            val currentNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+                            windowInsetsController.isAppearanceLightStatusBars = (currentNightMode != Configuration.UI_MODE_NIGHT_YES)
+                        }
+                    }
                 }
             )
         }

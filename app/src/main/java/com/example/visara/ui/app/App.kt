@@ -116,9 +116,7 @@ fun App(
     appViewModel: AppViewModel,
     onRequireLandscapeMode: () -> Unit,
     onRequirePortraitMode: () -> Unit,
-    onRequireAppearanceLightStatusBars: () -> Unit,
-    onRequireAppearanceDarkStatusBars: () -> Unit,
-    onRequireAppearanceDefaultStatusBars: () -> Unit,
+    onThemeChanged: (AppTheme) -> Unit,
 ) {
 
     val appState by appViewModel.appState.collectAsStateWithLifecycle()
@@ -134,13 +132,9 @@ fun App(
         key2 = appState.videoDetailState.isFullScreenMode,
     ) {
         if (appState.videoDetailState.isFullScreenMode) {
-            onRequireAppearanceDarkStatusBars()
+            onThemeChanged(AppTheme.DARK)
         } else {
-            when(appState.appTheme) {
-                AppTheme.LIGHT -> onRequireAppearanceLightStatusBars()
-                AppTheme.DARK -> onRequireAppearanceDarkStatusBars()
-                AppTheme.SYSTEM -> onRequireAppearanceDefaultStatusBars()
-            }
+            onThemeChanged(appState.appTheme)
         }
     }
 
